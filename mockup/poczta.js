@@ -111,7 +111,17 @@ function openLetterDetail(letterId) {
   l.read = true;
   updateBadges();
 
-  alert(`📨 ${l.sender}\n\nTemat: ${l.subject}\nData: ${l.date}\nUPO: ${l.upo}\n\n${l.content}`);
+  const msg = `📨 ${l.sender}\n\nTemat: ${l.subject}\nData: ${l.date}\nUPO: ${l.upo}\n\n${l.content}\n\nCzy chcesz pobrać oficjalne Urzędowe Poświadczenie Odbioru (UPO .xml)?`;
+  if (confirm(msg)) {
+    if (typeof exportUpoToFile === 'function') {
+      exportUpoToFile({
+        tytul: l.subject,
+        nadawca: l.sender,
+        dataDoreczenia: l.date,
+        sumaKontrolna: l.upo
+      });
+    }
+  }
   openPocztaModal();
 }
 

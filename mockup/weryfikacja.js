@@ -201,3 +201,76 @@ function initHologramEffect(cardEl) {
     cardEl.style.transform = 'none';
   });
 }
+
+// ----------------- HUB KODÓW QR I WERYFIKACJI (bnav QR) -----------------
+function openQrHubModal() {
+  if (typeof haptic === 'function') haptic('tap');
+  let modal = document.getElementById('qrHubModal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'qrHubModal';
+    modal.className = 'sheet-modal';
+    modal.setAttribute('role', 'dialog');
+    modal.setAttribute('aria-modal', 'true');
+    modal.setAttribute('aria-labelledby', 'qrHubTitle');
+    document.getElementById('app').appendChild(modal);
+  }
+
+  modal.innerHTML = `
+    <div class="scrim" onclick="closeQrHubModal()"></div>
+    <div class="modal-box">
+      <div class="modal-head">
+        <h2 id="qrHubTitle">Znak mObywatela i Kod QR</h2>
+        <button class="tx-close" onclick="closeQrHubModal()" aria-label="Zamknij">
+          <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></svg>
+        </button>
+      </div>
+      <p class="modal-sub">Wybierz sposób bezpiecznej wymiany i weryfikacji danych tożsamości.</p>
+
+      <div class="qr-hub-grid">
+        <button type="button" class="qr-hub-card primary" onclick="closeQrHubModal();if(typeof qrFlow==='function')qrFlow({})">
+          <div class="qrh-icon">📷</div>
+          <div class="qrh-info">
+            <b>Zeskanuj kod QR</b>
+            <small>Skieruj aparat na znak mObywatela w urzędzie, firmie lub telefonie obok i przekaż dane.</small>
+          </div>
+          <span class="qrh-arrow">→</span>
+        </button>
+
+        <button type="button" class="qr-hub-card" onclick="closeQrHubModal();if(typeof przyjmijFlow==='function')przyjmijFlow({})">
+          <div class="qrh-icon">🛡️</div>
+          <div class="qrh-info">
+            <b>Okaż mój Znak mObywatela</b>
+            <small>Wyświetl animowany żeton kryptograficzny, aby inna osoba lub instytucja mogła przyjąć Twoje dane.</small>
+          </div>
+          <span class="qrh-arrow">→</span>
+        </button>
+
+        <button type="button" class="qr-hub-card" onclick="closeQrHubModal();if(typeof openDoc==='function')openDoc('dowod')">
+          <div class="qrh-icon">✨</div>
+          <div class="qrh-info">
+            <b>mDowód z hologramem</b>
+            <small>Ekran weryfikacyjny z żyroskopowym hologramem 3D, orłem RP i zegarem milisekundowym.</small>
+          </div>
+          <span class="qrh-arrow">→</span>
+        </button>
+      </div>
+
+      <div class="modal-actions" style="margin-top:16px">
+        <button type="button" class="btn ghost wide" onclick="closeQrHubModal()">Zamknij</button>
+      </div>
+    </div>
+  `;
+
+  if (typeof openDialogFocus === 'function') openDialogFocus('qrhub', modal.querySelector('.modal-box'), '.tx-close');
+  modal.classList.add('open');
+  if (typeof announceSR === 'function') announceSR('Otwarto Znak mObywatela i kody QR');
+}
+
+function closeQrHubModal() {
+  const modal = document.getElementById('qrHubModal');
+  if (modal && modal.classList.contains('open')) {
+    modal.classList.remove('open');
+    if (typeof restoreDialogFocus === 'function') restoreDialogFocus('qrhub');
+  }
+}

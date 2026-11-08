@@ -14,7 +14,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=37">
+<link rel="stylesheet" href="style.css?v=38">
 </head>
 <body>
 <div class="phone" id="app">
@@ -278,9 +278,15 @@
         <h2 id="notifModalTitle">Centrum Powiadomień</h2>
         <button class="tx-close" onclick="closePowiadomieniaModal()" aria-label="Zamknij"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></svg></button>
       </div>
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
         <p class="modal-sub" style="margin:0">Alerty RCB, przypomnienia terminowe i statusy</p>
         <button type="button" class="btn-xs ghost" onclick="markAllNotificationsRead()">Odczytaj wszystkie</button>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px">
+        <button type="button" class="btn-xs ghost" onclick="closePowiadomieniaModal();setTimeout(()=>triggerDemoNotification('rcb'),200)" aria-label="Przetestuj powiadomienie push Alert RCB">🚨 Push RCB</button>
+        <button type="button" class="btn-xs ghost" onclick="closePowiadomieniaModal();setTimeout(()=>triggerDemoNotification('recepta'),200)" aria-label="Przetestuj powiadomienie push e-Recepta">💊 Push Recepta</button>
+        <button type="button" class="btn-xs ghost" onclick="closePowiadomieniaModal();setTimeout(()=>triggerDemoNotification('oc'),200)" aria-label="Przetestuj powiadomienie push OC i kalendarz">🚗 Push OC (.ics)</button>
+        <button type="button" class="btn-xs ghost" onclick="closePowiadomieniaModal();setTimeout(()=>triggerDemoNotification('pismo'),200)" aria-label="Przetestuj powiadomienie push e-Doręczenia i UPO">🏛️ Push Pismo (UPO)</button>
       </div>
       <div class="notif-list"></div>
     </div>
@@ -299,7 +305,7 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2M12 12v3M9 13.5h6"/></svg>
       <span>Usługi</span>
     </button>
-    <button type="button" class="bnav-btn qr-center" onclick="document.getElementById('qrBtn').click()" aria-label="Kod QR i Znak mObywatel">
+    <button type="button" class="bnav-btn qr-center" onclick="openQrHubModal()" aria-label="Kod QR i Znak mObywatel">
       <div class="bnav-qr-circle">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/><rect x="7" y="7" width="3" height="3"/><rect x="14" y="7" width="3" height="3"/><rect x="7" y="14" width="3" height="3"/><rect x="14" y="14" width="3" height="3"/></svg>
       </div>
@@ -322,18 +328,22 @@
   </div></div>
   <div class="homebar" aria-hidden="true"></div>
 </div>
-<script src="osoby.js?v=37"></script>
-<script src="sylwetki.js?v=37"></script>
-<script src="core.js?v=37"></script>
-<script src="accessibility.js?v=37"></script>
-<script src="variants.js?v=37"></script>
-<script src="scenarios.js?v=37"></script>
-<script src="agent.js?v=37"></script>
-<script src="znak-kod.js?v=37"></script>
-<script src="znak.js?v=37"></script>
-<script src="uslugi.js?v=37"></script>
-<script src="weryfikacja.js?v=37"></script>
-<script src="poczta.js?v=37"></script>
-<script src="ikp-integracja.js?v=37"></script>
+<script src="osoby.js?v=38"></script>
+<script src="sylwetki.js?v=38"></script>
+<script src="core.js?v=38"></script>
+<script src="accessibility.js?v=38"></script>
+<script src="variants.js?v=38"></script>
+<script src="scenarios.js?v=38"></script>
+<script src="agent.js?v=38"></script>
+<script src="znak-kod.js?v=38"></script>
+<script src="znak.js?v=38"></script>
+<script src="uslugi.js?v=38"></script>
+<script src="weryfikacja.js?v=38"></script>
+<script src="poczta.js?v=38"></script>
+<script src="ikp-integracja.js?v=38"></script>
+<script src="mandaty.js?v=38"></script>
+<script src="powiadomienia-eksport.js?v=38"></script>
+<script src="katalog-kart.js?v=38"></script>
+<script src="spotlight.js?v=38"></script>
 </body>
 </html>

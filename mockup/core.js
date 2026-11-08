@@ -146,6 +146,8 @@ function openDoc(id){
   q=[['doc','e-Recepty','ikp_recepty'],['clock','e-Rejestracja NFZ','ikp_nfz'],['shield','Karta DiLO','ikp_dilo'],['doc','Zaświadczenie NFZ','cert_nfz'],['dots','Zapytaj asystenta','ask']];
  }else if(id==='firma'){
   q=[['scan','Poświadcz za firmę','firma_poswiadcz'],['shield','Podpisz e-dowodem','firma_podpis'],['doc','Odpis CEIDG (PDF)','cert_ceidg'],['clock','Biała Lista VAT','firma_vat'],['dots','Zapytaj asystenta','ask']];
+ }else if(id==='pj'){
+  q=[['scan','Potwierdź dane','qr'],['clock','Punkty CEPiK','mandaty'],['doc','Szczegóły','data'],['doc','Zaświadczenie PDF','cert'],['dots','Zapytaj asystenta','ask']];
  }else{
   q=[['scan','Potwierdź dane','qr'],['doc','Szczegóły','data'],['clock','Kalendarz','cal'],['doc','Zaświadczenie PDF','cert'],['dots','Zapytaj asystenta','ask']];
  }
@@ -162,7 +164,8 @@ function openDoc(id){
   const a=b.dataset.a;
   if(a==='qr'){qrFlow({doc:id});return}
   if(a==='data'){$('#qrbox').innerHTML=`<div class="ui"><div class="rows" style="padding-top:4px">${rowsH(d.rows)}</div></div>`;if(typeof announceSR==='function')announceSR('Wyświetlono szczegółowe dane dokumentu')}
-  if(a==='ikp_recepty'){openIkpModal('recepty');return}
+  if(a==='mandaty'){if(typeof openMandatyModal==='function')openMandatyModal();else openPointsDetail();return}
+   if(a==='ikp_recepty'){openIkpModal('recepty');return}
   if(a==='ikp_nfz'){openERejestracjaModal();return}
   if(a==='ikp_dilo'){openDiloModal();return}
   if(a==='cert_nfz'){openOfficialCertificate('nfz');return}
