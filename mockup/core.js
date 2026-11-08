@@ -82,15 +82,18 @@ function layout(){
  const cardW=W-(narrow?20:32),natH=Math.round(cardW/1.5);
  const remH=$('#reminders').offsetHeight;
  const chatting=app.classList.contains('chatting');
+ const bnavEl=$('#bnav');
+ const bnavH=(bnavEl&&getComputedStyle(bnavEl).display!=='none'&&!chatting)?(bnavEl.offsetHeight||58):0;
+ const compH=chatting?comp:0;
  const pbarH=(!chatting&&pbar)?(pbar.offsetHeight+(H<680?6:8)):0;
  const stackTop=chatting?(T+topH+2):(T+topH+4+pbarH);
- const remTop=H-comp-remH-(H<680?4:6);
+ const remTop=H-bnavH-compH-remH-(H<680?4:8);
  const avail=Math.max(120,remTop-(H<680?6:10)-stackTop);
  let cardH=natH,off=Math.min(62,(avail-natH)/Math.max(1,n-1));
- const minOff=H<640?32:36;
+ const minOff=H<680?26:36;
  if(!chatting&&off<minOff){
-  off=Math.max(30,Math.min(minOff,Math.round(avail*0.165)));
-  cardH=Math.max(narrow?122:136,Math.min(natH,avail-off*Math.max(1,n-1)));
+  off=Math.max(H<650?22:26,Math.min(minOff,Math.floor((avail-(H<650?115:130))/Math.max(1,n-1))));
+  cardH=Math.max(H<650?110:122,Math.min(natH,avail-off*Math.max(1,n-1)));
  }
  const stNode=$('#stack');
  stNode.style.width=cardW+'px';stNode.style.margin='0 auto';
@@ -242,8 +245,25 @@ function emptyState(box=VIS.el){
   .forEach(([a,b])=>{const x=el(`<button><span>${a}<small>${b}</small></span>${svg('chev')}</button>`);x.onclick=()=>send(a);e.querySelector('.sugg').append(x)});
  box.append(e);
 }
-function enterChat(){if(!app.classList.contains('chatting')){app.classList.add('chatting');emptyState();layout()}}
-function exitChat(){closeHist();app.classList.remove('chatting');input.blur();layout()}
+function enterChat(){
+  if(!app.classList.contains('chatting')){
+    app.classList.add('chatting');
+    document.querySelectorAll('.bnav-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.view === 'chat');
+    });
+    emptyState();
+    layout();
+  }
+}
+function exitChat(){
+  closeHist();
+  app.classList.remove('chatting');
+  input.blur();
+  document.querySelectorAll('.bnav-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.view === 'docs');
+  });
+  layout();
+}
 function send(t){if(!t)return;if(typeof haptic==='function')haptic('tap');enterChat();act(()=>{addUser(t);route(t)})}
 
 /* ---------- rozmowy: osobne wątki z historią (w pamięci, do odświeżenia) ---------- */
@@ -306,6 +326,11 @@ $('#todoAsk').onclick=()=>{closeTodo();setTimeout(()=>startTopic('Co mam do zał
 
 /* ---------- nawigacja dolna mObywatel 2.0 (bnav) ---------- */
 function switchNavTab(tab) {
+  if (tab === 'chat') {
+    enterChat();
+    return;
+  }
+
   document.querySelectorAll('.bnav-btn').forEach(b => {
     const on = b.dataset.view === tab;
     b.classList.toggle('active', on);
@@ -320,6 +345,7 @@ function switchNavTab(tab) {
   const comp = $('#composer');
 
   if (tab === 'services') {
+    if (app.classList.contains('chatting')) exitChat();
     if (sw) sw.style.display = 'none';
     if (alt) alt.style.display = 'none';
     if (rem) rem.style.display = 'none';
@@ -328,11 +354,13 @@ function switchNavTab(tab) {
     if (typeof renderUslugiTab === 'function') renderUslugiTab();
     if (typeof announceSR === 'function') announceSR('Przełączono na widok: Usługi publiczne');
   } else if (tab === 'docs') {
+    if (app.classList.contains('chatting')) exitChat();
     if (sw) sw.style.display = '';
     if (alt) alt.style.display = '';
     if (rem) rem.style.display = '';
     if (vs) { vs.hidden = true; vs.style.display = 'none'; }
     if (comp) comp.style.display = '';
     if (typeof announceSR === 'function') announceSR('Przełączono na widok: Dokumenty');
+    layout();
   }
 }

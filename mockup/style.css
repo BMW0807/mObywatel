@@ -2105,12 +2105,114 @@ body.dark-mode {
   padding: 0 3px;
 }
 
-/* Dostosowanie marginesów dla zawartości z dolnym paskiem */
-.phone:not(.chatting) .composer {
-  bottom: 60px;
+/* ---------- Pigułka wyszukiwania AI w sekcji spraw (#searchPill) ---------- */
+.search-pill {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(220, 224, 235, 0.95);
+  border-radius: 24px;
+  padding: 8px 10px 8px 14px;
+  margin: 0 4px 10px;
+  box-shadow: 0 4px 16px -4px rgba(15, 25, 60, 0.08);
+  cursor: pointer;
+  transition: transform 0.18s var(--ease), box-shadow 0.18s, border-color 0.18s;
 }
-@media (max-width: 600px), (hover:none) and (pointer:coarse) and (max-width:800px), (display-mode:standalone) {
-  .phone:not(.chatting) .composer { bottom: calc(56px + max(env(safe-area-inset-bottom), 6px)); }
+.search-pill:hover {
+  border-color: rgba(220, 20, 60, 0.35);
+  box-shadow: 0 6px 20px -4px rgba(220, 20, 60, 0.12);
+}
+.search-pill:active {
+  transform: scale(0.985);
+}
+.sp-search-ic {
+  width: 19px;
+  height: 19px;
+  color: var(--ink2);
+  flex: none;
+}
+.sp-tx {
+  flex: 1;
+  font-size: 13.5px;
+  color: var(--ink2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-weight: 500;
+}
+.sp-mic-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--red-wash);
+  color: var(--red);
+  display: grid;
+  place-items: center;
+  flex: none;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.15s, background 0.15s;
+}
+.sp-mic-btn:hover {
+  background: rgba(220, 20, 60, 0.18);
+  transform: scale(1.05);
+}
+.sp-mic-btn svg {
+  width: 17px;
+  height: 17px;
+}
+
+/* Tryb ciemny dla search-pill */
+.phone.dark-mode .search-pill {
+  background: rgba(30, 41, 59, 0.92);
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 16px -4px rgba(0, 0, 0, 0.4);
+}
+.phone.dark-mode .sp-tx {
+  color: #94a3b8;
+}
+.phone.dark-mode .sp-search-ic {
+  color: #94a3b8;
+}
+.phone.dark-mode .sp-mic-btn {
+  background: rgba(220, 20, 60, 0.22);
+  color: #f87171;
+}
+
+/* W trybach compact-h i xcompact-h */
+.phone.compact-h .search-pill {
+  padding: 6px 8px 6px 12px;
+  margin-bottom: 6px;
+}
+.phone.compact-h .sp-tx {
+  font-size: 13px;
+}
+.phone.compact-h .sp-mic-btn {
+  width: 28px;
+  height: 28px;
+}
+.phone.compact-h .sp-mic-btn svg {
+  width: 15px;
+  height: 15px;
+}
+
+/* W widoku dokumentów kompozytor jest ukryty, zwalniając pełne miejsce dla stosu kart */
+.phone:not(.chatting) .composer {
+  display: none !important;
+}
+
+.phone.chatting .composer {
+  display: block !important;
+  bottom: 0 !important;
+  z-index: 45;
+  background: linear-gradient(to top, var(--bg) 80%, rgba(242,243,247,0));
+}
+
+.phone.chatting .bnav {
+  display: none !important;
 }
 
 /* ---------- 3. WIDOK KATALOGU USŁUG (#viewServices) ---------- */
