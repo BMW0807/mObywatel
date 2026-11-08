@@ -36,6 +36,12 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--red);outline-of
 .home{display:block;border-radius:12px;margin-left:-4px;padding:5px;transition:background .2s,transform .2s var(--ease)}
 .home:hover{background:rgba(255,255,255,.7)}.home:active{transform:scale(.94)}
 .emblem{width:30px;height:30px;display:block;border-radius:8px}
+.person-picker{display:flex;align-items:center;gap:5px;max-width:92px;min-width:0;padding:4px 7px 4px 4px;border-radius:18px;color:var(--ink);transition:background .2s,transform .2s var(--ease)}
+.person-picker:hover{background:rgba(255,255,255,.72)}.person-picker:active{transform:scale(.96)}
+.person-picker .person-avatar{width:28px;height:28px;flex:none;border-radius:50%;background:#e9eef5 50% 28%/cover no-repeat;box-shadow:0 0 0 2px #fff,0 0 0 3px rgba(15,25,60,.1)}
+.person-picker .person-name{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px;font-weight:600}
+.person-picker svg{width:13px;height:13px;flex:none;color:var(--ink2)}
+@media (max-width:380px){.person-picker{max-width:42px;padding-right:4px}.person-picker .person-name,.person-picker svg{display:none}}
 .top .sp{flex:1}
 .ico{width:40px;height:40px;display:grid;place-items:center;position:relative;color:var(--ink);border-radius:13px;transition:background .2s,color .2s,transform .2s var(--ease)}
 .ico:hover{background:rgba(255,255,255,.72)}.ico:active{transform:scale(.92)}

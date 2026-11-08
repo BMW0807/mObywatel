@@ -11,7 +11,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=24">
+<link rel="stylesheet" href="style.css?v=25">
 </head>
 <body>
 <div class="phone" id="app">
@@ -20,6 +20,9 @@
 
   <header class="top" id="top">
     <button class="home" id="homeBtn" aria-label="Ekran główny"><img class="emblem" src="assets/icon-mobywatel.svg" alt=""></button>
+    <button class="person-picker" id="personBtn" type="button" aria-label="Wybierz osobę w pokazie" aria-controls="lmenu">
+      <span class="person-avatar"></span><span class="person-name"></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 9 5 5 5-5"/></svg>
+    </button>
     <span class="sp"></span>
     <button class="ico" id="a11yBtn" onclick="toggleA11yPanel(event)" aria-label="Ustawienia wyglądu: wielkość tekstu, kontrast, słowniczek" aria-haspopup="true" aria-expanded="false" aria-controls="a11yPanel"><span class="aa">Aa</span></button>
     <button class="ico chatonly" id="histBtn" aria-label="Historia rozmów" aria-haspopup="true" aria-expanded="false" aria-controls="hmenu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4.2 12a7.8 7.8 0 1 0 2.3-5.5"/><path d="M4 4.6v3.6h3.6"/><path d="M12 8.2V12l2.7 1.7"/></svg><span class="hc" id="histCount" hidden></span></button>
@@ -131,7 +134,7 @@
 <script src="sylwetki.js?v=19"></script>
 <script src="core.js?v=21"></script>
 <script src="accessibility.js?v=22"></script>
-<script src="variants.js?v=20"></script>
+<script src="variants.js?v=21"></script>
 <script src="scenarios.js?v=23"></script>
 <script src="agent.js?v=26"></script>
 <script src="znak-kod.js?v=19"></script>

@@ -121,6 +121,11 @@ function setVariant(v){
 }
 function renderMenu(){
  const m=$('#lmenu');if(!m)return;
+ const picker=$('#personBtn');
+ if(picker){
+  picker.querySelector('.person-avatar').style.backgroundImage=`url(assets/foto-${OS.id}.jpg)`;
+  picker.querySelector('.person-name').textContent=OS.imie;
+ }
  const mo=m.querySelector('.mo');if(mo){mo.innerHTML=Object.values(OSOBY).map(o=>`<button data-o="${o.id}" class="${o.id===OS.id?'on':''}" aria-label="${o.imie} ${o.nazwisko}, ${o.opis}"><span class="oav" style="background-image:url(assets/foto-${o.id}.jpg)"></span><b>${o.imie}</b><small>${o.opis.split(',')[0]}</small></button>`).join('');
   mo.querySelectorAll('button').forEach(b=>b.onclick=()=>{if(b.dataset.o===OS.id){closeMenu();return}zmienOsobe(b.dataset.o)})}
  m.querySelector('.ml').innerHTML=LAYOUTS.map(([k,t,s])=>`<button data-k="${k}" class="${k===VARIANT?'on':''}"><span class="mi mi-${k}"><i></i><i></i><i></i><i></i></span><span class="mt"><b>${t}</b><small>${s}</small></span>${k===VARIANT?svg('check'):''}</button>`).join('');
@@ -150,4 +155,11 @@ function openMenu(){if(app.classList.contains('chatting'))return;closeHist();ren
 function closeMenu(){app.classList.remove('menu');$('#title').setAttribute('aria-expanded','false')}
 $('#title').onclick=()=>app.classList.contains('menu')?closeMenu():openMenu();
 $('#lmenu .scrim').onclick=closeMenu;
+$('#personBtn').onclick=()=>{
+ if(app.classList.contains('chatting'))return;
+ if(app.classList.contains('menu')){closeMenu();return}
+ openMenu();
+ requestAnimationFrame(()=>$('#lmenu .mo')?.scrollIntoView({block:'nearest'}));
+};
+renderMenu();
 buildAlt();
