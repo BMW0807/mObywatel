@@ -76,24 +76,23 @@ function layoutAlt(top,h,W){
  const narrow=W<360,padSide=narrow?20:32;
  if(VARIANT==='karuzela'){
   const compact=h<330;ALT.classList.toggle('compact',compact);
-  const actH=0,dotH=10,gaps=12+12+30;
-  const cardW=Math.min(W-(narrow?24:40),(h-actH-dotH-gaps)*1.5),cardH=cardW/1.5,pad=(W-cardW)/2;
+  const actH=0,dotH=10,gaps=12+12+24;
+  const cardW=W-(narrow?24:36),maxH=Math.max(126,h-actH-dotH-gaps),cardH=Math.min(Math.round(cardW/1.5),maxH),pad=(W-cardW)/2;
   const car=$('#car');car.style.paddingInline=pad+'px';car.style.scrollPaddingInline=pad+'px';car.style.height=cardH+'px';
-  car.querySelectorAll('.ccard').forEach(c=>{c.style.width=cardW+'px';c.style.height=cardH+'px'});
+  car.querySelectorAll('.ccard').forEach(c=>{c.style.width=cardW+'px';c.style.height=cardH+'px';c.classList.toggle('short-card',cardH<cardW/1.5*0.86)});
   car.scrollLeft=carIdx*(cardW+12);
-  const used=cardH+gaps+dotH+actH,extra=Math.max(0,h-used);
-  $('.alt .dots').style.marginTop='14px';$('#cstat').style.marginTop='12px';
+  $('.alt .dots').style.marginTop='12px';$('#cstat').style.marginTop='10px';
   ALT.style.height=h+'px';return h;
  }
  if(VARIANT==='pion'){
   const compact=h<360;ALT.classList.toggle('compact',compact);
-  const actH=0,statH=20,gaps=10+12;
+  const actH=0,statH=20,gaps=10+10;
   const vh=Math.max(120,h-actH-statH-gaps);
-  let cardW=Math.min(W-(narrow?28:48),(vh-(compact?36:56))*1.5);const cardH=cardW/1.5;
+  const cardW=W-(narrow?28:44),cardH=Math.min(Math.round(cardW/1.5),Math.max(118,vh-(compact?28:46)));
   const vc=$('#vcar');vc.style.height=vh+'px';const pad=(vh-cardH)/2;vc.style.paddingBlock=pad+'px';vc.style.scrollPaddingBlock=pad+'px';
-  vc.querySelectorAll('.vcard').forEach(c=>{c.style.width=cardW+'px';c.style.height=cardH+'px'});
+  vc.querySelectorAll('.vcard').forEach(c=>{c.style.width=cardW+'px';c.style.height=cardH+'px';c.classList.toggle('short-card',cardH<cardW/1.5*0.86)});
   vc.scrollTop=carIdx*(cardH+12);vDepth();
-  $('#cstat').style.marginTop='10px';$('#acts').style.marginTop='12px';
+  $('#cstat').style.marginTop='8px';$('#acts').style.marginTop='10px';
   ALT.style.height=h+'px';return h;
  }
  if(VARIANT==='lista'){
@@ -104,12 +103,12 @@ function layoutAlt(top,h,W){
   const used=4*rowH+3*8;ALT.style.height=used+'px';return Math.max(used,h);
  }
  if(VARIANT==='siatka'){
-  const tw=(W-padSide-10)/2;let cw=tw,capH=40;
-  if(2*(cw/1.5+capH)+12>h){capH=34;cw=Math.max(72,((h-12)/2-capH)*1.5)}
+  const tw=(W-padSide-10)/2;let capH=40,ch=Math.round(tw/1.5);
+  if(2*(ch+capH)+12>h){capH=34;ch=Math.max(76,Math.floor((h-12)/2-capH))}
   ALT.classList.toggle('tight',capH<40);
   ALT.querySelectorAll('.gitem').forEach(b=>{b.style.width=tw+'px'});
-  ALT.querySelectorAll('.gmini').forEach(m=>{m.style.width=cw+'px';m.style.height=cw/1.5+'px'});
-  const used=2*(cw/1.5+capH)+12;ALT.style.height=used+'px';return Math.max(used,h);
+  ALT.querySelectorAll('.gmini').forEach(m=>{m.style.width=tw+'px';m.style.height=ch+'px';m.classList.toggle('short-card',ch<tw/1.5*0.86)});
+  const used=2*(ch+capH)+12;ALT.style.height=used+'px';return Math.max(used,h);
  }
  return 0;
 }

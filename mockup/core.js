@@ -61,42 +61,59 @@ renderStack();
 
 /* ---------- układ: wszystko na jednym ekranie ---------- */
 function layout(){
- const H=app.clientHeight,W=app.clientWidth,framed=getComputedStyle($('.status')).display!=='none';
- const T=framed?50:Math.max(parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--sat'))||0,6);
+ const H=app.clientHeight,W=app.clientWidth;
+ if(!H||!W)return;
+ app.classList.toggle('compact-h',H<740);
+ app.classList.toggle('xcompact-h',H<640);
+ const stEl=$('.status'),framed=getComputedStyle(stEl).display!=='none';
+ const T=framed?(stEl.offsetHeight||36):Math.max(parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--sat'))||0,6);
+ const topH=$('#top').offsetHeight||50;
  const comp=$('#composer').offsetHeight;
  $('#top').style.top=T+'px';
- const titleTop=T+6; $('#title').style.top=titleTop+'px';app.style.setProperty('--histTop',(T+52)+'px');app.style.setProperty('--voiceTop',(T+52)+'px');app.style.setProperty('--qtopPad',(T+6)+'px');app.style.setProperty('--menuTop',(T+56)+'px');
+ const titleTop=T+Math.max(4,Math.round((topH-38)/2));
+ $('#title').style.top=titleTop+'px';
+ app.style.setProperty('--histTop',(T+topH+2)+'px');
+ app.style.setProperty('--voiceTop',(T+topH+2)+'px');
+ app.style.setProperty('--qtopPad',(T+6)+'px');
+ app.style.setProperty('--menuTop',(T+topH+4)+'px');
  const pbar=$('#personBtn');
- if(pbar)pbar.style.top=(T+50)+'px';
+ if(pbar)pbar.style.top=(T+topH)+'px';
  const n=DOCS.length,narrow=W<360;
- let cardW=W-(narrow?20:32),cardH=cardW/1.5;
+ const cardW=W-(narrow?20:32),natH=Math.round(cardW/1.5);
  const remH=$('#reminders').offsetHeight;
  const chatting=app.classList.contains('chatting');
- const pbarH=(!chatting&&pbar)?(pbar.offsetHeight+8):0;
- const stackTop=chatting?T+54:(T+54+pbarH);
- const remTop=H-comp-remH-6;
- const avail=Math.max(120,remTop-10-stackTop);
- const k=1+(n-1)*0.25;
- const minCardH=narrow?100:116;
- if(!chatting&&cardH*k>avail){cardH=Math.max(minCardH,avail/k);cardW=Math.min(W-(narrow?16:24),cardH*1.5)}
- $('#stack').style.width=cardW+'px';$('#stack').style.margin='0 auto';
- let off=Math.max(cardH*0.24,Math.min(76,(avail-cardH)/Math.max(1,n-1)));
+ const pbarH=(!chatting&&pbar)?(pbar.offsetHeight+(H<680?6:8)):0;
+ const stackTop=chatting?(T+topH+2):(T+topH+4+pbarH);
+ const remTop=H-comp-remH-(H<680?4:6);
+ const avail=Math.max(120,remTop-(H<680?6:10)-stackTop);
+ let cardH=natH,off=Math.min(62,(avail-natH)/Math.max(1,n-1));
+ const minOff=H<640?32:36;
+ if(!chatting&&off<minOff){
+  off=Math.max(30,Math.min(minOff,Math.round(avail*0.165)));
+  cardH=Math.max(narrow?122:136,Math.min(natH,avail-off*Math.max(1,n-1)));
+ }
+ const stNode=$('#stack');
+ stNode.style.width=cardW+'px';stNode.style.margin='0 auto';
+ stNode.style.setProperty('--peek',Math.round(off)+'px');
+ stNode.classList.toggle('tight-peek',!chatting&&off<46);
  const cards=[...document.querySelectorAll('.card')];
+ const shortCard=cardH<natH*0.86;
  if(chatting){
   const pocket=78;
   $('#stackwrap').style.top=stackTop+'px';$('#stackwrap').style.height=pocket+'px';$('#stackwrap').style.overflow='hidden';
-  cards.forEach((c,i)=>{const j=n-1-i;c.style.zIndex=i+1;c.style.top=(j*7)+'px';c.style.transform=`scale(${.975-j*0.025})`;c.style.transformOrigin='50% 0'});
-  const ct=T+52;$('#chat').style.top=ct+'px';$('#chat').style.height=(H-ct-comp+14)+'px';
+  cards.forEach((c,i)=>{const j=n-1-i;c.classList.remove('short-card');c.style.aspectRatio='auto';c.style.width=cardW+'px';c.style.height=natH+'px';c.style.zIndex=i+1;c.style.top=(j*7)+'px';c.style.transform=`scale(${.975-j*0.025})`;c.style.transformOrigin='50% 0'});
+  const ct=T+topH+2;$('#chat').style.top=ct+'px';$('#chat').style.height=(H-ct-comp+14)+'px';
  }else{
   $('#stackwrap').style.top=stackTop+'px';$('#stackwrap').style.height=((n-1)*off+cardH)+'px';$('#stackwrap').style.overflow='visible';
-  cards.forEach((c,i)=>{c.style.zIndex=i+1;c.style.top=(i*off)+'px';c.style.transform='none'});
-  const ct=T+54+80;$('#chat').style.top=ct+'px';$('#chat').style.height=(H-ct-comp+14)+'px';
+  cards.forEach((c,i)=>{c.classList.toggle('short-card',shortCard);c.style.aspectRatio='auto';c.style.width=cardW+'px';c.style.height=cardH+'px';c.style.zIndex=i+1;c.style.top=(i*off)+'px';c.style.transform='none'});
+  const ct=T+topH+82;$('#chat').style.top=ct+'px';$('#chat').style.height=(H-ct-comp+14)+'px';
  }
  let used=(n-1)*off+cardH;
  if(!chatting&&typeof layoutAlt==='function'&&VARIANT!=='stos')used=layoutAlt(stackTop,avail,W);
  $('#reminders').style.top=remTop+'px';
 }
 window.addEventListener('resize',layout);
+if(typeof ResizeObserver!=='undefined'){new ResizeObserver(()=>requestAnimationFrame(layout)).observe(app)}
 
 /* ---------- przypomnienia ---------- */
 const TILES=OS.tiles;
@@ -114,7 +131,7 @@ function closeDoc(){const det=$('#detail');if(!det||!det.classList.contains('on'
 function openDoc(id){
  const d=DOCS.find(x=>x.id===id),det=$('#detail');
  if(!d||!det)return;
- const top=getComputedStyle($('.status')).display!=='none'?50:6;
+ const stEl=$('.status'),top=getComputedStyle(stEl).display!=='none'?(stEl.offsetHeight||36):6;
  const hero=id==='dowod'&&d.screen
   ?`<div class="idcard"><div class="crop"><img src="${d.screen}" alt="mDowód: ${OS.imie} ${OS.nazwisko}" loading="lazy" decoding="async">${window.LANG&&window.LANG!=='pl'?`<div class="valid idv">${svg('check')}Dokument ważny</div>`:''}</div></div>`
   :`<div class="bigcard" style="background-image:url(${d.img})">${faceHTML(d)}</div><div class="valid">${svg('check')}Dokument ważny</div><div class="ui"><div class="rows" style="padding-top:2px">${rowsH(d.rows)}</div></div>`;

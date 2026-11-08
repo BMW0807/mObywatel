@@ -8,15 +8,16 @@
   --elev-2:0 12px 30px -18px rgba(15,25,60,.38);
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;height:100%}
-body{background:radial-gradient(circle at 50% 20%,#eef0f6 0,#d9dce4 58%,#cfd3dd 100%);font-family:var(--sans);color:var(--ink);display:flex;align-items:center;justify-content:center;
+html,body{margin:0;min-height:100%}
+body{min-height:100dvh;padding:14px;background:radial-gradient(circle at 50% 20%,#eef0f6 0,#d9dce4 58%,#cfd3dd 100%);font-family:var(--sans);color:var(--ink);display:flex;align-items:center;justify-content:center;overflow-y:auto;
   -webkit-font-smoothing:antialiased;font-feature-settings:"tnum" 0}
 button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;padding:0}
 button:focus-visible,input:focus-visible{outline:2px solid var(--red);outline-offset:2px}
 
-.phone{position:relative;width:390px;height:844px;border-radius:54px;overflow:hidden;background:var(--bg);
-  box-shadow:0 0 0 10px #16171a,0 0 0 11px #3b3d42,0 50px 90px -20px rgba(20,22,30,.45)}
-@media (max-width:520px){body{display:block;background:var(--bg)}.phone{width:100vw;height:100dvh;border-radius:0;box-shadow:none}}
+.phone{position:relative;flex:none;height:clamp(580px,calc(100dvh - 28px),852px);width:clamp(376px,46vw,402px);max-width:calc(100vw - 28px);border-radius:clamp(38px,5.5dvh,52px);overflow:hidden;background:var(--bg);
+  box-shadow:0 0 0 9px #16171a,0 0 0 10px #3b3d42,0 40px 80px -20px rgba(20,22,30,.45)}
+@media (min-width:521px) and (max-height:610px){body{align-items:flex-start;padding:10px}}
+@media (max-width:520px){html,body{height:100%;overflow:hidden}body{display:block;padding:0;background:var(--bg)}.phone{width:100%;height:100dvh;min-height:0;border-radius:0;box-shadow:none}}
 
 /* status bar (tylko w ramce na desktopie) */
 .status{position:absolute;inset:0 0 auto 0;height:50px;pointer-events:none;display:flex;align-items:center;justify-content:space-between;padding:16px 32px 0 40px;font-size:16px;font-weight:600;letter-spacing:-.01em;z-index:95}
@@ -26,28 +27,33 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--red);outline-of
 .status .bat::after{content:"";position:absolute;right:-4px;top:3.5px;width:2px;height:4px;background:currentColor;border-radius:0 1px 1px 0;opacity:.5}
 .island{position:absolute;top:11px;left:50%;transform:translateX(-50%);width:122px;height:35px;border-radius:20px;background:#000;z-index:96}
 .homebar{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);width:134px;height:5px;border-radius:3px;background:#111;z-index:60;pointer-events:none}
+@media (min-width:521px) and (max-height:760px){
+  .status{height:34px;padding:8px 26px 0 30px;font-size:13.5px}
+  .island{top:6px;width:96px;height:23px;border-radius:14px}
+  .homebar{bottom:5px;width:112px;height:4px}
+}
 @media (max-width:520px){.status,.island,.homebar{display:none}}
 @media (max-height:620px){.title{font-size:28px;line-height:34px}}
 
 /* header */
-.top{position:absolute;left:0;right:0;height:52px;display:flex;align-items:center;gap:6px;padding:0 16px 0 20px;z-index:20;
+.top{position:absolute;left:0;right:0;height:50px;display:flex;align-items:center;gap:3px;padding:0 12px 0 16px;z-index:20;
   background:linear-gradient(to bottom,rgba(242,243,247,.96) 0%,rgba(242,243,247,.82) 62%,rgba(242,243,247,0) 100%);
   -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
 .home{display:block;border-radius:12px;margin-left:-4px;padding:5px;transition:background .2s,transform .2s var(--ease)}
 .home:hover{background:rgba(255,255,255,.7)}.home:active{transform:scale(.94)}
 .emblem{width:30px;height:30px;display:block;border-radius:8px}
 .top .sp{flex:1}
-.ico{width:40px;height:40px;display:grid;place-items:center;position:relative;color:var(--ink);border-radius:13px;transition:background .2s,color .2s,transform .2s var(--ease)}
+.ico{width:36px;height:36px;display:grid;place-items:center;position:relative;color:var(--ink);border-radius:11px;transition:background .2s,color .2s,transform .2s var(--ease)}
 .ico:hover{background:rgba(255,255,255,.72)}.ico:active{transform:scale(.92)}
-.ico svg{width:24px;height:24px}
-.ico .dot{position:absolute;top:8px;right:7px;width:9px;height:9px;border-radius:50%;background:var(--red);box-shadow:0 0 0 2px var(--bg)}
+.ico svg{width:22px;height:22px}
+.ico .dot{position:absolute;top:6px;right:6px;width:8.5px;height:8.5px;border-radius:50%;background:var(--red);box-shadow:0 0 0 2px var(--bg)}
 
 .title{position:absolute;left:20px;margin:0;font-size:32px;line-height:40px;font-weight:700;letter-spacing:-.02em;transition:opacity .25s,transform .4s var(--ease)}
 
 /* stos dokumentów */
 .stackwrap{position:absolute;left:0;right:0;transition:height .5s var(--ease),top .5s var(--ease);z-index:5}
 .stack{position:relative;margin:0 16px;height:100%}
-.card{position:absolute;left:0;right:0;aspect-ratio:3/2;border-radius:18px;overflow:hidden;cursor:pointer;
+.card{position:absolute;left:0;right:0;width:100%;aspect-ratio:3/2;border-radius:18px;overflow:hidden;cursor:pointer;
   background:#ccc center/cover no-repeat;box-shadow:0 -1px 0 rgba(255,255,255,.25) inset,0 6px 18px -6px rgba(15,25,60,.28);
   transition:top .5s var(--ease),transform .5s var(--ease),filter .3s}
 .card:active{filter:brightness(.96)}
@@ -393,10 +399,10 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--red);outline-of
 .phone.voicing .hmenu{z-index:28}
 
 /* ---------- wersja 2: spokojniejszy ekran główny ---------- */
-.title{left:62px;font-size:22px;line-height:40px;letter-spacing:-.015em;font-weight:700;padding:4px 9px 4px 0;border-radius:12px;transition:opacity .25s,transform .4s var(--ease),background .2s}
+.title{left:54px;max-width:calc(100% - 214px);font-size:21px;line-height:38px;letter-spacing:-.015em;font-weight:700;padding:3px 8px 3px 0;border-radius:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:opacity .25s,transform .4s var(--ease),background .2s}
 .title:hover{background:rgba(255,255,255,.62)}
-.title svg{width:18px;height:18px}
-@media (max-height:620px){.title{font-size:21px;line-height:40px}}
+.title svg{width:17px;height:17px;flex:none}
+@media (max-height:620px){.title{font-size:20px;line-height:36px}}
 #bellBtn{display:none}
 .phone:not(.chatting) #cam{display:none}
 .phone:not(.chatting) .bar{padding-left:14px}
@@ -1176,23 +1182,76 @@ input:focus-visible,
   color: #fff !important;
 }
 
+/* Adaptacyjne zagęszczenie w pionie dla niższych ekranów / laptopów (np. 1080p @ 125–150% DPI) */
+.phone.compact-h .person-bar {
+  padding: 5px 9px 5px 8px;
+  gap: 8px;
+  border-radius: 14px;
+}
+.phone.compact-h .person-bar .person-avatar { width: 30px; height: 30px; }
+.phone.compact-h .person-bar .person-name { font-size: 13px; line-height: 16px; }
+.phone.compact-h .person-bar .person-desc { font-size: 11px; line-height: 14px; -webkit-line-clamp: 2; }
+.phone.xcompact-h .person-bar .person-desc { -webkit-line-clamp: 1; }
+.phone.compact-h .person-bar .person-change { font-size: 11.5px; padding: 3px 7px; }
+.phone.compact-h .quick-grid { gap: 6px; padding-bottom: 6px; }
+.phone.compact-h .qt { padding: 8px 10px; gap: 8px; border-radius: 14px; }
+.phone.compact-h .qt-ic { width: 30px; height: 30px; border-radius: 9px; }
+.phone.compact-h .qt-ic svg { width: 17px; height: 17px; }
+.phone.compact-h .qt-tx b { font-size: 13px; line-height: 16px; }
+.phone.compact-h .qt-tx small { font-size: 11.5px; line-height: 14px; }
+.phone.compact-h .rsum { padding: 9px 11px 9px 12px; gap: 10px; border-radius: 15px; }
+.phone.compact-h .rsum .rdot { width: 26px; height: 26px; font-size: 13px; }
+.phone.compact-h .rsum b { font-size: 14px; line-height: 18px; }
+.phone.compact-h .rsum small { font-size: 12px; line-height: 15px; }
+.phone.compact-h .composer { padding-top: 6px; padding-bottom: 16px; }
+@media (max-width: 520px) {
+  .phone.compact-h .composer { padding-bottom: max(env(safe-area-inset-bottom), 8px); }
+}
+.phone.compact-h .bar { padding: 4px 5px 4px 10px; }
+.phone.compact-h .bar input { padding: 8px 5px; font-size: 16px; }
+.phone.compact-h .ib, .phone.compact-h .send { width: 36px; height: 36px; }
+
+.phone.xcompact-h .qt { padding: 6px 9px; }
+.phone.xcompact-h .qt-ic { width: 26px; height: 26px; }
+.phone.xcompact-h .rsum { padding: 7px 10px; }
+
+.card.short-card .face .ph { width: 20cqw; }
+.card.short-card .face .ov { bottom: 4.5cqw; }
+.card.short-card .face .ttl { top: 5cqw; font-size: 4.8cqw; }
+.card.short-card .face .syl { top: 10cqw; width: 48cqw; height: 19cqw; }
+.stack.tight-peek .card:not(:last-child) .face .ttl {
+  top: clamp(6px, calc((var(--peek, 36px) - 19px) * 0.5), 18px);
+  font-size: clamp(13.5px, 4.3cqw, 16px);
+  line-height: 18px;
+}
+
+/* Nagłówek dla węższych ekranów (<= 374 px, np. iPhone SE / Galaxy S) */
+@media (max-width: 374px) {
+  .top { padding: 0 10px; gap: 2px; height: 48px; }
+  .ico { width: 33px; height: 33px; border-radius: 10px; }
+  .ico svg { width: 20px; height: 20px; }
+  .title { left: 46px; max-width: calc(100% - 190px); font-size: 19px; line-height: 36px; }
+}
+
 /* Responsywność dla bardzo wąskich telefonów (< 360 px, np. 320 px) */
 @media (max-width: 359px) {
   .top {
-    padding: 0 10px 0 10px;
+    padding: 0 8px 0 8px;
     gap: 2px;
-    height: 48px;
+    height: 46px;
   }
-  .home { padding: 4px; margin-left: -2px; }
-  .emblem { width: 26px; height: 26px; }
-  .ico { width: 32px; height: 32px; border-radius: 10px; }
-  .ico svg { width: 20px; height: 20px; }
-  #a11yBtn .aa { font-size: 14px; }
+  .home { padding: 3px; margin-left: -2px; }
+  .emblem { width: 25px; height: 25px; }
+  .ico { width: 30px; height: 30px; border-radius: 9px; }
+  .ico svg { width: 19px; height: 19px; }
+  #a11yBtn .aa { font-size: 13.5px; }
   .title {
-    left: 44px;
-    font-size: 18px;
-    line-height: 36px;
-    padding: 2px 6px 2px 0;
+    left: 40px;
+    max-width: calc(100% - 168px);
+    font-size: 17px;
+    line-height: 34px;
+    gap: 3px;
+    padding: 2px 4px 2px 0;
   }
   .title svg { width: 15px; height: 15px; }
 
