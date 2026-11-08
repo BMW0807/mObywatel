@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 70" width="400" height="70">
+  <defs>
+    <linearGradient id="ikpStrip" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#00695c"/>
+      <stop offset="60%" stop-color="#00897b"/>
+      <stop offset="100%" stop-color="#004d40"/>
+    </linearGradient>
+  </defs>
+  <rect width="400" height="70" rx="16" fill="url(#ikpStrip)"/>
+  <path d="M 330 40 L 345 40 L 350 30 L 355 50 L 362 22 L 368 46 L 372 40 L 390 40" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="2" stroke-linecap="round"/>
+</svg>

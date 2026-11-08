@@ -136,8 +136,16 @@ function openDoc(id){
  const hero=id==='dowod'&&d.screen
   ?`<div class="idcard"><div class="crop"><img src="${d.screen}" alt="mDowód: ${OS.imie} ${OS.nazwisko}" loading="lazy" decoding="async">${window.LANG&&window.LANG!=='pl'?`<div class="valid idv">${svg('check')}Dokument ważny</div>`:''}</div></div>`
   :`<div class="bigcard" style="background-image:url(${d.img})">${faceHTML(d)}</div><div class="valid">${svg('check')}Dokument ważny</div><div class="ui"><div class="rows" style="padding-top:2px">${rowsH(d.rows)}</div></div>`;
- const q=id==='dowod'?[['scan','Potwierdź swoje dane','qr'],['id','Dane dowodu','data'],['shield','Zastrzeż PESEL','pesel'],['doc','Zaświadczenie PDF','cert'],['dots','Zapytaj asystenta','ask']]
-                     :[['scan','Potwierdź dane','qr'],['doc','Szczegóły','data'],['clock','Kalendarz','cal'],['doc','Zaświadczenie PDF','cert'],['dots','Zapytaj asystenta','ask']];
+ let q;
+ if(id==='dowod'){
+  q=[['scan','Potwierdź swoje dane','qr'],['id','Dane dowodu','data'],['shield','Zastrzeż PESEL','pesel'],['doc','Zaświadczenie PDF','cert'],['dots','Zapytaj asystenta','ask']];
+ }else if(id==='ikp'){
+  q=[['doc','e-Recepty','ikp_recepty'],['clock','e-Rejestracja NFZ','ikp_nfz'],['shield','Karta DiLO','ikp_dilo'],['doc','Zaświadczenie NFZ','cert_nfz'],['dots','Zapytaj asystenta','ask']];
+ }else if(id==='firma'){
+  q=[['scan','Poświadcz za firmę','firma_poswiadcz'],['shield','Podpisz e-dowodem','firma_podpis'],['doc','Odpis CEIDG (PDF)','cert_ceidg'],['clock','Biała Lista VAT','firma_vat'],['dots','Zapytaj asystenta','ask']];
+ }else{
+  q=[['scan','Potwierdź dane','qr'],['doc','Szczegóły','data'],['clock','Kalendarz','cal'],['doc','Zaświadczenie PDF','cert'],['dots','Zapytaj asystenta','ask']];
+ }
  det.innerHTML=`<div style="height:${top}px;flex:none"></div><div class="nav"><button class="back" id="dclose">${svg('back')}Wróć</button><b>${d.name}</b><span></span></div>
   <div class="clock" id="dclock"></div>
   <div class="body">${hero}<div class="quick">${q.map(x=>`<button data-a="${x[2]}"><i>${svg(x[0])}</i>${x[1]}</button>`).join('')}</div><div class="qrbox" id="qrbox"></div></div>`;
@@ -151,6 +159,14 @@ function openDoc(id){
   const a=b.dataset.a;
   if(a==='qr'){qrFlow({doc:id});return}
   if(a==='data'){$('#qrbox').innerHTML=`<div class="ui"><div class="rows" style="padding-top:4px">${rowsH(d.rows)}</div></div>`;if(typeof announceSR==='function')announceSR('Wyświetlono szczegółowe dane dokumentu')}
+  if(a==='ikp_recepty'){openIkpModal('recepty');return}
+  if(a==='ikp_nfz'){openERejestracjaModal();return}
+  if(a==='ikp_dilo'){openDiloModal();return}
+  if(a==='cert_nfz'){openOfficialCertificate('nfz');return}
+  if(a==='firma_poswiadcz'){openFirmaPoswiadczModal();return}
+  if(a==='firma_podpis'){openFirmaPodpisModal();return}
+  if(a==='cert_ceidg'){openOfficialCertificate('ceidg');return}
+  if(a==='firma_vat'){closeDoc();startTopic('Sprawdź status firmy na Białej Liście VAT');return}
   if(a==='cert'){openOfficialCertificate(id==='dowod'?'dowod':(id==='auto'?'pojazd':(id==='pj'?'punkty':'dowod')));return}
   if(a==='cal'){
     if(id==='auto'){

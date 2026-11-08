@@ -255,6 +255,16 @@ document.addEventListener('keydown', e => {
   if (e.key !== 'Escape') return;
   const cert = document.getElementById('certModal');
   if (cert && cert.classList.contains('open')) { e.preventDefault(); closeCertModal(); return; }
+  const ikpM = document.getElementById('ikpModal');
+  if (ikpM && ikpM.classList.contains('open')) { e.preventDefault(); closeIkpModal(); return; }
+  const erejM = document.getElementById('erejestracjaModal');
+  if (erejM && erejM.classList.contains('open')) { e.preventDefault(); closeERejestracjaModal(); return; }
+  const diloM = document.getElementById('diloModal');
+  if (diloM && diloM.classList.contains('open')) { e.preventDefault(); closeDiloModal(); return; }
+  const fPosM = document.getElementById('firmaPoswiadczModal');
+  if (fPosM && fPosM.classList.contains('open')) { e.preventDefault(); closeFirmaPoswiadczModal(); return; }
+  const fPodM = document.getElementById('firmaPodpisModal');
+  if (fPodM && fPodM.classList.contains('open')) { e.preventDefault(); closeFirmaPodpisModal(); return; }
   const upo = document.getElementById('upoModal');
   if (upo && upo.classList.contains('open')) { e.preventDefault(); closeUPO(); return; }
   const errM = document.getElementById('errModal');
@@ -705,6 +715,28 @@ const TOPIC_CATEGORIES = [
       ['Paszport dla dziecka', 'wniosek online do 12 lat'],
       ['Potwierdź moje dane', 'przekaż dane znakiem mObywatela']
     ]
+  },
+  {
+    id: 'zdrowie',
+    icon: '🏥',
+    name: 'Zdrowie (IKP)',
+    questions: [
+      ['Moje e-Recepty w IKP', 'kody PIN i kody kreskowe leków'],
+      ['e-Rejestracja wizyty NFZ', 'wybór lekarza i rezerwacja terminu'],
+      ['Karta DiLO (onkologiczna)', 'szybka terapia onkologiczna i koordynator'],
+      ['Ubezpieczenie zdrowotne eWUŚ', 'potwierdzenie prawa do świadczeń']
+    ]
+  },
+  {
+    id: 'firma',
+    icon: '🏢',
+    name: 'Moja Firma',
+    questions: [
+      ['Poświadcz za firmę (CEIDG)', 'certyfikat reprezentacji z kodem QR'],
+      ['Podpisz dokument e-dowodem', 'podpis osobisty i pieczęć urzędowa'],
+      ['Biała Lista Podatników VAT', 'weryfikacja statusu i konta bankowego'],
+      ['Zaświadczenie CEIDG PDF', 'odpis z rejestru przedsiębiorców']
+    ]
   }
 ];
 
@@ -871,6 +903,48 @@ function openOfficialCertificate(type = 'pesel') {
       ['Polisa OC', auto.f?.find(x => /Polisa/i.test(x[0]))?.[1] || 'Ważna do 20.07.2026 (PZU S.A.)']
     ];
     legal = 'Dokument potwierdza aktualne dane techniczne pojazdu i stan ubezpieczenia OC zarejestrowany w CEPiK i Ubezpieczeniowym Funduszu Gwarancyjnym.';
+  } else if (type === 'ceidg' || type === 'firma') {
+    certTitle = 'ZAŚWIADCZENIE O WPISIE W CEIDG (DZIAŁALNOŚĆ GOSPODARCZA)';
+    const f = (OS.docs && OS.docs.find(d => d.id === 'firma')) || {};
+    certNumber = 'MRIT/CEIDG/' + new Date().getFullYear() + '/' + Math.floor(100000 + Math.random() * 900000);
+    rows = [
+      ['Przedsiębiorca', `${OS.imie} ${OS.nazwisko}`],
+      ['Numer PESEL', OS.moje.pesel],
+      ['Firma przedsiębiorcy', f.rows?.find(x => x[0] === 'Firma')?.[1] || 'Wiśniewski Instalacje Jan Wiśniewski'],
+      ['Numer NIP', '679 234 56 79'],
+      ['Numer REGON', '381920145'],
+      ['Adres do doręczeń', OS.moje.adres],
+      ['Przeważająca działalność (PKD 2025)', '43.22.Z – Instalacje wodno-kanalizacyjne i gazowe'],
+      ['Status wpisu w CEIDG', 'AKTYWNY – Przedsiębiorca wykonuje działalność gospodarczą'],
+      ['Wykaz Podatników VAT (Biała Lista)', 'Czynny podatnik VAT (rachunek rozliczeniowy zweryfikowany)']
+    ];
+    legal = 'Zaświadczenie o wpisie w CEIDG stanowi dokument urzędowy potwierdzający status przedsiębiorcy zgodnie z ustawą o Centralnej Ewidencji i Informacji o Działalności Gospodarczej. Opatrzone kwalifikowaną pieczęcią elektroniczną Ministra Rozwoju i Technologii.';
+  } else if (type === 'nfz' || type === 'ikp') {
+    certTitle = 'ZAŚWIADCZENIE O PRAWIE DO ŚWIADCZEŃ OPIEKI ZDROWOTNEJ (NFZ / eWUŚ)';
+    certNumber = 'NFZ-eWUS/' + new Date().getFullYear() + '/' + Math.floor(100000 + Math.random() * 900000);
+    rows = [
+      ['Ubezpieczony', `${OS.imie} ${OS.nazwisko}`],
+      ['Numer PESEL', OS.moje.pesel],
+      ['Status ubezpieczenia (eWUŚ)', 'PRAWO DO ŚWIADCZEŃ MEDYCZNYCH POTWIERDZONE (ZIELONY)'],
+      ['Podstawa ubezpieczenia', 'Ubezpieczenie zdrowotne obowiązkowe (ZUS)'],
+      ['Oddział Wojewódzki NFZ', OS.id === 'marta' ? 'Mazowiecki OW NFZ' : (OS.id === 'jan' ? 'Małopolski OW NFZ' : (OS.id === 'ewa' ? 'Lubelski OW NFZ' : 'Pomorski OW NFZ'))],
+      ['Data weryfikacji', today() + ', godz. ' + now()]
+    ];
+    legal = 'Niniejszy dokument potwierdza prawo do bezpłatnych świadczeń opieki zdrowotnej finansowanych ze środków publicznych na podstawie art. 50 ustawy o świadczeniach opieki zdrowotnej finansowanych ze środków publicznych.';
+  } else if (type === 'dilo') {
+    certTitle = 'URZĘDOWY ODPIS KARTY DIAGNOSTYKI I LECZENIA ONKOLOGICZNEGO (KARTA DiLO)';
+    certNumber = 'DILO/NFZ/2026/' + Math.floor(10000 + Math.random() * 90000);
+    rows = [
+      ['Pacjent', `${OS.imie} ${OS.nazwisko}`],
+      ['Numer PESEL', OS.moje.pesel],
+      ['Numer Karty DiLO', certNumber],
+      ['Status karty', 'AKTYWNA – SZYBKA ŚCIEŻKA ONKOLOGICZNA'],
+      ['Etap leczenia', 'Etap II: Diagnostyka pogłębiona (zgodnie z Pakietem Onkologicznym)'],
+      ['Wyznaczony Koordynator', 'mgr Anna Wójcik (tel. +48 22 546 20 00)'],
+      ['Placówka prowadząca', 'Narodowy Instytut Onkologii im. Marii Skłodowskiej-Curie'],
+      ['Data wystawienia karty', '04.10.2026']
+    ];
+    legal = 'Karta DiLO uprawnia pacjenta do diagnostyki i leczenia onkologicznego w trybie pilnym, bez limitów finansowych NFZ, z zachowaniem ustawowych terminów maksymalnych.';
   } else {
     certTitle = 'ODPIS DANYCH DOWODU TOŻSAMOŚCI Z REJESTRU DOWODÓW';
     rows = [
@@ -950,6 +1024,626 @@ function closeCertModal() {
   restoreDialogFocus('cert');
 }
 
+// --- 10b. Internetowe Konto Pacjenta (IKP): e-Recepty, e-Skierowania, eWUŚ ---
+function openIkpModal(defaultTab = 'recepty') {
+  haptic('card');
+  let modal = document.getElementById('ikpModal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'ikpModal';
+    modal.className = 'sheet-modal';
+    modal.setAttribute('role', 'dialog');
+    modal.setAttribute('aria-modal', 'true');
+    modal.setAttribute('aria-label', 'Internetowe Konto Pacjenta (IKP)');
+    document.body.appendChild(modal);
+  }
+
+  const recipes = [
+    { id: 'rx1', person: 'Zofia Kowalska (córka)', name: 'Amoksiklav 875 mg + 125 mg', form: '14 tabl. powl. (2 op.)', pin: '4821', barcode: '2801948210948215', doc: 'lek. med. Anna Jabłońska', exp: '12.12.2026', status: 'Do wykupienia' },
+    { id: 'rx2', person: 'Marta Kowalska', name: 'Paracetamol Hasco 500 mg', form: '20 tabl. (1 op.)', pin: '1194', barcode: '2801911940911942', doc: 'lek. med. Tomasz Lis', exp: '30.11.2026', status: 'Do wykupienia' }
+  ];
+
+  function render(tab) {
+    let tabHtml = '';
+    if (tab === 'recepty') {
+      tabHtml = `
+        <div class="ikp-sec">
+          <div class="ikp-sec-head">
+            <b>Aktywne e-Recepty (${recipes.length})</b>
+            <small>Podaj w aptece numer PESEL oraz 4-cyfrowy kod PIN lub pokaż kod kreskowy.</small>
+          </div>
+          <div class="rx-list">
+            ${recipes.map(r => `
+              <div class="rx-card">
+                <div class="rx-card-top">
+                  <div>
+                    <span class="rx-badge">${r.status}</span>
+                    <b class="rx-name">${r.name}</b>
+                    <span class="rx-sub">${r.form} • Pacjent: ${r.person}</span>
+                  </div>
+                  <div class="rx-pin-wrap">
+                    <span class="rx-pin-lbl">KOD PIN</span>
+                    <div class="rx-pin-val">${r.pin}</div>
+                  </div>
+                </div>
+                <div class="rx-barcode-wrap" aria-label="Kod kreskowy e-recepty: ${r.barcode}">
+                  <svg class="rx-barcode-svg" viewBox="0 0 240 40" preserveAspectRatio="none">
+                    <rect x="0" y="0" width="4" height="40" fill="#111"/>
+                    <rect x="7" y="0" width="2" height="40" fill="#111"/>
+                    <rect x="12" y="0" width="6" height="40" fill="#111"/>
+                    <rect x="22" y="0" width="3" height="40" fill="#111"/>
+                    <rect x="28" y="0" width="5" height="40" fill="#111"/>
+                    <rect x="36" y="0" width="2" height="40" fill="#111"/>
+                    <rect x="42" y="0" width="7" height="40" fill="#111"/>
+                    <rect x="52" y="0" width="3" height="40" fill="#111"/>
+                    <rect x="58" y="0" width="5" height="40" fill="#111"/>
+                    <rect x="66" y="0" width="2" height="40" fill="#111"/>
+                    <rect x="71" y="0" width="6" height="40" fill="#111"/>
+                    <rect x="80" y="0" width="4" height="40" fill="#111"/>
+                    <rect x="88" y="0" width="3" height="40" fill="#111"/>
+                    <rect x="94" y="0" width="6" height="40" fill="#111"/>
+                    <rect x="103" y="0" width="2" height="40" fill="#111"/>
+                    <rect x="108" y="0" width="5" height="40" fill="#111"/>
+                    <rect x="116" y="0" width="7" height="40" fill="#111"/>
+                    <rect x="126" y="0" width="3" height="40" fill="#111"/>
+                    <rect x="132" y="0" width="4" height="40" fill="#111"/>
+                    <rect x="139" y="0" width="2" height="40" fill="#111"/>
+                    <rect x="144" y="0" width="6" height="40" fill="#111"/>
+                    <rect x="153" y="0" width="4" height="40" fill="#111"/>
+                    <rect x="160" y="0" width="5" height="40" fill="#111"/>
+                    <rect x="168" y="0" width="3" height="40" fill="#111"/>
+                    <rect x="174" y="0" width="7" height="40" fill="#111"/>
+                    <rect x="184" y="0" width="2" height="40" fill="#111"/>
+                    <rect x="189" y="0" width="6" height="40" fill="#111"/>
+                    <rect x="198" y="0" width="4" height="40" fill="#111"/>
+                    <rect x="205" y="0" width="3" height="40" fill="#111"/>
+                    <rect x="211" y="0" width="5" height="40" fill="#111"/>
+                    <rect x="219" y="0" width="6" height="40" fill="#111"/>
+                    <rect x="228" y="0" width="3" height="40" fill="#111"/>
+                    <rect x="234" y="0" width="4" height="40" fill="#111"/>
+                  </svg>
+                  <span class="rx-num">${r.barcode}</span>
+                </div>
+                <div class="rx-card-bot">
+                  <span>Wystawił: <b>${r.doc}</b></span>
+                  <span>Ważna do: <b>${r.exp}</b></span>
+                </div>
+                <div class="rx-card-actions">
+                  <button type="button" class="btn ghost btn-sm" onclick="navigator.clipboard.writeText('${r.pin}');showToast('Skopiowano kod PIN: ${r.pin}')">Kopiuj PIN</button>
+                  <button type="button" class="btn ghost btn-sm" onclick="showToast('Powiększono kod kreskowy do skanowania')">Powiększ kod</button>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    } else if (tab === 'skierowania') {
+      tabHtml = `
+        <div class="ikp-sec">
+          <div class="ikp-sec-head">
+            <b>Aktywne e-Skierowania (1)</b>
+            <small>Skierowanie ważne w całym kraju w poradniach mających umowę z NFZ.</small>
+          </div>
+          <div class="rx-card">
+            <div class="rx-card-top">
+              <div>
+                <span class="rx-badge">Aktywne do realizacji</span>
+                <b class="rx-name">Badanie USG jamy brzusznej</b>
+                <span class="rx-sub">Cel: Diagnostyka bólów brzucha • Pacjent: Marta Kowalska</span>
+              </div>
+              <div class="rx-pin-wrap">
+                <span class="rx-pin-lbl">KOD</span>
+                <div class="rx-pin-val">7712</div>
+              </div>
+            </div>
+            <div class="rx-card-bot" style="margin-top:10px">
+              <span>Wystawił: <b>lek. med. Anna Jabłońska (POZ Mokotów)</b></span>
+              <span>Data wystawienia: <b>28.10.2026</b></span>
+            </div>
+            <div class="rx-card-actions">
+              <button type="button" class="btn primary btn-sm" onclick="closeIkpModal();openERejestracjaModal()">Zapisz na wizytę (e-Rejestracja)</button>
+              <button type="button" class="btn ghost btn-sm" onclick="navigator.clipboard.writeText('7712');showToast('Skopiowano kod skierowania: 7712')">Kopiuj kod</button>
+            </div>
+          </div>
+        </div>
+      `;
+    } else {
+      tabHtml = `
+        <div class="ikp-sec">
+          <div class="ikp-sec-head">
+            <b>Status ubezpieczenia i profilaktyka NFZ</b>
+            <small>System Elektronicznej Weryfikacji Uprawnień Świadczeniobiorców (eWUŚ).</small>
+          </div>
+          <div class="ewus-hero-box">
+            <div class="ewus-status-tag ok">● eWUŚ: ZIELONY — PRAWO DO ŚWIADCZEŃ MEDYCZNYCH</div>
+            <b>Prawo do bezpłatnego leczenia w ramach NFZ potwierdzone.</b>
+            <p>Zgłoszenie do ubezpieczenia zdrowotnego: ZUS (tytuł pracowniczy / zlecenie). Oddział: Mazowiecki OW NFZ.</p>
+          </div>
+          <div class="ikp-action-grid">
+            <button type="button" class="ikp-grid-btn" onclick="closeIkpModal();openOfficialCertificate('nfz')">
+              <span class="ikp-gb-ic">📜</span>
+              <span class="ikp-gb-tx"><b>Zaświadczenie NFZ (PDF)</b><small>Urzędowy odpis uprawnień z pieczęcią RP</small></span>
+            </button>
+            <button type="button" class="ikp-grid-btn" onclick="closeIkpModal();openDiloModal()">
+              <span class="ikp-gb-ic">🛡️</span>
+              <span class="ikp-gb-tx"><b>Karta DiLO (Onkologia)</b><small>Szybka ścieżka terapii onkologicznej</small></span>
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
+    modal.innerHTML = `
+      <div class="scrim" onclick="closeIkpModal()"></div>
+      <div class="modal-box">
+        <div class="modal-head">
+          <div style="display:flex;align-items:center;gap:10px">
+            <span style="font-size:22px">🏥</span>
+            <div>
+              <h2 id="ikpTitle">Internetowe Konto Pacjenta</h2>
+              <small style="color:var(--ink2)">Konto zdrowotne NFZ • ${OS.imie} ${OS.nazwisko}</small>
+            </div>
+          </div>
+          <button class="tx-close" onclick="closeIkpModal()" aria-label="Zamknij"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></svg></button>
+        </div>
+        <div class="ikp-tab-bar" role="tablist">
+          <button type="button" class="ikp-tab-btn ${tab === 'recepty' ? 'active' : ''}" data-tab="recepty">e-Recepty</button>
+          <button type="button" class="ikp-tab-btn ${tab === 'skierowania' ? 'active' : ''}" data-tab="skierowania">e-Skierowania</button>
+          <button type="button" class="ikp-tab-btn ${tab === 'ewus' ? 'active' : ''}" data-tab="ewus">eWUŚ i Profilaktyka</button>
+        </div>
+        <div class="ikp-tab-content">${tabHtml}</div>
+      </div>
+    `;
+
+    modal.querySelectorAll('.ikp-tab-btn').forEach(btn => {
+      btn.onclick = () => render(btn.dataset.tab);
+    });
+  }
+
+  render(defaultTab);
+  openDialogFocus('ikp', modal.querySelector('.modal-box'), '.tx-close');
+  modal.classList.add('open');
+  announceSR('Otwarto Internetowe Konto Pacjenta');
+}
+
+function closeIkpModal() {
+  const modal = document.getElementById('ikpModal');
+  if (!modal || !modal.classList.contains('open')) return;
+  modal.classList.remove('open');
+  restoreDialogFocus('ikp');
+}
+
+// --- 10c. e-Rejestracja przez system NFZ ---
+function openERejestracjaModal() {
+  haptic('card');
+  let modal = document.getElementById('erejestracjaModal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'erejestracjaModal';
+    modal.className = 'sheet-modal';
+    modal.setAttribute('role', 'dialog');
+    modal.setAttribute('aria-modal', 'true');
+    modal.setAttribute('aria-label', 'e-Rejestracja wizyty NFZ');
+    document.body.appendChild(modal);
+  }
+
+  const slots = [
+    { id: 's1', date: '14.11.2026', time: '10:30', doc: 'lek. med. Anna Jabłońska', spec: 'Lekarz POZ / Rodzinny', clinic: 'NZOZ Przychodnia Mokotów, Warszawa' },
+    { id: 's2', date: '15.11.2026', time: '14:15', doc: 'dr hab. n. med. Marek Szymański', spec: 'Kardiologia (NFZ)', clinic: 'Szpital Kliniczny Dzieciątka Jezus, Warszawa' },
+    { id: 's3', date: '18.11.2026', time: '09:00', doc: 'lek. med. Karolina Dudek', spec: 'Okulistyka (NFZ)', clinic: 'Centrum Medyczne NFZ Śródmieście, Warszawa' }
+  ];
+
+  let selectedSlot = slots[0];
+
+  function renderView(booked = false) {
+    if (booked) {
+      modal.innerHTML = `
+        <div class="scrim" onclick="closeERejestracjaModal()"></div>
+        <div class="modal-box">
+          <div class="modal-head">
+            <h2 id="erejSuccessTitle">Wizyta zarejestrowana!</h2>
+            <button class="tx-close" onclick="closeERejestracjaModal()" aria-label="Zamknij"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></svg></button>
+          </div>
+          <div class="erej-success-hero">
+            <div class="erej-ok-icon">✓</div>
+            <b>Potwierdzenie rezerwacji w systemie NFZ</b>
+            <span class="erej-code">Numer zgłoszenia: NFZ-REZ-2026-${Math.floor(10000 + Math.random() * 90000)}</span>
+          </div>
+          <div class="erej-summary-box">
+            <div class="erej-row"><span>Lekarz:</span> <b>${selectedSlot.doc}</b></div>
+            <div class="erej-row"><span>Specjalizacja:</span> <b>${selectedSlot.spec}</b></div>
+            <div class="erej-row"><span>Termin:</span> <b>${selectedSlot.date}, godz. ${selectedSlot.time}</b></div>
+            <div class="erej-row"><span>Placówka:</span> <b>${selectedSlot.clinic}</b></div>
+            <div class="erej-row"><span>Finansowanie:</span> <b>NFZ (Bezpłatnie, 0 zł)</b></div>
+          </div>
+          <div class="modal-actions" style="margin-top:16px">
+            <button type="button" class="btn primary" id="erejCalBtn" style="flex:1">Dodaj do kalendarza (.ics)</button>
+            <button type="button" class="btn ghost" onclick="closeERejestracjaModal()" style="flex:1">Gotowe</button>
+          </div>
+        </div>
+      `;
+      const calBtn = modal.querySelector('#erejCalBtn');
+      if (calBtn) {
+        calBtn.onclick = () => {
+          exportCalendarReminder({
+            title: `Wizyta NFZ: ${selectedSlot.spec}`,
+            date: selectedSlot.date,
+            desc: `Wizyta u lekarza: ${selectedSlot.doc} (${selectedSlot.clinic}). Pamiętaj o dowodzie osobistym mDowód!`
+          });
+        };
+      }
+      return;
+    }
+
+    modal.innerHTML = `
+      <div class="scrim" onclick="closeERejestracjaModal()"></div>
+      <div class="modal-box">
+        <div class="modal-head">
+          <div style="display:flex;align-items:center;gap:10px">
+            <span style="font-size:22px">🗓️</span>
+            <div>
+              <h2 id="erejTitle">e-Rejestracja NFZ</h2>
+              <small style="color:var(--ink2)">Bezpośredni zapis na wizytę lekarską</small>
+            </div>
+          </div>
+          <button class="tx-close" onclick="closeERejestracjaModal()" aria-label="Zamknij"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></svg></button>
+        </div>
+        <p class="modal-sub">Wybierz dogodny bezpłatny termin z puli centralnego systemu e-Rejestracji NFZ:</p>
+        <div class="erej-list">
+          ${slots.map(s => `
+            <div class="erej-item ${s.id === selectedSlot.id ? 'active' : ''}" data-id="${s.id}">
+              <div class="erej-slot-top">
+                <span class="erej-time">${s.date} • ${s.time}</span>
+                <span class="erej-badge">NFZ</span>
+              </div>
+              <b class="erej-doc">${s.doc}</b>
+              <small class="erej-clinic">${s.spec} • ${s.clinic}</small>
+            </div>
+          `).join('')}
+        </div>
+        <div class="modal-actions" style="margin-top:16px">
+          <button type="button" class="btn primary" id="erejConfirmBtn" style="flex:1.4">Zarezerwuj wizytę (Face ID)</button>
+          <button type="button" class="btn ghost" onclick="closeERejestracjaModal()" style="flex:1">Anuluj</button>
+        </div>
+      </div>
+    `;
+
+    modal.querySelectorAll('.erej-item').forEach(item => {
+      item.onclick = () => {
+        selectedSlot = slots.find(s => s.id === item.dataset.id);
+        renderView(false);
+      };
+    });
+
+    const confBtn = modal.querySelector('#erejConfirmBtn');
+    if (confBtn) {
+      confBtn.onclick = () => {
+        haptic('success');
+        showToast('Potwierdzono biometrią Face ID. Trwa rezerwacja w NFZ...');
+        setTimeout(() => renderView(true), 600);
+      };
+    }
+  }
+
+  renderView(false);
+  openDialogFocus('erej', modal.querySelector('.modal-box'), '.tx-close');
+  modal.classList.add('open');
+  announceSR('Otwarto e-Rejestrację wizyty NFZ');
+}
+
+function closeERejestracjaModal() {
+  const modal = document.getElementById('erejestracjaModal');
+  if (!modal || !modal.classList.contains('open')) return;
+  modal.classList.remove('open');
+  restoreDialogFocus('erej');
+}
+
+// --- 10d. Karta DiLO (Diagnostyki i Leczenia Onkologicznego) ---
+function openDiloModal() {
+  haptic('card');
+  let modal = document.getElementById('diloModal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'diloModal';
+    modal.className = 'sheet-modal';
+    modal.setAttribute('role', 'dialog');
+    modal.setAttribute('aria-modal', 'true');
+    modal.setAttribute('aria-label', 'Karta DiLO - Diagnostyka i Leczenie Onkologiczne');
+    document.body.appendChild(modal);
+  }
+
+  const diloNumber = 'DILO/NFZ/2026/84102';
+
+  modal.innerHTML = `
+    <div class="scrim" onclick="closeDiloModal()"></div>
+    <div class="modal-box">
+      <div class="modal-head">
+        <div style="display:flex;align-items:center;gap:10px">
+          <span style="font-size:22px">🎗️</span>
+          <div>
+            <h2 id="diloTitle">Karta DiLO</h2>
+            <small style="color:var(--ink2)">Szybka terapia onkologiczna NFZ</small>
+          </div>
+        </div>
+        <button class="tx-close" onclick="closeDiloModal()" aria-label="Zamknij"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></svg></button>
+      </div>
+
+      <div class="dilo-hero">
+        <div class="dilo-badge">KARTA AKTYWNA — TRYB SZYBKIEJ ŚCIEŻKI</div>
+        <b>Karta Diagnostyki i Leczenia Onkologicznego: ${diloNumber}</b>
+        <p>Karta uprawnia do natychmiastowej diagnostyki i leczenia bez limitów finansowych NFZ, z gwarancją terminów ustawowych.</p>
+      </div>
+
+      <div class="dilo-coord-card">
+        <div class="dilo-coord-head">
+          <span>👩‍⚕️ Twój Wyznaczony Koordynator DiLO:</span>
+          <b>mgr Anna Wójcik</b>
+        </div>
+        <div class="dilo-coord-body">
+          <p>Narodowy Instytut Onkologii im. Marii Skłodowskiej-Curie w Warszawie</p>
+          <div class="dilo-coord-contacts">
+            <a href="tel:+48225462000" class="btn ghost btn-sm">📞 +48 22 546 20 00</a>
+            <button type="button" class="btn ghost btn-sm" onclick="showToast('Koordynator dostępny pon-pt 8:00 - 15:00')">Godziny dyżuru</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="dilo-stages-wrap">
+        <b>Etapy ścieżki onkologicznej:</b>
+        <div class="dilo-stage-item done">
+          <span class="dilo-st-dot">✓</span>
+          <div class="dilo-st-info">
+            <b>Etap 1: Wystawienie karty DiLO</b>
+            <small>Lekarz POZ • 04.10.2026</small>
+          </div>
+        </div>
+        <div class="dilo-stage-item done">
+          <span class="dilo-st-dot">✓</span>
+          <div class="dilo-st-info">
+            <b>Etap 2: Diagnostyka wstępna</b>
+            <small>Badania obrazowe i laboratoryjne zakończone • 18.10.2026</small>
+          </div>
+        </div>
+        <div class="dilo-stage-item current">
+          <span class="dilo-st-dot">●</span>
+          <div class="dilo-st-info">
+            <b>Etap 3: Diagnostyka pogłębiona & Konsylium</b>
+            <small>Konsylium lekarskie wyznaczone na: 12.11.2026, godz. 11:00</small>
+          </div>
+        </div>
+        <div class="dilo-stage-item wait">
+          <span class="dilo-st-dot">○</span>
+          <div class="dilo-st-info">
+            <b>Etap 4: Realizacja planu leczenia</b>
+            <small>Oczekiwanie na decyzję konsylium wielodyscyplinarnego</small>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-actions" style="margin-top:16px">
+        <button type="button" class="btn primary" onclick="closeDiloModal();openOfficialCertificate('dilo')" style="flex:1.4">Pobierz Kartę DiLO (PDF)</button>
+        <button type="button" class="btn ghost" onclick="closeDiloModal();startTopic('Jak wygląda ścieżka leczenia z Kartą DiLO?')" style="flex:1">Zapytaj asystenta</button>
+      </div>
+    </div>
+  `;
+
+  openDialogFocus('dilo', modal.querySelector('.modal-box'), '.tx-close');
+  modal.classList.add('open');
+  announceSR('Otwarto Kartę Diagnostyki i Leczenia Onkologicznego');
+}
+
+function closeDiloModal() {
+  const modal = document.getElementById('diloModal');
+  if (!modal || !modal.classList.contains('open')) return;
+  modal.classList.remove('open');
+  restoreDialogFocus('dilo');
+}
+
+// --- 10e. Poświadczenie reprezentacji firmy (CEIDG / KRS) z e-dowodem ---
+function openFirmaPoswiadczModal() {
+  haptic('card');
+  let modal = document.getElementById('firmaPoswiadczModal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'firmaPoswiadczModal';
+    modal.className = 'sheet-modal';
+    modal.setAttribute('role', 'dialog');
+    modal.setAttribute('aria-modal', 'true');
+    modal.setAttribute('aria-label', 'Poświadczenie reprezentacji firmy');
+    document.body.appendChild(modal);
+  }
+
+  const token = 'CEIDG-' + Math.floor(1000 + Math.random() * 9000) + '-' + Math.floor(1000 + Math.random() * 9000);
+
+  modal.innerHTML = `
+    <div class="scrim" onclick="closeFirmaPoswiadczModal()"></div>
+    <div class="modal-box">
+      <div class="modal-head">
+        <div style="display:flex;align-items:center;gap:10px">
+          <span style="font-size:22px">🏢</span>
+          <div>
+            <h2 id="fPosTitle">Poświadcz za firmę</h2>
+            <small style="color:var(--ink2)">Cyfrowe umocowanie przedsiębiorcy CEIDG</small>
+          </div>
+        </div>
+        <button class="tx-close" onclick="closeFirmaPoswiadczModal()" aria-label="Zamknij"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></svg></button>
+      </div>
+
+      <div class="firma-hero">
+        <div class="firma-badge">REPREZENTACJA POTWIERDZONA e-DOWODEM</div>
+        <b>Wiśniewski Instalacje Jan Wiśniewski</b>
+        <p>NIP: 679 234 56 79 • REGON: 381920145 • PKD: 43.22.Z</p>
+      </div>
+
+      <div class="firma-qr-card">
+        <div class="firma-qr-box">
+          <svg viewBox="0 0 100 100" class="firma-qr-svg" width="130" height="130">
+            <rect width="100" height="100" fill="#fff"/>
+            <path d="M10,10 h30 v30 h-30 z M15,15 v20 h20 v-20 z M22,22 h6 v6 h-6 z" fill="#111"/>
+            <path d="M60,10 h30 v30 h-30 z M65,15 v20 h20 v-20 z M72,22 h6 v6 h-6 z" fill="#111"/>
+            <path d="M10,60 h30 v30 h-30 z M15,65 v20 h20 v-20 z M22,72 h6 v6 h-6 z" fill="#111"/>
+            <rect x="50" y="15" width="5" height="15" fill="#111"/>
+            <rect x="50" y="35" width="5" height="5" fill="#111"/>
+            <rect x="45" y="45" width="10" height="10" fill="#111"/>
+            <rect x="60" y="50" width="15" height="5" fill="#111"/>
+            <rect x="80" y="50" width="10" height="10" fill="#111"/>
+            <rect x="50" y="65" width="10" height="10" fill="#111"/>
+            <rect x="65" y="65" width="10" height="10" fill="#111"/>
+            <rect x="80" y="70" width="10" height="20" fill="#111"/>
+            <rect x="50" y="85" width="20" height="5" fill="#111"/>
+          </svg>
+        </div>
+        <div class="firma-token-tag">Jednorazowy token weryfikacyjny: <b>${token}</b></div>
+        <small class="firma-token-sub">Ważny przez 3 minuty. Zeskanuj w banku, urzędzie lub u kontrahenta.</small>
+      </div>
+
+      <div class="firma-rows-box">
+        <div class="firma-row"><span>Status CEIDG:</span> <b style="color:var(--ok)">Aktywny przedsiębiorca</b></div>
+        <div class="firma-row"><span>Biała Lista VAT:</span> <b>Czynny podatnik VAT (Konto OK)</b></div>
+        <div class="firma-row"><span>Uprawnienie:</span> <b>Właściciel / Reprezentacja jednoosobowa</b></div>
+        <div class="firma-row"><span>Adres doręczeń:</span> <b>ul. Floriańska 12/4, 31-021 Kraków</b></div>
+      </div>
+
+      <div class="modal-actions" style="margin-top:16px">
+        <button type="button" class="btn primary" id="copyFirmaBtn" style="flex:1.4">Kopiuj dane do faktury</button>
+        <button type="button" class="btn ghost" onclick="closeFirmaPoswiadczModal();openOfficialCertificate('ceidg')" style="flex:1">Odpis CEIDG (PDF)</button>
+      </div>
+    </div>
+  `;
+
+  const copyBtn = modal.querySelector('#copyFirmaBtn');
+  if (copyBtn) {
+    copyBtn.onclick = () => {
+      const txt = 'Wiśniewski Instalacje Jan Wiśniewski\nNIP: 6792345679\nREGON: 381920145\nul. Floriańska 12/4, 31-021 Kraków';
+      navigator.clipboard.writeText(txt);
+      showToast('Skopiowano kompletne dane firmy do schowka');
+    };
+  }
+
+  openDialogFocus('fpos', modal.querySelector('.modal-box'), '.tx-close');
+  modal.classList.add('open');
+  announceSR('Otwarto poświadczenie tożsamości i reprezentacji firmy');
+}
+
+function closeFirmaPoswiadczModal() {
+  const modal = document.getElementById('firmaPoswiadczModal');
+  if (!modal || !modal.classList.contains('open')) return;
+  modal.classList.remove('open');
+  restoreDialogFocus('fpos');
+}
+
+// --- 10f. Podpisanie dokumentu firmowego e-dowodem ---
+function openFirmaPodpisModal() {
+  haptic('card');
+  let modal = document.getElementById('firmaPodpisModal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'firmaPodpisModal';
+    modal.className = 'sheet-modal';
+    modal.setAttribute('role', 'dialog');
+    modal.setAttribute('aria-modal', 'true');
+    modal.setAttribute('aria-label', 'Podpisanie dokumentu e-dowodem');
+    document.body.appendChild(modal);
+  }
+
+  function renderView(signed = false) {
+    if (signed) {
+      modal.innerHTML = `
+        <div class="scrim" onclick="closeFirmaPodpisModal()"></div>
+        <div class="modal-box">
+          <div class="modal-head">
+            <h2 id="fPodSuccess">Dokument podpisany!</h2>
+            <button class="tx-close" onclick="closeFirmaPodpisModal()" aria-label="Zamknij"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></svg></button>
+          </div>
+          <div class="erej-success-hero">
+            <div class="erej-ok-icon">✍️</div>
+            <b>Podpis osobisty certyfikatem z dowodu osobistego</b>
+            <span class="erej-code">Sygnatura: XADES-BES/RP-${Math.floor(100000 + Math.random() * 900000)}</span>
+          </div>
+          <div class="erej-summary-box">
+            <div class="erej-row"><span>Podpisujący:</span> <b>Jan Wiśniewski (PESEL 81051939871)</b></div>
+            <div class="erej-row"><span>W imieniu:</span> <b>Wiśniewski Instalacje (NIP 679 234 56 79)</b></div>
+            <div class="erej-row"><span>Dokument:</span> <b>Umowa o współpracy B2B (Instalacje Sanitarne)</b></div>
+            <div class="erej-row"><span>Znacznik czasu:</span> <b>${today()}, ${now()} (GUM RP)</b></div>
+            <div class="erej-row"><span>Moc prawna:</span> <b>Równoważny z podpisem własnoręcznym (art. 78¹ KC)</b></div>
+          </div>
+          <div class="modal-actions" style="margin-top:16px">
+            <button type="button" class="btn primary" onclick="showToast('Pobrano podpisany dokument XML (XAdES) wraz z UPO');closeFirmaPodpisModal()" style="flex:1">Pobierz dokument z pieczęcią</button>
+            <button type="button" class="btn ghost" onclick="closeFirmaPodpisModal()" style="flex:1">Zamknij</button>
+          </div>
+        </div>
+      `;
+      return;
+    }
+
+    modal.innerHTML = `
+      <div class="scrim" onclick="closeFirmaPodpisModal()"></div>
+      <div class="modal-box">
+        <div class="modal-head">
+          <div style="display:flex;align-items:center;gap:10px">
+            <span style="font-size:22px">✍️</span>
+            <div>
+              <h2 id="fPodTitle">Podpisz dokument e-dowodem</h2>
+              <small style="color:var(--ink2)">Certyfikat podpisu osobistego z mDowodu</small>
+            </div>
+          </div>
+          <button class="tx-close" onclick="closeFirmaPodpisModal()" aria-label="Zamknij"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></svg></button>
+        </div>
+
+        <p class="modal-sub">Wybierz dokument do złożenia podpisu kwalifikowanego w imieniu firmy:</p>
+
+        <div class="firma-doc-picker">
+          <label class="f-doc-opt active">
+            <input type="radio" name="fDoc" checked>
+            <div class="f-doc-tx">
+              <b>Umowa o współpracy B2B (Wiśniewski Instalacje)</b>
+              <small>Kontrahent: TechBuild Polska Sp. z o.o. • PDF 142 KB</small>
+            </div>
+          </label>
+          <label class="f-doc-opt">
+            <input type="radio" name="fDoc">
+            <div class="f-doc-tx">
+              <b>Oświadczenie do Urzędu Skarbowego</b>
+              <small>Zgłoszenie aktualizacyjne NIP-B • PDF 98 KB</small>
+            </div>
+          </label>
+        </div>
+
+        <div class="f-cert-info-box">
+          <span>Certyfikat: <b>Podpis osobisty RP (Jan Wiśniewski)</b></span>
+          <small>Certyfikat aktywny w bezpiecznym module Secure Enclave urządzenia.</small>
+        </div>
+
+        <div class="modal-actions" style="margin-top:16px">
+          <button type="button" class="btn primary" id="fSignBtn" style="flex:1.4">Złóż podpis (Face ID)</button>
+          <button type="button" class="btn ghost" onclick="closeFirmaPodpisModal()" style="flex:1">Anuluj</button>
+        </div>
+      </div>
+    `;
+
+    const signBtn = modal.querySelector('#fSignBtn');
+    if (signBtn) {
+      signBtn.onclick = () => {
+        haptic('success');
+        showToast('Weryfikacja biometryczna Face ID... Składanie podpisu cyfrowego.');
+        setTimeout(() => renderView(true), 700);
+      };
+    }
+  }
+
+  renderView(false);
+  openDialogFocus('fpod', modal.querySelector('.modal-box'), '.tx-close');
+  modal.classList.add('open');
+  announceSR('Otwarto moduł podpisywania dokumentów firmowych e-dowodem');
+}
+
+function closeFirmaPodpisModal() {
+  const modal = document.getElementById('firmaPodpisModal');
+  if (!modal || !modal.classList.contains('open')) return;
+  modal.classList.remove('open');
+  restoreDialogFocus('fpod');
+}
+
 // --- 11. Inteligentne podpowiedzi w czasie rzeczywistym ---
 const SEARCH_DATABASE = [
   { text: 'Zastrzeż mój PESEL', cat: 'Bezpieczeństwo', icon: 'shield', desc: 'Blokada wyłudzeń kredytów' },
@@ -963,7 +1657,13 @@ const SEARCH_DATABASE = [
   { text: 'Urodziło nam się dziecko', cat: 'Rodzina', icon: 'doc', desc: 'Zgłoszenie narodzin w USC' },
   { text: 'Dostałam podejrzanego SMS-a', cat: 'Bezpieczeństwo', icon: 'alert', desc: 'Zgłoszenie do CSIRT NASK' },
   { text: 'Kto sprawdzał mój PESEL?', cat: 'Bezpieczeństwo', icon: 'shield', desc: 'Historia weryfikacji' },
-  { text: 'Kupuję używane auto', cat: 'Kierowca', icon: 'car', desc: 'Historia pojazdu z CEPiK' }
+  { text: 'Kupuję używane auto', cat: 'Kierowca', icon: 'car', desc: 'Historia pojazdu z CEPiK' },
+  { text: 'Moje e-Recepty w IKP', cat: 'Zdrowie', icon: 'doc', desc: 'Kody PIN i kod kreskowy w aptece' },
+  { text: 'e-Rejestracja wizyty NFZ', cat: 'Zdrowie', icon: 'clock', desc: 'Zapis do lekarza POZ / specjalisty' },
+  { text: 'Karta DiLO onkologiczna', cat: 'Zdrowie', icon: 'shield', desc: 'Szybka terapia onkologiczna NFZ' },
+  { text: 'Poświadcz za firmę (CEIDG)', cat: 'Firma', icon: 'shield', desc: 'Certyfikat reprezentacji i NIP' },
+  { text: 'Podpisz dokument e-dowodem', cat: 'Firma', icon: 'doc', desc: 'Podpis elektroniczny z certyfikatem' },
+  { text: 'Biała Lista Podatników VAT', cat: 'Firma', icon: 'coin', desc: 'Wykaz MF i status przedsiębiorcy' }
 ];
 
 let selectedSuggestIndex = -1;

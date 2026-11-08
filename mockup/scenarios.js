@@ -177,6 +177,73 @@ const S={
  },
  async dowodWaz(){await say('Twój dowód jest ważny do <b>20.05.2031</b>. To e-dowód z warstwą elektroniczną. Na nowy wniosek masz jeszcze czas, przypomnę Ci o nim wcześniej.');chips([{label:'Przypomnij w marcu 2031',go:()=>result({title:'Przypomnienie ustawione',rows:[['Kiedy','20.03.2031, 9:00']]})},{label:'Nie trzeba'}])},
  async kdr(){await say('Z Kartą Dużej Rodziny masz ulgę 37% na pociągi (49% na bilet miesięczny), bezpłatny wstęp do parków narodowych i zniżki u partnerów. Pokazać partnerów w Twojej okolicy?');chips([{label:'Pokaż w okolicy',go:()=>info({icon:'doc',title:'Partnerzy KDR w pobliżu',source:'Wyszukiwarka partnerów KDR (empatia.gov.pl)',rows:[['Muzeum w okolicy','zniżka na bilet rodzinny'],['Basen miejski','zniżka na wejście'],['Orlen','8 gr/l, paliwa premium 10 gr/l']]})}])},
+ async ikp(){
+  await info({
+   icon: 'doc',
+   title: 'Internetowe Konto Pacjenta (IKP)',
+   source: 'Ministerstwo Zdrowia / NFZ',
+   rows: [
+    ['e-Recepty', '2 aktywne do wykupienia (Amoksiklav, Paracetamol)'],
+    ['e-Skierowania', '1 ważne (Badanie USG jamy brzusznej, kod 7712)'],
+    ['Status eWUŚ', 'Zielony – prawo do bezpłatnych świadczeń NFZ aktywne'],
+    ['Karta DiLO', 'Szybka terapia onkologiczna NFZ aktywna']
+   ]
+  });
+  await say('Możesz od razu otworzyć e-Recepty z kodem PIN i kodem kreskowym do apteki lub umówić wizytę przez e-Rejestrację NFZ.');
+  chips([
+   { label: 'Otwórz e-Recepty (PIN)', go: () => { if (typeof openIkpModal === 'function') openIkpModal('recepty'); } },
+   { label: 'e-Rejestracja NFZ', go: () => { if (typeof openERejestracjaModal === 'function') openERejestracjaModal(); } },
+   { label: 'Karta DiLO (Onkologia)', go: () => { if (typeof openDiloModal === 'function') openDiloModal(); } },
+   { label: 'Zaświadczenie NFZ (PDF)', go: () => { if (typeof openOfficialCertificate === 'function') openOfficialCertificate('nfz'); } }
+  ]);
+ },
+ async erejestracja(){
+  await say('W centralnym systemie e-Rejestracji NFZ masz dostępne bezpłatne terminy do lekarza POZ oraz poradni specjalistycznych.');
+  if (typeof openERejestracjaModal === 'function') openERejestracjaModal();
+ },
+ async dilo(){
+  await info({
+   icon: 'shield',
+   title: 'Karta DiLO – Szybka Terapia Onkologiczna',
+   source: 'Krajowa Sieć Onkologiczna / NFZ',
+   rows: [
+    ['Numer Karty', 'DILO/NFZ/2026/84102'],
+    ['Koordynator', 'mgr Anna Wójcik (tel. +48 22 546 20 00)'],
+    ['Etap leczenia', 'Etap 3: Diagnostyka pogłębiona (Konsylium: 12.11.2026)'],
+    ['Placówka', 'Narodowy Instytut Onkologii w Warszawie']
+   ]
+  });
+  chips([
+   { label: 'Szczegóły Karty DiLO', go: () => { if (typeof openDiloModal === 'function') openDiloModal(); } },
+   { label: 'Pobierz odpis DiLO (PDF)', go: () => { if (typeof openOfficialCertificate === 'function') openOfficialCertificate('dilo'); } }
+  ]);
+ },
+ async firma(){
+  await info({
+   icon: 'shield',
+   title: 'Moja Firma – Wiśniewski Instalacje',
+   source: 'CEIDG / Ministerstwo Rozwoju i Technologii',
+   rows: [
+    ['Przedsiębiorca', `${OS.imie} ${OS.nazwisko}`],
+    ['Numer NIP', '679 234 56 79 (REGON 381920145)'],
+    ['Przeważające PKD', '43.22.Z – Instalacje wod.-kan. i gazowe'],
+    ['Status w CEIDG', 'Aktywny przedsiębiorca'],
+    ['Biała Lista VAT', 'Czynny podatnik VAT (Konto rozliczeniowe zweryfikowane)']
+   ]
+  });
+  await say('Możesz wygenerować cyfrowe poświadczenie reprezentacji z kodem QR, podpisać dokument firmowy certyfikatem z e-dowodu lub pobrać oficjalny odpis z CEIDG.');
+  chips([
+   { label: 'Poświadcz za firmę (QR)', go: () => { if (typeof openFirmaPoswiadczModal === 'function') openFirmaPoswiadczModal(); } },
+   { label: 'Podpisz e-dowodem', go: () => { if (typeof openFirmaPodpisModal === 'function') openFirmaPodpisModal(); } },
+   { label: 'Zaświadczenie CEIDG PDF', go: () => { if (typeof openOfficialCertificate === 'function') openOfficialCertificate('ceidg'); } }
+  ]);
+ },
+ async poswiadczFirme(){
+  if (typeof openFirmaPoswiadczModal === 'function') openFirmaPoswiadczModal();
+ },
+ async podpiszFirme(){
+  if (typeof openFirmaPodpisModal === 'function') openFirmaPodpisModal();
+ },
  async fallback(){await say('Tego w tej wersji jeszcze nie załatwię. Najbliżej pasuje:');chips([{label:'Co mam do załatwienia?',go:S.todo},{label:'Zgubiłam portfel',go:S.portfel},{label:'Kupuję używane auto',go:S.auto}])}
 };
 
@@ -184,10 +251,18 @@ const norm=t=>t.toLowerCase().replace(/ł/g,'l').normalize('NFD').replace(/[\u03
 function route(t){
  if(pending){const p=pending;pending=null;return p(t)}
  const n=norm(t);
+ if(/pokaz.*(ikp|pacjent|zdrow|recept)/.test(n))return S.docShow('ikp');
+ if(/pokaz.*(firm|dzialaln|ceidg)/.test(n))return S.docShow('firma');
  if(/pokaz.*(dowod|mdowod)/.test(n))return S.docShow('dowod');
  if(/pokaz.*(prawo|prawk)/.test(n))return S.docShow('pj');
  if(/pokaz.*(auto|pojazd|samoch)/.test(n))return S.docShow('auto');
  if(/pokaz.*(kdr|duzej rodziny)/.test(n))return S.docShow('kdr');
+ if(/recept|skierowani|lekarz|ikp|pacjent|medycyn|ewus/.test(n))return S.ikp();
+ if(/rejestracj|umow.*(lekarz|wizyt)|zapisz.*(lekarz|wizyt)/.test(n))return S.erejestracja();
+ if(/dilo|onkolog|nowotwor|rak\b/.test(n))return S.dilo();
+ if(/poswiadcz.*firm|reprezentacj.*firm|token.*ceidg/.test(n))return S.poswiadczFirme();
+ if(/podpis.*(firm|e-dowod|dowod.*osob)/.test(n))return S.podpiszFirme();
+ if(/firma|ceidg|nip|biala lista|dzialalnosc/.test(n))return S.firma();
  if(/dowod.*(waz|traci)|waznosc dowodu/.test(n))return S.dowodWaz();
  if(/zastrz.*pesel/.test(n))return S.pesel();
  if(/znalaz|odblok\w* dowod/.test(n))return S.znaleziony();

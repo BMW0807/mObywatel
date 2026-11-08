@@ -179,14 +179,39 @@ function renderMenu(){
   `;
  }
 }
-function openMenu(focusPersona){
+let currentMenuTab = 'osoba';
+function setMenuTab(tab) {
+ currentMenuTab = tab;
+ const m = $('#lmenu');
+ if(!m) return;
+ m.querySelectorAll('.lmenu-tab').forEach(b => {
+  const on = b.dataset.tab === tab;
+  b.classList.toggle('active', on);
+  b.setAttribute('aria-selected', on ? 'true' : 'false');
+ });
+ const secOsoba = $('#secOsoba');
+ const secUklad = $('#secUklad');
+ const secA11y = $('#secA11y');
+ if(secOsoba) secOsoba.hidden = (tab !== 'osoba');
+ if(secUklad) secUklad.hidden = (tab !== 'uklad');
+ if(secA11y) secA11y.hidden = (tab !== 'a11y');
+ const panel = m.querySelector('.panel');
+ if(panel) panel.scrollTop = 0;
+}
+
+function openMenu(tabOrFocusPersona){
  if(app.classList.contains('chatting'))return;
  closeHist();renderMenu();
- if(typeof openDialogFocus==='function')openDialogFocus('lmenu',$('#lmenu .panel'),focusPersona?'#lmenu .mo button.on':'#lmenu .ml button.on');
+ let targetTab = 'osoba';
+ if(tabOrFocusPersona === 'uklad' || tabOrFocusPersona === false) targetTab = 'uklad';
+ else if(tabOrFocusPersona === 'a11y') targetTab = 'a11y';
+ else if(tabOrFocusPersona === 'osoba' || tabOrFocusPersona === true) targetTab = 'osoba';
+ setMenuTab(targetTab);
+ if(typeof openDialogFocus==='function')openDialogFocus('lmenu',$('#lmenu .panel'),targetTab==='osoba'?'#lmenu .mo button.on':(targetTab==='uklad'?'#lmenu .ml button.on':'.lmenu-tab.active'));
  app.classList.add('menu');
  $('#title').setAttribute('aria-expanded','true');
  const pb=$('#personBtn');if(pb)pb.setAttribute('aria-expanded','true');
- if(typeof announceSR==='function')announceSR('Otwarto wybór osoby i układu dokumentów');
+ if(typeof announceSR==='function')announceSR('Otwarto menu: ' + (targetTab === 'osoba' ? 'wybór osoby' : (targetTab === 'uklad' ? 'układ kart' : 'opcje i dostępność')));
 }
 function closeMenu(){
  if(!app.classList.contains('menu'))return;
@@ -195,13 +220,12 @@ function closeMenu(){
  const pb=$('#personBtn');if(pb)pb.setAttribute('aria-expanded','false');
  if(typeof restoreDialogFocus==='function')restoreDialogFocus('lmenu');
 }
-$('#title').onclick=()=>app.classList.contains('menu')?closeMenu():openMenu(false);
+$('#title').onclick=()=>app.classList.contains('menu')?closeMenu():openMenu('uklad');
 $('#lmenu .scrim').onclick=closeMenu;
 $('#personBtn').onclick=()=>{
  if(app.classList.contains('chatting'))return;
- if(app.classList.contains('menu')){closeMenu();return}
- openMenu(true);
- requestAnimationFrame(()=>$('#lmenu .mo')?.scrollIntoView({block:'nearest'}));
+ if(app.classList.contains('menu') && currentMenuTab === 'osoba'){closeMenu();return}
+ openMenu('osoba');
 };
 renderMenu();
 buildAlt();

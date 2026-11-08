@@ -304,16 +304,21 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--red);outline-of
 .phone.menu .title svg{transform:rotate(180deg)}
 .lmenu{position:absolute;inset:0;z-index:55;pointer-events:none}
 .lmenu .scrim{position:absolute;inset:0;background:rgba(242,243,247,.55);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);opacity:0;transition:opacity .25s}
-.lmenu .panel{position:absolute;left:12px;right:12px;top:var(--menuTop,110px);max-height:calc(100% - var(--menuTop,110px) - 20px);background:#fff;border-radius:20px;padding:8px 10px 48px;box-shadow:0 20px 50px -12px rgba(15,25,60,.35);
+.lmenu .panel{position:absolute;left:12px;right:12px;top:var(--menuTop,110px);max-height:calc(100% - var(--menuTop,110px) - 20px);background:#fff;border-radius:22px;padding:8px 10px 24px;box-shadow:0 20px 50px -12px rgba(15,25,60,.35);
   transform:translateY(-14px) scale(.98);transform-origin:top center;opacity:0;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:rgba(15,25,60,.25) transparent;transition:transform .32s var(--ease),opacity .2s}
-.lmenu .panel::-webkit-scrollbar{width:6px;display:block}
+.lmenu .panel::-webkit-scrollbar{width:5px;display:block}
 .lmenu .panel::-webkit-scrollbar-thumb{background:rgba(15,25,60,.25);border-radius:4px}
 .phone.menu .lmenu{pointer-events:auto}
 .phone.menu .lmenu .scrim{opacity:1}
 .phone.menu .lmenu .panel{transform:none;opacity:1}
 .phone.menu #title{z-index:56}
 .phone.menu .composer,.phone.hist .composer{display:none!important}
-.lmenu .mh{font-size:13px;color:var(--ink2);padding:8px 12px 6px;font-weight:500}
+.lmenu-tabs{display:flex;gap:4px;background:var(--bg);padding:4px;border-radius:14px;margin:2px 4px 8px}
+.lmenu-tab{flex:1;padding:8px 4px;font-size:13px;font-weight:600;color:var(--ink2);text-align:center;border-radius:10px;transition:all .2s var(--ease)}
+.lmenu-tab:hover{color:var(--ink)}
+.lmenu-tab.active{background:#fff;color:var(--ink);box-shadow:0 2px 8px rgba(15,25,60,.09)}
+.lmenu-sec[hidden]{display:none!important}
+.lmenu .mh{font-size:13px;color:var(--ink2);padding:6px 12px 6px;font-weight:500}
 .lmenu .ml button{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:10px 12px;border-radius:14px}
 .lmenu .ml button.on{background:var(--red-wash)}
 .lmenu .ml button>svg{width:20px;height:20px;color:var(--red);flex:none}
@@ -616,7 +621,6 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--red);outline-of
 .lmenu .mo .otx b{display:block;font-size:14.5px;line-height:19px;font-weight:600;color:var(--ink)}
 .lmenu .mo .otx small{display:block;font-size:12.5px;line-height:16px;color:var(--ink2);margin-top:1px}
 .lmenu .mo button>svg{flex:none;width:18px;height:18px;color:var(--red)}
-.lmenu .panel{max-height:calc(100% - var(--menuTop,110px) - 20px);overflow-y:auto;scrollbar-width:none;padding-bottom:28px}
 
 /* sylwetki pojazdów */
 .face .syl{position:absolute;right:4.5cqw;top:12.5cqw;width:54cqw;height:22cqw;pointer-events:none;filter:drop-shadow(0 .8cqw 1.4cqw rgba(80,30,0,.25))}
@@ -1453,12 +1457,468 @@ input:focus-visible,
   .upo-doc-head, .upo-footer-legal { flex-direction: column; text-align: center; }
   .upo-meta-item, .upo-row { flex-direction: column; gap: 2px; }
   .upo-meta-item b, .upo-val { text-align: left; }
-
-  .mob-toast {
-    white-space: normal;
-    max-width: calc(100vw - 20px);
-    text-align: center;
-    font-size: 13px;
-    padding: 9px 14px;
-  }
 }
+
+/* ==========================================================================
+   NOWE MODUŁY: IKP, e-REJESTRACJA NFZ, KARTA DiLO, MOJA FIRMA (CEIDG)
+   ========================================================================== */
+
+/* Zakładki IKP */
+.ikp-tab-bar {
+  display: flex;
+  gap: 6px;
+  background: var(--bg);
+  padding: 4px;
+  border-radius: 14px;
+  margin: 10px 0 14px;
+  border: 1px solid var(--hair);
+  overflow-x: auto;
+}
+.ikp-tab-btn {
+  flex: 1;
+  min-width: max-content;
+  padding: 7px 12px;
+  border-radius: 10px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--ink2);
+  text-align: center;
+  transition: background .15s, color .15s;
+}
+.ikp-tab-btn.active {
+  background: #fff;
+  color: var(--ink);
+  box-shadow: 0 1px 3px rgba(15,25,60,.12);
+}
+.high-contrast .ikp-tab-btn.active {
+  background: #ffd700 !important;
+  color: #000 !important;
+}
+
+/* Karta recepty w IKP */
+.rx-card {
+  background: var(--bg);
+  border: 1px solid var(--hair);
+  border-radius: 16px;
+  padding: 12px 14px;
+  margin-bottom: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.rx-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+}
+.rx-pin-box {
+  background: #00695c;
+  color: #fff;
+  border-radius: 10px;
+  padding: 5px 10px;
+  text-align: center;
+  flex: none;
+}
+.rx-pin-label { font-size: 10px; letter-spacing: 0.05em; opacity: .85; }
+.rx-pin-val { font-size: 18px; font-weight: 800; letter-spacing: 1.5px; font-family: monospace; }
+.rx-info b { font-size: 15px; color: var(--ink); display: block; margin-bottom: 2px; }
+.rx-info small { font-size: 12px; color: var(--ink2); }
+.rx-barcode {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  height: 38px;
+  background: #fff;
+  border-radius: 8px;
+  padding: 6px 10px;
+  border: 1px solid #e2e8f0;
+}
+.rx-barcode i {
+  display: block;
+  height: 100%;
+  background: #111;
+  border-radius: 1px;
+}
+.rx-foot {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11.5px;
+  color: var(--ink2);
+}
+
+/* e-Rejestracja NFZ */
+.erej-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: var(--bg);
+  border: 1px solid var(--hair);
+  border-radius: 14px;
+  padding: 12px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: border-color .15s, background .15s;
+}
+.erej-item:hover, .erej-item.selected {
+  border-color: #00695c;
+  background: rgba(0, 105, 92, 0.05);
+}
+.erej-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.erej-title { font-size: 14.5px; font-weight: 700; color: var(--ink); }
+.erej-badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 6px;
+  background: rgba(0,105,92,.12);
+  color: #00695c;
+}
+.erej-details { font-size: 12.5px; color: var(--ink2); }
+
+/* Karta DiLO */
+.dilo-hero {
+  background: linear-gradient(135deg, #004d40, #00796b);
+  color: #fff;
+  border-radius: 18px;
+  padding: 16px;
+  margin-bottom: 14px;
+}
+.dilo-hero-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+.dilo-tag {
+  font-size: 11px;
+  font-weight: 700;
+  background: #a7f3d0;
+  color: #064e3b;
+  padding: 3px 8px;
+  border-radius: 6px;
+  letter-spacing: .03em;
+}
+.dilo-nr { font-size: 17px; font-weight: 800; margin: 0 0 2px; }
+.dilo-stage-box {
+  background: var(--bg);
+  border: 1px solid var(--hair);
+  border-radius: 14px;
+  padding: 12px;
+  margin-bottom: 12px;
+}
+.dilo-stage-item {
+  display: flex;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--hair);
+}
+.dilo-stage-item:last-child { border-bottom: 0; padding-bottom: 0; }
+.dilo-dot {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #00695c;
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-size: 11px;
+  font-weight: 700;
+  flex: none;
+}
+.dilo-dot.wait { background: #cbd5e1; color: #475569; }
+.dilo-step-tx b { font-size: 13.5px; display: block; color: var(--ink); }
+.dilo-step-tx small { font-size: 11.5px; color: var(--ink2); }
+
+/* Poświadczenie za firmę */
+.firma-badge-bar, .firma-hero {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: linear-gradient(135deg, #0f172a, #1e293b);
+  color: #fff;
+  border-radius: 16px;
+  padding: 14px 16px;
+  margin-bottom: 14px;
+}
+.firma-badge {
+  display: inline-block;
+  align-self: flex-start;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: .03em;
+  background: #f59e0b;
+  color: #0f172a;
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+.firma-hero b { font-size: 15px; color: #fff; }
+.firma-hero p { margin: 0; font-size: 12px; color: #94a3b8; line-height: 16px; }
+
+.firma-qr-card, .firma-qr-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 14px;
+  background: #fff;
+  border-radius: 16px;
+  border: 1px solid var(--hair);
+  margin-bottom: 14px;
+  box-shadow: 0 2px 8px rgba(15,25,60,.04);
+}
+.firma-qr-box { padding: 4px; background: #fff; }
+.firma-qr-svg { width: 140px; height: 140px; }
+.firma-token-tag {
+  font-size: 13px;
+  color: var(--ink);
+  background: var(--bg);
+  padding: 6px 12px;
+  border-radius: 10px;
+  margin-top: 8px;
+}
+.firma-token-sub { font-size: 11px; color: var(--ink2); text-align: center; margin-top: 4px; }
+
+.firma-rows-box {
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border: 1px solid var(--hair);
+  border-radius: 14px;
+  padding: 4px 12px;
+  margin-bottom: 14px;
+}
+.firma-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--hair);
+  font-size: 12.5px;
+  gap: 10px;
+}
+.firma-row:last-child { border-bottom: 0; }
+.firma-row span { color: var(--ink2); flex: none; }
+.firma-row b { text-align: right; color: var(--ink); }
+
+/* Podpis firmowy e-dowodem */
+.firma-doc-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.f-doc-opt {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: var(--surface);
+  border: 1.5px solid var(--hair);
+  padding: 10px 12px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: border-color .15s;
+}
+.f-doc-opt.active, .f-doc-opt:has(input:checked) {
+  border-color: var(--red);
+  background: var(--red-wash);
+}
+.f-doc-tx b { display: block; font-size: 13.5px; color: var(--ink); }
+.f-doc-tx small { display: block; font-size: 11.5px; color: var(--ink2); margin-top: 2px; }
+.f-cert-info-box {
+  background: #f1f5f9;
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-size: 12.5px;
+  color: var(--ink);
+  margin-bottom: 14px;
+}
+.f-cert-info-box b { color: #0f172a; }
+.f-cert-info-box small { display: block; color: #64748b; font-size: 11.5px; margin-top: 2px; }
+
+/* Koordynator i etapy DiLO */
+.dilo-coord-card {
+  background: var(--surface);
+  border: 1px solid var(--hair);
+  border-radius: 14px;
+  padding: 12px 14px;
+  margin-bottom: 14px;
+}
+.dilo-coord-head span { font-size: 12px; color: var(--ink2); display: block; }
+.dilo-coord-head b { font-size: 15px; color: var(--ink); display: block; margin-top: 2px; }
+.dilo-coord-body p { margin: 4px 0 10px; font-size: 12.5px; color: var(--ink2); }
+.dilo-coord-contacts { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.dilo-stages-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: var(--bg);
+  border-radius: 14px;
+  padding: 12px 14px;
+  margin-bottom: 14px;
+}
+.dilo-stage-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+.dilo-st-dot {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 11px;
+  font-weight: 700;
+  flex: none;
+}
+.dilo-stage-item.done .dilo-st-dot { background: #00695c; color: #fff; }
+.dilo-stage-item.current .dilo-st-dot { background: var(--red); color: #fff; animation: pulse 1s infinite; }
+.dilo-stage-item.wait .dilo-st-dot { background: #cbd5e1; color: #64748b; }
+.dilo-st-info b { font-size: 13px; color: var(--ink); display: block; }
+.dilo-st-info small { font-size: 11.5px; color: var(--ink2); display: block; }
+
+/* e-Recepty w IKP styling */
+.rx-card {
+  background: var(--surface);
+  border: 1px solid var(--hair);
+  border-radius: 16px;
+  padding: 14px;
+  margin-bottom: 12px;
+  box-shadow: 0 1px 4px rgba(15,25,60,.04);
+}
+.rx-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+}
+.rx-badge {
+  display: inline-block;
+  font-size: 10.5px;
+  font-weight: 700;
+  background: #e6f4ea;
+  color: #137333;
+  padding: 2px 7px;
+  border-radius: 6px;
+  margin-bottom: 4px;
+}
+.rx-name { font-size: 14.5px; color: var(--ink); display: block; }
+.rx-sub { font-size: 12px; color: var(--ink2); display: block; margin-top: 2px; }
+.rx-pin-wrap {
+  text-align: center;
+  background: var(--bg);
+  border: 1.5px solid var(--hair);
+  padding: 4px 8px;
+  border-radius: 10px;
+  flex: none;
+}
+.rx-pin-lbl { font-size: 9.5px; font-weight: 700; color: var(--ink3); display: block; }
+.rx-pin-val { font-size: 16px; font-weight: 800; color: var(--ink); letter-spacing: .1em; }
+
+.rx-barcode-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 10px 0 8px;
+  background: #fff;
+  padding: 6px;
+  border-radius: 8px;
+}
+.rx-barcode-svg { width: 100%; height: 36px; }
+.rx-num { font-size: 11px; letter-spacing: .2em; color: var(--ink2); font-variant-numeric: tabular-nums; margin-top: 2px; }
+.rx-card-bot {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11.5px;
+  color: var(--ink2);
+  border-top: 1px solid var(--hair);
+  padding-top: 8px;
+  margin-top: 6px;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.rx-card-actions { display: flex; gap: 8px; margin-top: 10px; }
+.btn-sm { padding: 6px 12px; font-size: 12.5px; border-radius: 10px; }
+
+/* eWUŚ */
+.ewus-hero-box {
+  background: #f0fdf4;
+  border: 1.5px solid #bbf7d0;
+  border-radius: 14px;
+  padding: 12px 14px;
+  margin-bottom: 14px;
+}
+.ewus-status-tag.ok {
+  font-size: 11px;
+  font-weight: 700;
+  color: #15803d;
+  margin-bottom: 6px;
+}
+.ewus-hero-box b { font-size: 13.5px; color: #166534; display: block; }
+.ewus-hero-box p { font-size: 12px; color: #374151; margin: 4px 0 0; }
+
+.ikp-action-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+.ikp-grid-btn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--surface);
+  border: 1px solid var(--hair);
+  border-radius: 14px;
+  padding: 12px;
+  text-align: left;
+  cursor: pointer;
+  transition: background .15s;
+}
+.ikp-grid-btn:hover { background: var(--bg); }
+.ikp-gb-ic { font-size: 24px; flex: none; }
+.ikp-gb-tx b { display: block; font-size: 13.5px; color: var(--ink); }
+.ikp-gb-tx small { display: block; font-size: 11.5px; color: var(--ink2); }
+
+/* Sukces e-Rejestracji */
+.erej-success-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 14px 0;
+  gap: 6px;
+}
+.erej-ok-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #dcfce7;
+  color: #15803d;
+  display: grid;
+  place-items: center;
+  font-size: 22px;
+  font-weight: 700;
+}
+.erej-code { font-size: 12px; color: var(--ink2); font-weight: 600; }
+.erej-summary-box {
+  background: var(--bg);
+  border-radius: 14px;
+  padding: 6px 14px;
+}
+.erej-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--hair);
+  font-size: 12.5px;
+}
+.erej-row:last-child { border-bottom: 0; }
+.erej-row span { color: var(--ink2); }
+.erej-row b { text-align: right; color: var(--ink); }
+
