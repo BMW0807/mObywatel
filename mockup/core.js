@@ -91,13 +91,13 @@ function layout(){
  const compH=chatting?comp:0;
  const pbarH=(!chatting&&pbar)?(pbar.offsetHeight+(H<680?6:8)):0;
  const stackTop=chatting?(T+topH+2):(T+topH+4+pbarH);
- const remTop=H-bnavH-compH-remH-(H<680?4:8);
+ let remTop=H-bnavH-compH-remH-(H<680?4:8);
  const avail=Math.max(120,remTop-(H<680?6:10)-stackTop);
- let cardH=natH,off=Math.min(62,(avail-natH)/Math.max(1,n-1));
- const minOff=H<680?26:36;
+ let cardH=natH,off=Math.min(58,(avail-natH)/Math.max(1,n-1));
+ const minOff=H<680?22:30;
  if(!chatting&&off<minOff){
-  off=Math.max(H<650?22:26,Math.min(minOff,Math.floor((avail-(H<650?115:130))/Math.max(1,n-1))));
-  cardH=Math.max(H<650?110:122,Math.min(natH,avail-off*Math.max(1,n-1)));
+  off=Math.max(H<650?18:22,Math.min(minOff,Math.floor((avail-(H<650?100:114))/Math.max(1,n-1))));
+  cardH=Math.max(H<650?96:108,Math.min(natH,avail-off*Math.max(1,n-1)));
  }
  const stNode=$('#stack');
  stNode.style.width=cardW+'px';stNode.style.margin='0 auto';
@@ -117,6 +117,7 @@ function layout(){
  }
  let used=(n-1)*off+cardH;
  if(!chatting&&typeof layoutAlt==='function'&&VARIANT!=='stos')used=layoutAlt(stackTop,avail,W);
+ remTop=Math.max(stackTop+used+(H<680?4:6), remTop);
  $('#reminders').style.top=remTop+'px';
 }
 window.addEventListener('resize',layout);

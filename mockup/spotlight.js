@@ -663,11 +663,21 @@
         backdrop-filter: blur(5px);
         -webkit-backdrop-filter: blur(5px);
       }
+      #spotlightModal {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        max-width: 100%;
+        overflow-x: hidden;
+      }
       .spotlight-box {
         position: absolute;
         left: 0;
         right: 0;
         bottom: 0;
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
         max-height: 88%;
         height: 88%;
         background: var(--surface, #ffffff);
