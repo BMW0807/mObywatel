@@ -212,13 +212,13 @@ $('#hnew').onclick=()=>{closeHist();newConv();input.focus()};
 $('#homeBtn').onclick=()=>{
  // na ekranie głównym orzełek prowadzi na stronę startową (z prefiksem języka, np. /de/)
  if(!app.classList.contains('chatting')&&!$('#detail').classList.contains('on')){const m=location.pathname.match(/^\/([a-z]{2})\//);location.href=m?'/'+m[1]+'/':'/';return}
- $('#detail').classList.remove('on');exitChat();$('#tiles').scrollTo({left:0,behavior:'smooth'})};
+ if(typeof closeDoc==='function')closeDoc();else $('#detail').classList.remove('on');
+ exitChat();$('#tiles').scrollTo({left:0,behavior:'smooth'})};
 $('#mailBtn').onclick=()=>{closeHist();startTopic('Co mam w skrzynce?')};
 $('#bellBtn').onclick=()=>{closeHist();startTopic('Co mam do załatwienia?')};
 input.addEventListener('focus',enterChat);
 $('#composer').onsubmit=e=>{e.preventDefault();const t=input.value.trim();input.value='';send(t)};
 $('#mic').onclick=async()=>{enterChat();const bar=$('.bar');bar.classList.add('listening');input.placeholder='Słucham…';await sleep(1600);bar.classList.remove('listening');input.placeholder='Co chcesz załatwić?';send('Miałam stłuczkę na parkingu')};
 $('#cam').onclick=()=>{enterChat();act(()=>{addUser('📷 zdjęcie dowodu rejestracyjnego');S.auto2()})};
-document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(app.classList.contains('hist')){closeHist();return}$('#detail').classList.remove('on');exitChat()}});
 layout();
 document.fonts&&document.fonts.ready.then(layout);

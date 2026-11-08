@@ -296,7 +296,7 @@ def popraw_jezyk(text, keys, log):
         else:
             fixed = ''
         if fixed and not OBCE.search(fixed):
-            log(dict(t='jezyk', przed=text, po=fixed)); return fixed
+            log(dict(t='jezyk', chars=len(text))); return fixed
     except Exception as e:
         log(dict(t='jezyk_blad', msg=str(e)))
     for k_, v in {'Если': 'Jeśli', 'если': 'jeśli', 'или': 'lub', 'нет': 'nie', 'да': 'tak', 'но': 'ale', 'и': 'i'}.items():
@@ -347,7 +347,7 @@ def run(messages, stan, confirm=None, keys=None, log=lambda x: None, osoba=None,
         t0 = time.time(); txt = messages[-1]['content']; m = PREFIKS.match(txt); pre = m.group(1) if m else ''
         pl_txt = tlumacz.tlumacz_wolne([txt[len(pre):]], 'auto', 'pl', key)[0]
         messages[-1] = dict(messages[-1], content=pre + pl_txt)
-        log(dict(t='tlumacz_wej', jezyk=j, ms=int((time.time() - t0) * 1000), przed=txt[:120], po=pl_txt[:120]))
+        log(dict(t='tlumacz_wej', jezyk=j, ms=int((time.time() - t0) * 1000), chars=len(txt)))
     ostatnia = messages[-1]['content'] if messages and not confirm and isinstance(messages[-1].get('content'), str) else ''
     m, s, ev, cz = _run(messages, stan, confirm, keys, log, osoba)
     if not cz and ev and all(e.get('t') == 'text' for e in ev) and not ev[-1]['plain'].rstrip().endswith('?') and KONIEC.search(PREFIKS.sub('', ostatnia)):
@@ -406,7 +406,7 @@ def _run(messages, stan, confirm, keys, log, osoba):
                 d, karta = akcje.A[tu['name']]['wykonaj'](tu['input'], stan)
                 events.append(dict(t='card', **karta))
                 res = json.dumps(dict(wykonano=True, potwierdzono_face_id=True, wynik=d), ensure_ascii=False)
-                log(dict(t='akcja', name=tu['name'], input=tu['input'], ok=True))
+                log(dict(t='akcja', name=tu['name'], input_keys=sorted((tu.get('input') or {}).keys()), ok=True))
             else:
                 res = 'Użytkowniczka anulowała na karcie potwierdzenia. NIE wykonano.'
                 log(dict(t='akcja', name=tu['name'], ok=False))
@@ -429,7 +429,7 @@ def _run(messages, stan, confirm, keys, log, osoba):
                 events.append(dict(t='text', md=b['text'], html=md(b['text']), plain=bez_myslnikow(re.sub(r'\*\*', '', b['text']).strip())))
                 continue
             n, a = b['name'], b['input']
-            log(dict(t='tool', name=n, input=a))
+            log(dict(t='tool', name=n, input_keys=sorted((a or {}).keys())))
             if n in NAZWY_ODCZYTOW:
                 d, karta = wykonaj_odczyt(n, a, stan)
                 if karta and a.get('pokaz_karte', True) is not False:

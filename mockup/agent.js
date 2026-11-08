@@ -4,25 +4,92 @@ const scriptRoute=route,scriptStartTopic=startTopic;
 CONVS.forEach(c=>{c.api=[];c.stan=null});
 const _mk=mkConv;mkConv=function(box){const c=_mk(box);c.api=[];c.stan=null;return c};
 
-function botText(html,txt){clearEmpty();msgs.append(el(`<div class="msg bot" data-t="0">${html}</div>`));end();touch('bot',txt||plain(html))}
+function botText(html,txt){clearEmpty();const p=txt||plain(html);msgs.append(el(`<div class="msg bot" data-t="0">${html}</div>`));end();touch('bot',p);if(typeof announceSR==='function')announceSR(p)}
 function lockOld(box){box.querySelectorAll('.ui .actions').forEach(x=>x.remove());box.querySelectorAll('.chips').forEach(x=>x.remove())}
 
-async function agentCall(c,extra,voice){
+let _aiStatusTimer=null,_aiStartTs=0;
+function syncAiStatus(){
+ const st=$('#aiStatus'),tx=$('#aiStatusTx'),comp=$('#composer');
+ if(CALLS>0){
+  if(!_aiStartTs)_aiStartTs=Date.now();
+  if(st)st.hidden=false;
+  if(comp){comp.classList.add('busy-ai');comp.setAttribute('aria-busy','true')}
+  if(!REC&&input)input.placeholder='Asystent odpowiada…';
+  const upd=()=>{
+   if(CALLS<=0||!tx)return;
+   const sec=Math.floor((Date.now()-_aiStartTs)/1000);
+   tx.textContent=sec>=3?`Asystent odpowiada… (${sec} s)`:'Asystent odpowiada…';
+  };
+  upd();
+  if(!_aiStatusTimer)_aiStatusTimer=setInterval(upd,1000);
+ }else{
+  _aiStartTs=0;
+  if(_aiStatusTimer){clearInterval(_aiStatusTimer);_aiStatusTimer=null}
+  if(st)st.hidden=true;
+  if(comp){comp.classList.remove('busy-ai');comp.removeAttribute('aria-busy')}
+  if(!REC&&input)input.placeholder='Co chcesz załatwić?';
+ }
+}
+
+function renderAiError(c,{code,err,onRetry,onDemo}){
+ clearEmpty();
+ const cnt=(typeof MobStore!=='undefined'&&MobStore.getAiErrors)?MobStore.getAiErrors().length:1;
+ const cardEl=el(`<div class="ui warn ai-err-card" role="alert" data-t="0">
+  ${hd('alert','Nie udało się uzyskać odpowiedzi')}
+  <div class="body">
+   <p class="ai-err-desc">${esc(err)}</p>
+   <div class="ai-err-meta"><span class="ai-err-code">${esc(code||'Błąd AI')}</span><button type="button" class="ai-err-hist-link">Historia błędów (${cnt})</button></div>
+  </div>
+  <div class="actions">
+   ${onDemo?`<button type="button" class="btn ghost ai-demo-btn">Tryb demo</button>`:''}
+   <button type="button" class="btn primary ai-retry-btn">↻ Spróbuj ponownie</button>
+  </div>
+ </div>`);
+ const retryBtn=cardEl.querySelector('.ai-retry-btn');
+ const demoBtn=cardEl.querySelector('.ai-demo-btn');
+ const histBtn=cardEl.querySelector('.ai-err-hist-link');
+ if(histBtn)histBtn.onclick=()=>{if(typeof openErrorHistory==='function')openErrorHistory()};
+ if(retryBtn)retryBtn.onclick=()=>act(()=>{cardEl.remove();onRetry&&onRetry()});
+ if(demoBtn)demoBtn.onclick=()=>act(()=>{cardEl.remove();onDemo&&onDemo()});
+ c.el.append(cardEl);end();
+ touch('bot','Błąd połączenia — spróbuj ponownie');
+ if(typeof announceSR==='function')announceSR('Błąd asystenta: '+err+'. Możesz użyć przycisku Spróbuj ponownie.',true);
+}
+
+async function agentCall(c,extra,voice,meta={}){
  inflight++;CALLS++;KONIEC=false;if(VOICE)vstate('think');
- const ty=el('<div class="typing"><i></i><i></i><i></i></div>');c.el.append(ty);end();
- let res=null,err=null;
+ syncAiStatus();
+ if(typeof announceSR==='function')announceSR('Asystent odpowiada…');
+ const ty=el('<div class="typing" aria-hidden="true"><i></i><i></i><i></i></div>');c.el.append(ty);end();
+ let res=null,err=null,code='Błąd połączenia';
  try{
   const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),45000);
   const r=await fetch('/api/agent',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.assign({conv:c.id,messages:c.api,stan:c.stan,osoba:OS.id,lang:window.LANG||'pl'},extra)),signal:controller.signal});
   clearTimeout(timer);
-  res=await r.json();if(!r.ok)err=res.error||('HTTP '+r.status);
- }catch(e){err=e.name==='AbortError'?'Przekroczono czas oczekiwania na odpowiedź asystenta.':String(e)}
- CALLS--;ty.remove();
+  try{res=await r.json()}catch(je){res={}}
+  if(!r.ok){
+   code='HTTP '+r.status;
+   err=(res&&res.error)?String(res.error):(r.status===429?'Zbyt wiele zapytań. Odczekaj chwilę i spróbuj ponownie.':r.status===503?'Usługa modelu AI jest chwilowo niedostępna.':'Serwer zwrócił błąd HTTP '+r.status+'.');
+  }
+ }catch(e){
+  if(e&&e.name==='AbortError'){code='Timeout (45 s)';err='Przekroczono czas oczekiwania na odpowiedź modelu AI.'}
+  else{code='Sieć';err='Brak połączenia z serwerem asystenta.'}
+ }
+ CALLS=Math.max(0,CALLS-1);ty.remove();syncAiStatus();
  try{
-  if(err){if(VOICE)vstate('idle');botText('<b>Nie udało się połączyć z asystentem.</b><br>Spróbuj ponownie za chwilę albo wybierz sprawę z ekranu głównego.','Nie udało się połączyć z asystentem. Spróbuj ponownie za chwilę albo wybierz sprawę z ekranu głównego.');return {err}}
+  if(!err&&(!res||((!res.events||!res.events.length)&&!res.czeka))){
+   code='Pusta odpowiedź';
+   err='Asystent nie zwrócił odpowiedzi. Spróbuj ponowić zapytanie.';
+  }
+  if(err){
+   if(VOICE)vstate('idle');
+   if(typeof MobStore!=='undefined'&&MobStore.addAiError){
+    MobStore.addAiError({code,message:err,endpoint:'/api/agent',prompt:meta.prompt||''});
+   }
+   return {err,code};
+  }
   c.api=res.messages;c.stan=res.stan;
   await renderEvents(res.events||[],voice);
-  if(!res.events||!res.events.length){botText('<b>Asystent nie zwrócił odpowiedzi.</b><br>Spróbuj ponownie za chwilę.','Asystent nie zwrócił odpowiedzi. Spróbuj ponownie za chwilę.')}
   return {};
  }finally{settle()}
 }
@@ -30,15 +97,33 @@ async function agentSend(t,opts={}){
  const c=WR,typed=!opts.chip;let voice=opts.voice||NEXT_VOICE;NEXT_VOICE=false;
  if(typed)c.voiceMode=voice;else voice=!!c.voiceMode;
  clearStage();lockOld(c.el);
- c.api.push({role:'user',content:(voice?'[głos] ':'')+(opts.hidden||t)});
+ const userContent=(voice?'[głos] ':'')+(opts.hidden||t);
+ c.api.push({role:'user',content:userContent});
  const ft=voice&&VOICE&&typed?setTimeout(fillerPlay,600):null;   // agent myśli dłużej niż chwilę: krótkie „Już sprawdzam.”
- const r=await agentCall(c,{},voice);
+ const r=await agentCall(c,{},voice,{prompt:t||opts.hidden||''});
  clearTimeout(ft);
- if(r&&r.err){c.api.pop();console.warn('agent:',r.err);await scriptRoute(t)}
+ if(r&&r.err){
+  c.api.pop();
+  console.warn('agent:',r.code,r.err);
+  renderAiError(c,{
+   code:r.code,
+   err:r.err,
+   onRetry:()=>agentSend(t,opts),
+   onDemo:t?()=>scriptRoute(t):null
+  });
+ }
 }
 async function agentConfirm(id,ok){
- const c=WR;const r=await agentCall(c,{confirm:{id,ok}},!!c.voiceMode);
- if(r&&r.err)await say(ok?'Nie udało się połączyć z rejestrem. Spróbuj jeszcze raz za chwilę.':'Anulowałem. Nic nie zostało wysłane.');
+ const c=WR;const r=await agentCall(c,{confirm:{id,ok}},!!c.voiceMode,{prompt:ok?'Potwierdzenie czynności':'Anulowanie czynności'});
+ if(r&&r.err){
+  if(!ok){await say('Anulowałem. Nic nie zostało wysłane.');return}
+  renderAiError(c,{
+   code:r.code,
+   err:r.err,
+   onRetry:()=>agentConfirm(id,ok),
+   onDemo:null
+  });
+ }
 }
 async function renderEvents(evs,voice){
  const speak=[];let qrEv=null;
@@ -159,7 +244,14 @@ async function startRec(){
   if(VOICE)vstate('stt');else{input.placeholder='Rozpoznaję…';bar.classList.add('busy')}
   const blob=new Blob(chunks,{type:(mr.mimeType||mime||'audio/webm').split(';')[0]});
   let text='';
-  try{const r=await fetch('/api/stt?lang='+(window.LANG||'pl'),{method:'POST',headers:{'Content-Type':blob.type,'X-Glos':JSON.stringify(Object.assign({dead},diag)).slice(0,600)},body:blob});const j=await r.json();text=(j.text||'').trim()}catch(e){}
+  try{
+   const r=await fetch('/api/stt?lang='+(window.LANG||'pl'),{method:'POST',headers:{'Content-Type':blob.type,'X-Glos':JSON.stringify(Object.assign({dead},diag)).slice(0,600)},body:blob});
+   const j=await r.json();
+   if(!r.ok&&typeof MobStore!=='undefined'&&MobStore.addAiError)MobStore.addAiError({code:'STT HTTP '+r.status,message:j.error||'Błąd rozpoznawania mowy',endpoint:'/api/stt'});
+   text=(j.text||'').trim();
+  }catch(e){
+   if(typeof MobStore!=='undefined'&&MobStore.addAiError)MobStore.addAiError({code:'STT Sieć',message:'Nie udało się połączyć z usługą rozpoznawania mowy.',endpoint:'/api/stt'});
+  }
   bar.classList.remove('busy');input.placeholder='Co chcesz załatwić?';
   if(!text){if(VOICE){vstate('idle');$('#vheard').textContent='Nie udało się rozpoznać. Spróbuj jeszcze raz.'}else await say('Nie udało mi się rozpoznać nagrania. Spróbuj jeszcze raz albo napisz.');return}
   if(VOICE)$('#vheard').textContent='„'+text+'”';
@@ -188,10 +280,11 @@ function vmicTap(){
 async function initAgent(){
  if(/tryb=skrypt/.test(location.search))return;
  try{const r=await fetch('/api/health',{cache:'no-store'});const j=await r.json();AGENT=!!j.agent;window.AGENT_INFO=j}catch(e){AGENT=false}
+ if(typeof updateErrorBadge==='function')updateErrorBadge();
  if(!AGENT)return;
  app.dataset.agent='1';
  route=t=>agentSend(t);
- startTopic=function(t){if(VIS.title)newConv();enterChat();act(()=>{addUser(t);route(t)})};
+ startTopic=function(t,fn,forceDirect){if(VIS.title)newConv();enterChat();act(()=>{addUser(t);(forceDirect&&fn)?fn():route(t)})};
  $('#mic').onclick=()=>enterVoice();
  $('#vmic').onclick=vmicTap;
  $('#vkbd').onclick=()=>{exitVoice();setTimeout(()=>input.focus(),50)};

@@ -68,8 +68,97 @@ const MobStore = {
     hist.unshift(entry);
     this.set('upo_history', hist.slice(0, 30));
     return entry;
+  },
+
+  // Historia błędów asystenta AI (wspólna w przeglądarce)
+  getAiErrors() {
+    try {
+      const raw = localStorage.getItem('mob_ai_errors');
+      const arr = raw ? JSON.parse(raw) : [];
+      return Array.isArray(arr) ? arr : [];
+    } catch (e) {
+      return [];
+    }
+  },
+  addAiError(item) {
+    const list = this.getAiErrors();
+    const cleanPrompt = String(item.prompt || '').replace(/\b\d{11}\b/g, '[PESEL]').slice(0, 90);
+    const entry = {
+      id: 'err_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+      ts: Date.now(),
+      dateStr: today() + ' ' + nowS(),
+      code: item.code || 'Błąd połączenia',
+      message: String(item.message || 'Nie udało się połączyć z asystentem AI.').slice(0, 240),
+      endpoint: item.endpoint || '/api/agent',
+      osoba: (typeof OS !== 'undefined' && OS) ? `${OS.imie} ${OS.nazwisko}` : '',
+      prompt: cleanPrompt
+    };
+    list.unshift(entry);
+    try {
+      localStorage.setItem('mob_ai_errors', JSON.stringify(list.slice(0, 30)));
+    } catch (e) {}
+    if (typeof updateErrorBadge === 'function') updateErrorBadge();
+    return entry;
+  },
+  clearAiErrors() {
+    try { localStorage.removeItem('mob_ai_errors'); } catch (e) {}
+    if (typeof updateErrorBadge === 'function') updateErrorBadge();
   }
 };
+
+// --- 1b. Czytniki ekranu (aria-live) oraz zarządzanie fokusem i klawiaturą ---
+function announceSR(msg, assertive = false) {
+  if (!msg) return;
+  const elSr = document.getElementById(assertive ? 'srAlert' : 'srPolite');
+  if (!elSr) return;
+  elSr.textContent = '';
+  requestAnimationFrame(() => { elSr.textContent = String(msg); });
+}
+
+const _focusReturn = {};
+const FOCUSABLE_SEL = 'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+function openDialogFocus(key, container, initialSel) {
+  if (document.activeElement && document.activeElement !== document.body) {
+    _focusReturn[key] = document.activeElement;
+  }
+  requestAnimationFrame(() => {
+    if (!container) return;
+    const target = (initialSel && container.querySelector(initialSel)) || container.querySelector(FOCUSABLE_SEL);
+    if (target && typeof target.focus === 'function') {
+      try { target.focus({ preventScroll: true }); } catch (e) { target.focus(); }
+    }
+  });
+}
+
+function restoreDialogFocus(key) {
+  const prev = _focusReturn[key];
+  delete _focusReturn[key];
+  if (prev && typeof prev.focus === 'function' && document.contains(prev)) {
+    requestAnimationFrame(() => {
+      try { prev.focus({ preventScroll: true }); } catch (e) { prev.focus(); }
+    });
+  }
+}
+
+function getActiveTrapContainer() {
+  const upo = document.getElementById('upoModal');
+  if (upo && upo.classList.contains('open')) return upo.querySelector('.upo-sheet');
+  const errM = document.getElementById('errModal');
+  if (errM && errM.classList.contains('open')) return errM.querySelector('.modal-box');
+  const glM = document.getElementById('glossaryModal');
+  if (glM && glM.classList.contains('open')) return glM.querySelector('.modal-box');
+  const ptM = document.getElementById('pointsModal');
+  if (ptM && ptM.classList.contains('open')) return ptM.querySelector('.modal-box');
+  const qrx = document.querySelector('.qrx.on');
+  if (qrx) return qrx;
+  const det = document.getElementById('detail');
+  if (det && det.classList.contains('on')) return det;
+  if (app.classList.contains('todo')) return document.querySelector('#todo .tpanel');
+  if (app.classList.contains('menu')) return document.querySelector('#lmenu .panel');
+  if (app.classList.contains('hist')) return document.querySelector('#hmenu .panel');
+  return null;
+}
 
 // --- 2. Dostępność (WCAG, Duży Tekst, Wysoki Kontrast) ---
 const A11Y = {
@@ -118,16 +207,55 @@ function toggleA11yPanel(e) {
   if (e) e.stopPropagation();
   const p = document.getElementById('a11yPanel'), b = document.getElementById('a11yBtn');
   const open = !p.classList.contains('open');
+  if (open) openDialogFocus('a11y', p, '#apFont');
   p.classList.toggle('open', open);
   if (b) b.setAttribute('aria-expanded', open);
+  if (!open) restoreDialogFocus('a11y');
 }
 function closeA11yPanel() {
   const p = document.getElementById('a11yPanel'), b = document.getElementById('a11yBtn');
-  if (p) p.classList.remove('open');
+  if (!p || !p.classList.contains('open')) return;
+  p.classList.remove('open');
   if (b) b.setAttribute('aria-expanded', 'false');
+  restoreDialogFocus('a11y');
 }
 document.addEventListener('click', e => { const p = document.getElementById('a11yPanel'); if (p && p.classList.contains('open') && !p.contains(e.target)) closeA11yPanel(); });
-document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeA11yPanel(); if (typeof closeGlossary === 'function') closeGlossary(); if (typeof closePointsDetail === 'function') closePointsDetail(); if (typeof closeUPO === 'function') closeUPO(); } });
+
+// Globalna obsługa klawiatury: pułapka fokusu (Tab) i zamykanie najwyższej warstwy (Escape)
+document.addEventListener('keydown', e => {
+  if (e.key === 'Tab') {
+    const trap = getActiveTrapContainer();
+    if (!trap) return;
+    const nodes = [...trap.querySelectorAll(FOCUSABLE_SEL)].filter(n => n.offsetParent !== null);
+    if (!nodes.length) return;
+    const first = nodes[0], last = nodes[nodes.length - 1];
+    if (e.shiftKey && (document.activeElement === first || !trap.contains(document.activeElement))) {
+      e.preventDefault(); last.focus();
+    } else if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault(); first.focus();
+    }
+    return;
+  }
+  if (e.key !== 'Escape') return;
+  const upo = document.getElementById('upoModal');
+  if (upo && upo.classList.contains('open')) { e.preventDefault(); closeUPO(); return; }
+  const errM = document.getElementById('errModal');
+  if (errM && errM.classList.contains('open')) { e.preventDefault(); closeErrorHistory(); return; }
+  const glM = document.getElementById('glossaryModal');
+  if (glM && glM.classList.contains('open')) { e.preventDefault(); closeGlossary(); return; }
+  const ptM = document.getElementById('pointsModal');
+  if (ptM && ptM.classList.contains('open')) { e.preventDefault(); closePointsDetail(); return; }
+  const a11yP = document.getElementById('a11yPanel');
+  if (a11yP && a11yP.classList.contains('open')) { e.preventDefault(); closeA11yPanel(); return; }
+  if (document.querySelector('.qrx.on')) return; // obsługiwane w znak.js
+  if (app.classList.contains('menu') && typeof closeMenu === 'function') { e.preventDefault(); closeMenu(); return; }
+  if (app.classList.contains('todo') && typeof closeTodo === 'function') { e.preventDefault(); closeTodo(); return; }
+  if (app.classList.contains('hist') && typeof closeHist === 'function') { e.preventDefault(); closeHist(); return; }
+  const det = document.getElementById('detail');
+  if (det && det.classList.contains('on')) { e.preventDefault(); if (typeof closeDoc === 'function') closeDoc(); else det.classList.remove('on'); return; }
+  if (typeof VOICE !== 'undefined' && VOICE && typeof exitVoice === 'function') { e.preventDefault(); exitVoice(); return; }
+  if (app.classList.contains('chatting') && typeof exitChat === 'function') { e.preventDefault(); exitChat(); }
+});
 
 // --- 3. Komunikaty Toast ---
 function showToast(msg) {
@@ -136,10 +264,12 @@ function showToast(msg) {
     t = document.createElement('div');
     t.id = 'mobToast';
     t.className = 'mob-toast';
+    t.setAttribute('role', 'status');
     document.body.appendChild(t);
   }
   t.textContent = msg;
   t.classList.add('show');
+  announceSR(msg);
   clearTimeout(t._timer);
   t._timer = setTimeout(() => t.classList.remove('show'), 2600);
 }
@@ -194,12 +324,98 @@ function openGlossary() {
       </div>
     `).join('');
   }
+  openDialogFocus('glossary', modal.querySelector('.modal-box'), '.tx-close');
   modal.classList.add('open');
+  announceSR('Otwarto słowniczek Po ludzku');
 }
 
 function closeGlossary() {
   const modal = document.getElementById('glossaryModal');
-  if (modal) modal.classList.remove('open');
+  if (!modal || !modal.classList.contains('open')) return;
+  modal.classList.remove('open');
+  restoreDialogFocus('glossary');
+}
+
+// --- 4b. Historia błędów asystenta AI ---
+function updateErrorBadge() {
+  const errs = MobStore.getAiErrors();
+  const cnt = errs.length;
+  const badge = document.getElementById('errBadge');
+  const btn = document.getElementById('errBtn');
+  const sub = document.getElementById('apErrSub');
+  if (badge) {
+    badge.hidden = cnt === 0;
+    badge.textContent = cnt > 9 ? '9+' : String(cnt);
+  }
+  if (btn) {
+    btn.classList.toggle('has-err', cnt > 0);
+    btn.setAttribute('aria-label', cnt > 0
+      ? `Historia błędów asystenta AI (${cnt} ${cnt === 1 ? 'błąd' : cnt < 5 ? 'błędy' : 'błędów'})`
+      : 'Historia błędów asystenta AI — brak błędów');
+  }
+  if (sub) {
+    sub.textContent = cnt > 0 ? `Zapisano błędów: ${cnt}` : 'Brak błędów — asystent działa prawidłowo';
+  }
+}
+
+function renderErrorHistory() {
+  const meta = document.getElementById('errAgentMeta');
+  const listEl = document.getElementById('errList');
+  const foot = document.getElementById('errFoot');
+  if (!listEl) return;
+
+  const info = window.AGENT_INFO;
+  if (meta) {
+    const active = info && info.agent;
+    const modelName = (info && info.model) ? esc(String(info.model)) : 'tryb demonstracyjny (scenariusze)';
+    meta.innerHTML = `<div class="err-status-pill ${active ? 'ok' : 'demo'}">
+      <span class="dot" aria-hidden="true"></span>
+      <span>${active ? 'Połączono z modelem:' : 'Tryb offline / demo:'} <b>${modelName}</b></span>
+    </div>`;
+  }
+
+  const errs = MobStore.getAiErrors();
+  if (foot) foot.hidden = errs.length === 0;
+  if (!errs.length) {
+    listEl.innerHTML = `<div class="err-empty">
+      <b>Brak zarejestrowanych błędów</b>
+      <p>Wszystkie zapytania do asystenta AI w tej przeglądarce przebiegły bez zakłóceń. Gdy wystąpi przekroczenie czasu lub błąd połączenia, zobaczysz tutaj pełny dziennik.</p>
+    </div>`;
+    return;
+  }
+
+  listEl.innerHTML = errs.map(e => `
+    <div class="err-item">
+      <div class="err-item-head">
+        <span class="err-code">${esc(e.code || 'Błąd')}</span>
+        <time class="err-time">${esc(e.dateStr || '')}</time>
+      </div>
+      <p class="err-msg">${esc(e.message || '')}</p>
+      ${e.prompt ? `<div class="err-ctx">Zapytanie: <span>„${esc(e.prompt)}”</span></div>` : ''}
+    </div>
+  `).join('');
+}
+
+function openErrorHistory() {
+  const modal = document.getElementById('errModal');
+  if (!modal) return;
+  renderErrorHistory();
+  openDialogFocus('err', modal.querySelector('.modal-box'), '.tx-close');
+  modal.classList.add('open');
+  announceSR('Otwarto historię błędów asystenta AI');
+}
+
+function closeErrorHistory() {
+  const modal = document.getElementById('errModal');
+  if (!modal || !modal.classList.contains('open')) return;
+  modal.classList.remove('open');
+  restoreDialogFocus('err');
+}
+
+function clearErrorHistory() {
+  MobStore.clearAiErrors();
+  renderErrorHistory();
+  showToast('Wyczyszczono historię błędów asystenta');
 }
 
 // --- 5. Urzędowe Poświadczenie Odbioru (UPO) - Podgląd i Druk ---
@@ -224,12 +440,12 @@ function openUPO(entry) {
     <div class="upo-scrim" onclick="closeUPO()"></div>
     <div class="upo-sheet" role="dialog" aria-modal="true" aria-labelledby="upoTitle">
       <div class="upo-header-bar">
-        <button class="upo-close-btn" onclick="closeUPO()">✕ Zamknij</button>
-        <button class="upo-print-btn" onclick="window.print()">🖨️ Drukuj / Zapisz PDF</button>
+        <button class="upo-close-btn" type="button" onclick="closeUPO()">✕ Zamknij</button>
+        <button class="upo-print-btn" type="button" onclick="window.print()">🖨️ Drukuj / Zapisz PDF</button>
       </div>
       <div class="upo-document" id="printableUPO">
         <div class="upo-doc-head">
-          <div class="upo-eagle">
+          <div class="upo-eagle" aria-hidden="true">
             <svg viewBox="0 0 48 48" width="48" height="48" fill="none" stroke="#dc143c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M24 4l4 8 8-2-4 8 8 4-8 4 4 8-8-2-4 8-4-8-8 2 4-8-8-4 8-4-4-8 8 2z"/>
               <circle cx="24" cy="24" r="6"/>
@@ -256,7 +472,7 @@ function openUPO(entry) {
         </div>
 
         <div class="upo-footer-legal">
-          <div class="upo-stamp">
+          <div class="upo-stamp" aria-hidden="true">
             <div class="upo-stamp-circle">
               <span>PODPIS KWALIFIKOWANY</span>
               <b>MINISTERSTWO CYFRYZACJI</b>
@@ -271,12 +487,16 @@ function openUPO(entry) {
     </div>
   `;
 
+  openDialogFocus('upo', modal.querySelector('.upo-sheet'), '.upo-close-btn');
   modal.classList.add('open');
+  announceSR('Otwarto Urzędowe Poświadczenie Odbioru: ' + entry.upo);
 }
 
 function closeUPO() {
   const modal = document.getElementById('upoModal');
-  if (modal) modal.classList.remove('open');
+  if (!modal || !modal.classList.contains('open')) return;
+  modal.classList.remove('open');
+  restoreDialogFocus('upo');
 }
 
 // --- 6. Pulpit Szybkich Spraw (Direct Dashboard) ---
@@ -300,7 +520,7 @@ function renderDashboard() {
   const pesel = MobStore.isPeselBlocked();
   const paid = MobStore.isTaxPaid();
 
-  const tile = (id, tone, icon, title, sub, label) =>
+  const tile = (id, tone, icon, title, sub) =>
     `<button type="button" class="qt ${tone}" data-q="${id}" aria-label="${title}: ${sub}">
       <span class="qt-ic">${svg(icon)}</span>
       <span class="qt-tx"><b>${title}</b><small>${sub}</small></span>
@@ -328,7 +548,7 @@ function updateDashboard() {
   renderDashboard();
 }
 
-// Szybka akcja PESEL z pulpitu: otwiera rozmowę, żeby karta potwierdzenia była widoczna
+// Szybka akcja PESEL z pulpitu: otwiera rozmowę, żeby karta potwierdzenia była widoczna od razu
 function togglePeselDirect() {
   const willBlock = !MobStore.isPeselBlocked();
   startTopic(willBlock ? 'Zastrzeż mój PESEL' : 'Cofnij zastrzeżenie PESEL', () => confirmCard({
@@ -352,7 +572,7 @@ function togglePeselDirect() {
         rows: [['Status', willBlock ? 'zastrzeżony' : 'niezastrzeżony']]
       });
     }
-  }));
+  }), true);
 }
 
 // Szybka akcja płatności z pulpitu
@@ -374,7 +594,7 @@ function directPaymentClick() {
       MobStore.setTaxPaid(true);
       await result({ title: 'Zapłacono', source: 'ePłatności, godz. ' + now(), rows: [['Kwota', kwota], ['Prowizja', 'brak']] });
     }
-  }));
+  }), true);
 }
 
 // Szczegóły punktów karnych
@@ -398,16 +618,20 @@ function openPointsDetail() {
   const btnAsk = modal.querySelector('.pts-ask');
   if (btnAsk) {
     btnAsk.onclick = () => {
-      modal.classList.remove('open');
+      closePointsDetail();
       startTopic('Ile mam punktów karnych i kiedy wygasną?');
     };
   }
+  openDialogFocus('points', modal.querySelector('.modal-box'), '.tx-close');
   modal.classList.add('open');
+  announceSR(`Punkty karne: ${pkt} z ${maxPkt}`);
 }
 
 function closePointsDetail() {
   const modal = document.getElementById('pointsModal');
-  if (modal) modal.classList.remove('open');
+  if (!modal || !modal.classList.contains('open')) return;
+  modal.classList.remove('open');
+  restoreDialogFocus('points');
 }
 
 // --- 7. Kategoryzowane Podpowiedzi Asystenta (Topic Hub) ---
@@ -471,8 +695,8 @@ let activeTopicCategory = 'kierowca';
 function renderTopicHub(container) {
   if (!container) return;
   const catsHtml = TOPIC_CATEGORIES.map(c => `
-    <button type="button" class="topic-cat-pill ${c.id === activeTopicCategory ? 'active' : ''}" onclick="selectTopicCategory('${c.id}')">
-      <span class="topic-cat-icon">${c.icon}</span>
+    <button type="button" class="topic-cat-pill ${c.id === activeTopicCategory ? 'active' : ''}" aria-pressed="${c.id === activeTopicCategory ? 'true' : 'false'}" onclick="selectTopicCategory('${c.id}')">
+      <span class="topic-cat-icon" aria-hidden="true">${c.icon}</span>
       <span class="topic-cat-name">${c.name}</span>
     </button>
   `).join('');
@@ -487,7 +711,7 @@ function renderTopicHub(container) {
 
   container.innerHTML = `
     <div class="topic-hub">
-      <div class="topic-cat-bar">${catsHtml}</div>
+      <div class="topic-cat-bar" role="group" aria-label="Kategorie spraw">${catsHtml}</div>
       <div class="topic-questions-list">${qHtml}</div>
     </div>
   `;
@@ -503,4 +727,14 @@ function selectTopicCategory(catId) {
 document.addEventListener('DOMContentLoaded', () => {
   A11Y.init();
   renderDashboard();
+  updateErrorBadge();
+  const skip = document.getElementById('skipToChat');
+  if (skip) {
+    skip.addEventListener('click', e => {
+      e.preventDefault();
+      if (typeof enterChat === 'function') enterChat();
+      const pr = document.getElementById('prompt');
+      if (pr) pr.focus();
+    });
+  }
 });

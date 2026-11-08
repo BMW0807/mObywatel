@@ -28,7 +28,7 @@ const I={
  dots:'<circle cx="6" cy="12" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="18" cy="12" r="1.3"/>',
  scan:'<path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2"/><path d="m8.5 12 2.4 2.4 4.6-4.8"/>'
 };
-const svg=n=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${I[n]||I.doc}</svg>`;
+const svg=n=>`<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${I[n]||I.doc}</svg>`;
 
 /* ---------- dokumenty (oficjalne grafiki kart z info.mobywatel.gov.pl) ---------- */
 const DOCS=OS.docs;
@@ -40,10 +40,10 @@ function sylH(d){if(!d.model)return '';const m=(d.more||[])[0];
 function sylBanner(p){if(!p||!p.model||typeof SYLWETKI==='undefined')return '';
  return `<div class="sylban">${SY(p.model,p.kolor,{label:p.model})}${p.nr?`<span class="sylnr">${plateH(p.nr)}</span>`:''}</div>`}
 const PHOTO=`<span class="ph" role="img" aria-label="Zdjęcie: ${OS.imie} ${OS.nazwisko}"></span>`;
-const LIVE='<span class="live" role="button" aria-label="Mój znak mObywatela: powiększ, aby przyjąć dane"></span>';
+const LIVE='<span class="live" role="button" tabindex="0" aria-label="Mój znak mObywatela: powiększ, aby przyjąć dane"></span>';
 /* prywatność: po otwarciu aplikacji mDowód pokazuje tylko zdjęcie i imię */
 const PRIV=(full,short)=>`<span class="pvf">${full}</span><span class="pvs">${short}</span>`;
-const REVEAL='<span class="reveal" role="button" tabindex="0" aria-label="Pokaż dane z mDowodu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="2.8"/></svg>Pokaż dane</span>';
+const REVEAL='<span class="reveal" role="button" tabindex="0" aria-label="Pokaż dane z mDowodu"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="2.8"/></svg>Pokaż dane</span>';
 function shortName(n){const p=n.split(' ');return p.length>1?p.slice(0,-1).join(' '):n}
 function faceHTML(d){
  const cells=d.f.map(([k,v])=>`<span><small>${k}</small><b>${v}</b></span>`).join('');
@@ -66,16 +66,21 @@ function layout(){
  const comp=$('#composer').offsetHeight;
  $('#top').style.top=T+'px';
  const titleTop=T+6; $('#title').style.top=titleTop+'px';app.style.setProperty('--histTop',(T+52)+'px');app.style.setProperty('--voiceTop',(T+52)+'px');app.style.setProperty('--qtopPad',(T+6)+'px');app.style.setProperty('--menuTop',(T+56)+'px');
- const n=DOCS.length;let cardW=W-32,cardH=cardW/1.5;
+ const pbar=$('#personBtn');
+ if(pbar)pbar.style.top=(T+50)+'px';
+ const n=DOCS.length,narrow=W<360;
+ let cardW=W-(narrow?20:32),cardH=cardW/1.5;
  const remH=$('#reminders').offsetHeight;
  const chatting=app.classList.contains('chatting');
- const stackTop=chatting?T+54:T+62;
+ const pbarH=(!chatting&&pbar)?(pbar.offsetHeight+8):0;
+ const stackTop=chatting?T+54:(T+54+pbarH);
  const remTop=H-comp-remH-6;
- const avail=remTop-14-stackTop;
+ const avail=Math.max(120,remTop-10-stackTop);
  const k=1+(n-1)*0.25;
- if(!chatting&&cardH*k>avail){cardH=Math.max(120,avail/k);cardW=cardH*1.5}
+ const minCardH=narrow?100:116;
+ if(!chatting&&cardH*k>avail){cardH=Math.max(minCardH,avail/k);cardW=Math.min(W-(narrow?16:24),cardH*1.5)}
  $('#stack').style.width=cardW+'px';$('#stack').style.margin='0 auto';
- let off=Math.max(cardH*0.25,Math.min(76,(avail-cardH)/(n-1)));
+ let off=Math.max(cardH*0.24,Math.min(76,(avail-cardH)/Math.max(1,n-1)));
  const cards=[...document.querySelectorAll('.card')];
  if(chatting){
   const pocket=78;
@@ -105,25 +110,30 @@ function qrSVG(seed=7){
  return `<svg viewBox="-1 -1 27 27" fill="currentColor" shape-rendering="crispEdges">${p}${fin(0.5,0.5)}${fin(18.5,0.5)}${fin(0.5,18.5)}</svg>`;
 }
 function rowsH(rows){return rows.map(([k,v])=>`<div class="row"><span>${k}</span><b>${v}</b></div>`).join('')}
+function closeDoc(){const det=$('#detail');if(!det||!det.classList.contains('on'))return;det.classList.remove('on');if(typeof restoreDialogFocus==='function')restoreDialogFocus('detail')}
 function openDoc(id){
  const d=DOCS.find(x=>x.id===id),det=$('#detail');
+ if(!d||!det)return;
  const top=getComputedStyle($('.status')).display!=='none'?50:6;
  const hero=id==='dowod'&&d.screen
-  ?`<div class="idcard"><div class="crop"><img src="${d.screen}" alt="mDowód: ${OS.imie} ${OS.nazwisko}">${window.LANG&&window.LANG!=='pl'?`<div class="valid idv">${svg('check')}Dokument ważny</div>`:''}</div></div>`
+  ?`<div class="idcard"><div class="crop"><img src="${d.screen}" alt="mDowód: ${OS.imie} ${OS.nazwisko}" loading="lazy" decoding="async">${window.LANG&&window.LANG!=='pl'?`<div class="valid idv">${svg('check')}Dokument ważny</div>`:''}</div></div>`
   :`<div class="bigcard" style="background-image:url(${d.img})">${faceHTML(d)}</div><div class="valid">${svg('check')}Dokument ważny</div><div class="ui"><div class="rows" style="padding-top:2px">${rowsH(d.rows)}</div></div>`;
  const q=id==='dowod'?[['scan','Potwierdź swoje dane','qr'],['id','Dane dowodu','data'],['shield','Zastrzeż PESEL','pesel'],['dots','Zapytaj asystenta','ask']]
                      :[['scan','Potwierdź dane','qr'],['doc','Szczegóły','data'],['shield','Zgubiony portfel','lost'],['dots','Zapytaj asystenta','ask']];
  det.innerHTML=`<div style="height:${top}px;flex:none"></div><div class="nav"><button class="back" id="dclose">${svg('back')}Wróć</button><b>${d.name}</b><span></span></div>
   <div class="clock" id="dclock"></div>
   <div class="body">${hero}<div class="quick">${q.map(x=>`<button data-a="${x[2]}"><i>${svg(x[0])}</i>${x[1]}</button>`).join('')}</div><div class="qrbox" id="qrbox"></div></div>`;
- tick();det.classList.add('on');
- $('#dclose').onclick=()=>det.classList.remove('on');
+ tick();
+ if(typeof openDialogFocus==='function')openDialogFocus('detail',det,'#dclose');
+ det.classList.add('on');
+ if(typeof announceSR==='function')announceSR('Otwarto dokument: '+d.name);
+ $('#dclose').onclick=closeDoc;
  det.querySelectorAll('.quick button').forEach(b=>b.onclick=()=>{
   const a=b.dataset.a;
   if(a==='qr'){qrFlow({doc:id});return}
-  if(a==='data')$('#qrbox').innerHTML=`<div class="ui"><div class="rows" style="padding-top:4px">${rowsH(d.rows)}</div></div>`;
-  if(a==='pesel'||a==='lost'){det.classList.remove('on');startTopic(a==='pesel'?'Zastrzeż mój PESEL':rodz('Zgubiłam portfel','Zgubiłem portfel'))}
-  if(a==='ask'){det.classList.remove('on');startTopic(OS.ask[id]||'Opowiedz mi o tym dokumencie')}
+  if(a==='data'){$('#qrbox').innerHTML=`<div class="ui"><div class="rows" style="padding-top:4px">${rowsH(d.rows)}</div></div>`;if(typeof announceSR==='function')announceSR('Wyświetlono szczegółowe dane dokumentu')}
+  if(a==='pesel'||a==='lost'){closeDoc();startTopic(a==='pesel'?'Zastrzeż mój PESEL':rodz('Zgubiłam portfel','Zgubiłem portfel'))}
+  if(a==='ask'){closeDoc();startTopic(OS.ask[id]||'Opowiedz mi o tym dokumencie')}
  });
 }
 
@@ -133,7 +143,7 @@ function el(h){const t=document.createElement('template');t.innerHTML=h.trim();r
 function end(){requestAnimationFrame(()=>msgs.scrollTo({top:msgs.scrollHeight,behavior:FAST?'auto':'smooth'}))}
 function clearEmpty(){const e=msgs.querySelector('.empty');if(e)e.remove()}
 function addUser(t){clearEmpty();msgs.append(el(`<div class="msg user" data-t="0">${esc(t)}</div>`));end();touch('user',t)}
-async function say(t){clearEmpty();const ty=el('<div class="typing"><i></i><i></i><i></i></div>');msgs.append(ty);end();await sleep(Math.min(1100,400+t.replace(/<[^>]+>/g,'').length*6));ty.remove();msgs.append(el(`<div class="msg bot">${t}</div>`));end();touch('bot',plain(t))}
+async function say(t){clearEmpty();const ty=el('<div class="typing" aria-hidden="true"><i></i><i></i><i></i></div>');msgs.append(ty);end();await sleep(Math.min(1100,400+t.replace(/<[^>]+>/g,'').length*6));ty.remove();const p=plain(t);msgs.append(el(`<div class="msg bot">${t}</div>`));end();touch('bot',p);if(typeof announceSR==='function')announceSR(p)}
 function hd(icon,title){return `<div class="hd"><div class="ic">${svg(icon)}</div><div class="tt">${title}</div></div>`}
 const srcH=s=>s?`<div class="src">${svg('db')}${s}</div>`:'';
 async function card(h){await sleep(160);const c=el(h);msgs.append(c);end();return c}
@@ -148,10 +158,12 @@ function result(o){
    o.body=(o.body||'')+btnH;
   }catch(e){}
  }
+ if(typeof announceSR==='function'&&o.title)announceSR('Gotowe: '+o.title);
  return info({icon:'check',tone:'ok',...o});
 }
 async function confirmCard({icon='doc',title,source,rows,note='',body='',label='Potwierdź',then,onCancel,pojazd=null,tl=0}){
- const c=await card(`<div class="ui"${tl?' data-t="0"':''}>${hd(icon,title)}${sylBanner(pojazd)}${body?`<div class="body">${body}</div>`:''}<div class="rows">${rowsH(rows)}</div>${note?`<div class="note">${note}</div>`:''}<div class="actions"><button class="btn ghost">${(window.T||(s=>s))('Anuluj')}</button><button class="btn primary">${label}</button></div>${srcH(source)}</div>`);
+ const c=await card(`<div class="ui" role="region" aria-label="Karta potwierdzenia: ${esc(title||label)}"${tl?' data-t="0"':''}>${hd(icon,title)}${sylBanner(pojazd)}${body?`<div class="body">${body}</div>`:''}<div class="rows">${rowsH(rows)}</div>${note?`<div class="note">${note}</div>`:''}<div class="actions"><button type="button" class="btn ghost">${(window.T||(s=>s))('Anuluj')}</button><button type="button" class="btn primary">${label}</button></div>${srcH(source)}</div>`);
+ if(typeof announceSR==='function')announceSR('Wymagane potwierdzenie: '+(title||label)+'. Sprawdź dane i wybierz '+label+' lub Anuluj.');
  const [no,ok]=c.querySelectorAll('.btn');
  ok.onclick=()=>act(async()=>{c.querySelector('.actions').remove();await faceid();c.classList.add('done');then&&then()});
  no.onclick=()=>act(()=>{c.querySelector('.actions').remove();onCancel?onCancel():say('Anulowałem. Nic nie zostało wysłane.')});
@@ -228,9 +240,9 @@ function renderHist(){
   :`<div class="hempty">${(window.T||(s=>s))('Tu pojawią się Twoje rozmowy.')}</div>`;
  h.querySelectorAll('button').forEach(x=>x.onclick=()=>{switchTo(CONVS.find(c=>c.id===+x.dataset.c));closeHist()});
 }
-function openHist(){if(!app.classList.contains('chatting'))return;renderHist();app.classList.add('hist');$('#histBtn').setAttribute('aria-expanded','true')}
-function closeHist(){app.classList.remove('hist');const b=$('#histBtn');b&&b.setAttribute('aria-expanded','false')}
-function startTopic(t,fn){if(VIS.title)newConv();enterChat();act(()=>{addUser(t);fn?fn():route(t)})}
+function openHist(){if(!app.classList.contains('chatting'))return;renderHist();if(typeof openDialogFocus==='function')openDialogFocus('hist',$('#hmenu .panel'),'#hnew');app.classList.add('hist');$('#histBtn').setAttribute('aria-expanded','true');if(typeof announceSR==='function')announceSR('Otwarto historię rozmów')}
+function closeHist(){if(!app.classList.contains('hist'))return;app.classList.remove('hist');const b=$('#histBtn');b&&b.setAttribute('aria-expanded','false');if(typeof restoreDialogFocus==='function')restoreDialogFocus('hist')}
+function startTopic(t,fn,forceDirect){if(VIS.title)newConv();enterChat();act(()=>{addUser(t);fn?fn():route(t)})}
 VIS=WR=mkConv(msgs);
 app.addEventListener('scroll',()=>{if(app.scrollTop||app.scrollLeft){app.scrollTop=0;app.scrollLeft=0}});
 
@@ -239,9 +251,10 @@ function openTodo(){
  const t=$('#todo');
  t.querySelector('.tl').innerHTML=TILES.map((x,i)=>`<button data-i="${i}" class="${x.u?'urgent':''}"><span class="ti">${svg(x.i)}</span><span class="tx"><b>${x.h}</b><small>${x.d}</small><em>${x.s||''}</em></span>${svg('chev')}</button>`).join('');
  t.querySelectorAll('.tl button').forEach(b=>b.onclick=()=>{const x=TILES[+b.dataset.i];closeTodo();setTimeout(()=>startTopic(x.q||x.h,()=>S[x.k]()),180)});
+ if(typeof openDialogFocus==='function')openDialogFocus('todo',t.querySelector('.tpanel'),'#todoClose');
  app.classList.add('todo');t.setAttribute('aria-hidden','false');
+ if(typeof announceSR==='function')announceSR('Otwarto listę spraw do załatwienia');
 }
-function closeTodo(){app.classList.remove('todo');$('#todo').setAttribute('aria-hidden','true')}
+function closeTodo(){if(!app.classList.contains('todo'))return;app.classList.remove('todo');$('#todo').setAttribute('aria-hidden','true');if(typeof restoreDialogFocus==='function')restoreDialogFocus('todo')}
 $('#todo .scrim').onclick=closeTodo;$('#todoClose').onclick=closeTodo;
 $('#todoAsk').onclick=()=>{closeTodo();setTimeout(()=>startTopic('Co mam do załatwienia?',()=>S.todo()),180)};
-document.addEventListener('keydown',e=>{if(e.key==='Escape'&&app.classList.contains('todo'))closeTodo()});

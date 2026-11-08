@@ -2,7 +2,7 @@
    i po Face ID przekazujesz mu swoje dane w zakresie, o który prosi. Znak to zmieniający się żeton w pierścieniu kropek. ---------- */
 const DEV=(()=>{try{let d=sessionStorage.getItem('mobDev');if(!d){d=Math.random().toString(36).slice(2,10);sessionStorage.setItem('mobDev',d)}return d}catch(e){return Math.random().toString(36).slice(2,10)}})();
 const QI={x:'<path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/>',pc:'<rect x="3" y="4.5" width="18" height="12" rx="2"/><path d="M8.5 20h7M12 16.5V20"/>',ph:'<rect x="7" y="2.5" width="10" height="19" rx="2.5"/><path d="M11 18.5h2"/>',inbox:'<path d="M4 13.5h4.5l1.5 2.5h4l1.5-2.5H20"/><path d="M5.5 6.5h13L20 13.5V18a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 18v-4.5z"/><path d="M12 3v7M9.5 7.5 12 10l2.5-2.5"/>'};
-const qsvg=(n,w=1.8)=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round">${QI[n]||I[n]||''}</svg>`;
+const qsvg=(n,w=1.8)=>`<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round">${QI[n]||I[n]||''}</svg>`;
 const hhmm=()=>new Date().toLocaleTimeString('pl-PL',{hour:'2-digit',minute:'2-digit'});
 const mmss=s=>Math.floor(s/60)+':'+String(s%60).padStart(2,'0');
 const API=(u,b)=>fetch(u,b?{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)}:{cache:'no-store'}).then(r=>r.json());
@@ -123,7 +123,7 @@ function odebrano(d){
  const wynik={imie_nazwisko:name||'osoba pełnoletnia',zakres:z.nazwa,dane:Object.fromEntries(rest),status:'przekazane z mObywatela'};
  const o=pScreen(`${pTop(z.nazwa)}<div class="qbody">
   <div class="okbar">${svg('check')}<b>Dane z mObywatela</b><span>Face ID, ${hhmm()}</span></div>
-  <div class="person">${foto?`<span class="pav photo"><span class="ph" style="background-image:url(assets/foto-${/^[a-z]+$/.test(d.dane.foto||'')?d.dane.foto:'marta'}.jpg)"></span></span>`:'<span class="pav">•</span>'}<div><b>${E(name||'Osoba pełnoletnia')}</b><small>Dane z rejestrów państwowych</small></div></div>
+  <div class="person">${foto?`<span class="pav photo"><span class="ph" style="background-image:url(assets/foto-${/^[a-z]+$/.test(d.dane.foto||'')?d.dane.foto:'marta'}.webp)"></span></span>`:'<span class="pav">•</span>'}<div><b>${E(name||'Osoba pełnoletnia')}</b><small>Dane z rejestrów państwowych</small></div></div>
   ${d.dane&&d.dane.pojazd&&d.dane.pojazd.model&&typeof SYLWETKI!=='undefined'?`<div class="otrz-syl">${SYLWETKI.svg(String(d.dane.pojazd.model),String(d.dane.pojazd.kolor||''))}</div>`:''}
   <div class="dlist">${rowsHTML(rest.filter(r=>r[1]!==name))}</div>
   <p class="qnote c">Dane znikną z ekranu za <b class="pt">${mmss(left)}</b></p>
@@ -131,10 +131,12 @@ function odebrano(d){
  st.tick=setInterval(()=>{left=Math.max(0,left-1);const b=o.querySelector('.pt');if(b)b.textContent=mmss(left);if(!left)zFinish({ok:true,wynik})},1000);
  o.querySelector('.qbtn').onclick=()=>zFinish({ok:true,wynik});
 }
-/* znak na karcie mDowodu: dotknięcie powiększa go, by druga osoba mogła go zeskanować */
-document.addEventListener('click',e=>{const t=e.target.closest&&e.target.closest('.face .live');if(!t)return;e.preventDefault();e.stopPropagation();przyjmijFlow({})},true);
+/* znak na karcie mDowodu: dotknięcie lub Enter/Spacja powiększa go, by druga osoba mogła go zeskanować */
+function otworzZnak(e){const t=e.target.closest&&e.target.closest('.face .live');if(!t)return false;e.preventDefault();e.stopPropagation();przyjmijFlow({});return true}
+document.addEventListener('click',e=>{otworzZnak(e)},true);
+document.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&otworzZnak(e))return},true);
 /* „Pokaż dane” na mDowodzie; po zminimalizowaniu aplikacji dane znów są ukryte */
-function odkryjDane(e){const t=e.target.closest&&e.target.closest('.face .reveal');if(!t)return false;e.preventDefault();e.stopPropagation();app.classList.remove('ukryte');return true}
+function odkryjDane(e){const t=e.target.closest&&e.target.closest('.face .reveal');if(!t)return false;e.preventDefault();e.stopPropagation();app.classList.remove('ukryte');if(typeof announceSR==='function')announceSR('Odkryto dane dokumentu mDowód');return true}
 ['pointerdown','pointerup','click'].forEach(ev=>document.addEventListener(ev,e=>{if(e.target.closest&&e.target.closest('.face .reveal')){if(ev==='click')odkryjDane(e);else e.stopPropagation()}},true));
 document.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&odkryjDane(e))return},true);
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')app.classList.add('ukryte')});

@@ -133,7 +133,7 @@ setInterval(beat,1000);beat();
 function pokaz(d){
  done=true;
  const rows=(d.rows||[]).filter(r=>r[1]!=='foto');
- const f=document.getElementById('foto');f.style.display=(d.rows||[]).some(r=>r[1]==='foto')?'':'none';f.style.backgroundImage='url(assets/foto-'+(/^[a-z]+$/.test(d.foto||'')?d.foto:'marta')+'.jpg)';
+ const f=document.getElementById('foto');f.style.display=(d.rows||[]).some(r=>r[1]==='foto')?'':'none';f.style.backgroundImage='url(assets/foto-'+(/^[a-z]+$/.test(d.foto||'')?d.foto:'marta')+'.webp)';
  const E=x=>String(x==null?'':x).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
  document.getElementById('dl').innerHTML=rows.map(([k,v])=>`<div class="row"><span>${E(k)}</span><b>${E(v)}</b></div>`).join('');
  document.getElementById('godz').textContent='godz. '+new Date().toLocaleTimeString('pl-PL',{hour:'2-digit',minute:'2-digit'});

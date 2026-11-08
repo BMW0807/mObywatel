@@ -73,10 +73,11 @@ function vDepth(){
 /* zwraca wysokość zajętą przez wariant */
 function layoutAlt(top,h,W){
  ALT.style.top=top+'px';
+ const narrow=W<360,padSide=narrow?20:32;
  if(VARIANT==='karuzela'){
   const compact=h<330;ALT.classList.toggle('compact',compact);
   const actH=0,dotH=10,gaps=12+12+30;
-  const cardW=Math.min(W-40,(h-actH-dotH-gaps)*1.5),cardH=cardW/1.5,pad=(W-cardW)/2;
+  const cardW=Math.min(W-(narrow?24:40),(h-actH-dotH-gaps)*1.5),cardH=cardW/1.5,pad=(W-cardW)/2;
   const car=$('#car');car.style.paddingInline=pad+'px';car.style.scrollPaddingInline=pad+'px';car.style.height=cardH+'px';
   car.querySelectorAll('.ccard').forEach(c=>{c.style.width=cardW+'px';c.style.height=cardH+'px'});
   car.scrollLeft=carIdx*(cardW+12);
@@ -88,7 +89,7 @@ function layoutAlt(top,h,W){
   const compact=h<360;ALT.classList.toggle('compact',compact);
   const actH=0,statH=20,gaps=10+12;
   const vh=Math.max(120,h-actH-statH-gaps);
-  let cardW=Math.min(W-48,(vh-(compact?36:56))*1.5);const cardH=cardW/1.5;
+  let cardW=Math.min(W-(narrow?28:48),(vh-(compact?36:56))*1.5);const cardH=cardW/1.5;
   const vc=$('#vcar');vc.style.height=vh+'px';const pad=(vh-cardH)/2;vc.style.paddingBlock=pad+'px';vc.style.scrollPaddingBlock=pad+'px';
   vc.querySelectorAll('.vcard').forEach(c=>{c.style.width=cardW+'px';c.style.height=cardH+'px'});
   vc.scrollTop=carIdx*(cardH+12);vDepth();
@@ -96,14 +97,14 @@ function layoutAlt(top,h,W){
   ALT.style.height=h+'px';return h;
  }
  if(VARIANT==='lista'){
-  const rowW=W-32,rowH=Math.max(40,Math.min(104,(h-3*8)/4));
+  const rowW=W-padSide,rowH=Math.max(40,Math.min(104,(h-3*8)/4));
   const s=Math.max(rowW/400,rowH/100),av=Math.round(Math.min(52*s+4,rowH-6)),pl=Math.round(24*s+(52*s-av)/2);ALT.style.setProperty('--av',av+'px');
   ALT.classList.toggle('tight',rowH<70);ALT.classList.toggle('xtight',rowH<52);
   ALT.querySelectorAll('.strip').forEach(b=>{b.style.height=rowH+'px';b.style.paddingLeft=pl+'px'});
   const used=4*rowH+3*8;ALT.style.height=used+'px';return Math.max(used,h);
  }
  if(VARIANT==='siatka'){
-  const tw=(W-32-12)/2;let cw=tw,capH=40;
+  const tw=(W-padSide-10)/2;let cw=tw,capH=40;
   if(2*(cw/1.5+capH)+12>h){capH=34;cw=Math.max(72,((h-12)/2-capH)*1.5)}
   ALT.classList.toggle('tight',capH<40);
   ALT.querySelectorAll('.gitem').forEach(b=>{b.style.width=tw+'px'});
@@ -113,24 +114,33 @@ function layoutAlt(top,h,W){
  return 0;
 }
 
-/* menu rozwijane z góry: przełączanie wariantów */
+/* menu rozwijane z góry: przełączanie wariantów i osoby */
 function setVariant(v){
  if(v===VARIANT){closeMenu();return}
  VARIANT=v;app.dataset.v=v;carIdx=0;buildAlt();layout();renderMenu();closeMenu();
+ const lv=LAYOUTS.find(l=>l[0]===v);
+ if(lv&&typeof announceSR==='function')announceSR('Zmieniono układ dokumentów na: '+lv[1]);
  try{const u=new URL(location.href);u.searchParams.set('uklad',v);history.replaceState(null,'',u.toString())}catch(e){}
 }
 function renderMenu(){
  const m=$('#lmenu');if(!m)return;
  const picker=$('#personBtn');
  if(picker){
-  picker.querySelector('.person-avatar').style.backgroundImage=`url(assets/foto-${OS.id}.jpg)`;
-  picker.querySelector('.person-name').textContent=OS.imie;
+  const av=picker.querySelector('.person-avatar'),nm=picker.querySelector('.person-name'),ds=picker.querySelector('.person-desc');
+  if(av)av.style.backgroundImage=`url(assets/foto-${OS.id}.webp)`;
+  if(nm)nm.textContent=`${OS.imie} ${OS.nazwisko}`;
+  if(ds)ds.textContent=OS.opis;
+  picker.setAttribute('aria-label',`Aktywna osoba: ${OS.imie} ${OS.nazwisko}, ${OS.opis}. Kliknij, aby zmienić osobę.`);
  }
- const mo=m.querySelector('.mo');if(mo){mo.innerHTML=Object.values(OSOBY).map(o=>`<button data-o="${o.id}" class="${o.id===OS.id?'on':''}" aria-label="${o.imie} ${o.nazwisko}, ${o.opis}"><span class="oav" style="background-image:url(assets/foto-${o.id}.jpg)"></span><b>${o.imie}</b><small>${o.opis.split(',')[0]}</small></button>`).join('');
-  mo.querySelectorAll('button').forEach(b=>b.onclick=()=>{if(b.dataset.o===OS.id){closeMenu();return}zmienOsobe(b.dataset.o)})}
- m.querySelector('.ml').innerHTML=LAYOUTS.map(([k,t,s])=>`<button data-k="${k}" class="${k===VARIANT?'on':''}"><span class="mi mi-${k}"><i></i><i></i><i></i><i></i></span><span class="mt"><b>${t}</b><small>${s}</small></span>${k===VARIANT?svg('check'):''}</button>`).join('');
+ const mo=m.querySelector('.mo');
+ if(mo){
+  mo.innerHTML=Object.values(OSOBY).map(o=>`<button type="button" data-o="${o.id}" class="${o.id===OS.id?'on':''}" aria-current="${o.id===OS.id?'true':'false'}" aria-label="${o.imie} ${o.nazwisko} — ${o.opis}"><span class="oav" style="background-image:url(assets/foto-${o.id}.webp)" aria-hidden="true"></span><span class="otx"><b>${o.imie} ${o.nazwisko}</b><small>${o.opis}</small></span>${o.id===OS.id?svg('check'):''}</button>`).join('');
+  mo.querySelectorAll('button').forEach(b=>b.onclick=()=>{if(b.dataset.o===OS.id){closeMenu();return}zmienOsobe(b.dataset.o)});
+ }
+ m.querySelector('.ml').innerHTML=LAYOUTS.map(([k,t,s])=>`<button type="button" data-k="${k}" class="${k===VARIANT?'on':''}" aria-current="${k===VARIANT?'true':'false'}"><span class="mi mi-${k}" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span class="mt"><b>${t}</b><small>${s}</small></span>${k===VARIANT?svg('check'):''}</button>`).join('');
  m.querySelectorAll('.ml button').forEach(b=>b.onclick=()=>setVariant(b.dataset.k));
  const ma=m.querySelector('.ma11y');if(ma&&typeof A11Y!=='undefined'){
+  const errCnt=(typeof MobStore!=='undefined'&&MobStore.getAiErrors)?MobStore.getAiErrors().length:0;
   ma.innerHTML=`
    <div class="ma-row">
     <button type="button" class="ma-btn" onclick="A11Y.toggleLargeText();renderMenu()">
@@ -144,21 +154,40 @@ function renderMenu(){
     <button type="button" class="ma-btn" onclick="closeMenu();openGlossary()">
      <span>📖 Słowniczek „Po ludzku”</span>
     </button>
-    <button type="button" class="ma-btn reset" onclick="if(confirm('Zresetować dane demonstracyjne?')){MobStore.reset();location.reload()}">
-     <span>↺ Resetuj dane demo</span>
+    <button type="button" class="ma-btn" onclick="closeMenu();openErrorHistory()">
+     <span>⚠️ Błędy AI${errCnt?` (<b>${errCnt}</b>)`:''}</span>
+    </button>
+   </div>
+   <div class="ma-row" style="margin-top:6px">
+    <button type="button" class="ma-btn reset" onclick="if(confirm('Zresetować dane demonstracyjne wybranej osoby?')){MobStore.reset();location.reload()}">
+     <span>↺ Resetuj dane demo (${OS.imie})</span>
     </button>
    </div>
   `;
  }
 }
-function openMenu(){if(app.classList.contains('chatting'))return;closeHist();renderMenu();app.classList.add('menu');$('#title').setAttribute('aria-expanded','true')}
-function closeMenu(){app.classList.remove('menu');$('#title').setAttribute('aria-expanded','false')}
-$('#title').onclick=()=>app.classList.contains('menu')?closeMenu():openMenu();
+function openMenu(focusPersona){
+ if(app.classList.contains('chatting'))return;
+ closeHist();renderMenu();
+ if(typeof openDialogFocus==='function')openDialogFocus('lmenu',$('#lmenu .panel'),focusPersona?'#lmenu .mo button.on':'#lmenu .ml button.on');
+ app.classList.add('menu');
+ $('#title').setAttribute('aria-expanded','true');
+ const pb=$('#personBtn');if(pb)pb.setAttribute('aria-expanded','true');
+ if(typeof announceSR==='function')announceSR('Otwarto wybór osoby i układu dokumentów');
+}
+function closeMenu(){
+ if(!app.classList.contains('menu'))return;
+ app.classList.remove('menu');
+ $('#title').setAttribute('aria-expanded','false');
+ const pb=$('#personBtn');if(pb)pb.setAttribute('aria-expanded','false');
+ if(typeof restoreDialogFocus==='function')restoreDialogFocus('lmenu');
+}
+$('#title').onclick=()=>app.classList.contains('menu')?closeMenu():openMenu(false);
 $('#lmenu .scrim').onclick=closeMenu;
 $('#personBtn').onclick=()=>{
  if(app.classList.contains('chatting'))return;
  if(app.classList.contains('menu')){closeMenu();return}
- openMenu();
+ openMenu(true);
  requestAnimationFrame(()=>$('#lmenu .mo')?.scrollIntoView({block:'nearest'}));
 };
 renderMenu();
