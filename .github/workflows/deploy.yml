@@ -20,8 +20,10 @@ jobs:
             set -e
             cd /home/bmw/mobywatel-ai
 
-            # Pobranie najnowszego kodu
-            git pull origin main
+            # Wdrożenie dokładnie tego, co jest na origin/main.
+            # Reset obsługuje także wymuszone przepisanie historii repozytorium.
+            git fetch --prune origin main
+            git reset --hard origin/main
 
             # Przebudowanie i ponowne uruchomienie kontenerów w tle
             docker compose down
