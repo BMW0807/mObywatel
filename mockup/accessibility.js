@@ -188,6 +188,18 @@ const A11Y = {
     showToast(this.highContrast ? 'Włączono tryb wysokiego kontrastu' : 'Standardowe kolory');
   },
 
+  setLang(code) {
+    if (typeof haptic === 'function') haptic('toggle');
+    try { localStorage.setItem('mobLang', code); } catch (e) {}
+    const u = new URL(location.href);
+    if (code === 'pl') {
+      u.searchParams.delete('lang');
+    } else {
+      u.searchParams.set('lang', code);
+    }
+    location.href = u.toString();
+  },
+
   apply() {
     document.body.classList.toggle('large-text', this.largeText);
     document.body.classList.toggle('high-contrast', this.highContrast);
@@ -199,6 +211,10 @@ const A11Y = {
     const f = document.getElementById('apFont'), c = document.getElementById('apContrast');
     if (f) { f.classList.toggle('on', this.largeText); f.setAttribute('aria-checked', this.largeText); }
     if (c) { c.classList.toggle('on', this.highContrast); c.setAttribute('aria-checked', this.highContrast); }
+    const curLang = new URLSearchParams(location.search).get('lang') || (function() { try { return localStorage.getItem('mobLang'); } catch (e) { return null; } })() || 'pl';
+    document.querySelectorAll('.lang-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.lang === curLang.toLowerCase());
+    });
   }
 };
 
@@ -237,6 +253,8 @@ document.addEventListener('keydown', e => {
     return;
   }
   if (e.key !== 'Escape') return;
+  const cert = document.getElementById('certModal');
+  if (cert && cert.classList.contains('open')) { e.preventDefault(); closeCertModal(); return; }
   const upo = document.getElementById('upoModal');
   if (upo && upo.classList.contains('open')) { e.preventDefault(); closeUPO(); return; }
   const errM = document.getElementById('errModal');
@@ -723,11 +741,326 @@ function selectTopicCategory(catId) {
   if (hub) renderTopicHub(hub);
 }
 
+// --- 8. Haptyka / Wibracje telefonu (Web Vibration API) ---
+function haptic(type = 'tap') {
+  if (typeof navigator === 'undefined' || !navigator.vibrate) return;
+  try {
+    switch (type) {
+      case 'tap': navigator.vibrate(12); break;
+      case 'card': navigator.vibrate([16, 35, 16]); break;
+      case 'toggle': navigator.vibrate(22); break;
+      case 'success': navigator.vibrate([25, 40, 35, 40, 50]); break;
+      case 'warn': navigator.vibrate([40, 60, 40, 60, 40]); break;
+      case 'error': navigator.vibrate([80, 50, 80]); break;
+      default: navigator.vibrate(15);
+    }
+  } catch (e) {}
+}
+
+// --- 9. Eksport zdarzeń do Kalendarza (.ics) ---
+function exportToCalendar({ title, desc = '', date, daysBefore = 3 }) {
+  if (!date) return;
+  haptic('tap');
+  try {
+    let y, m, d;
+    if (date.includes('-')) {
+      [y, m, d] = date.split('-').map(Number);
+    } else if (date.includes('.')) {
+      [d, m, y] = date.split('.').map(Number);
+    }
+    if (!y || !m || !d) {
+      showToast('Niepoprawny format daty: ' + date);
+      return;
+    }
+    const pad = n => String(n).padStart(2, '0');
+    const dtStart = `${y}${pad(m)}${pad(d)}T090000`;
+    const dtEnd = `${y}${pad(m)}${pad(d)}T100000`;
+    const nowStamp = new Date().toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+    const uid = 'mob-' + Date.now() + '@mobywatel.gov.pl';
+
+    const icsContent = [
+      'BEGIN:VCALENDAR',
+      'VERSION:2.0',
+      'PRODID:-//Ministerstwo Cyfryzacji//mObywatel 2.0//PL',
+      'CALSCALE:GREGORIAN',
+      'METHOD:PUBLISH',
+      'BEGIN:VEVENT',
+      `UID:${uid}`,
+      `DTSTAMP:${nowStamp}`,
+      `DTSTART:${dtStart}`,
+      `DTEND:${dtEnd}`,
+      `SUMMARY:${title}`,
+      `DESCRIPTION:${desc.replace(/\n/g, '\\n')} - Przypomnienie z mObywatela`,
+      'STATUS:CONFIRMED',
+      'BEGIN:VALARM',
+      'TRIGGER:-P' + daysBefore + 'D',
+      'ACTION:DISPLAY',
+      `DESCRIPTION:Przypomnienie: ${title}`,
+      'END:VALARM',
+      'END:VEVENT',
+      'END:VCALENDAR'
+    ].join('\r\n');
+
+    const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${title.replace(/[^a-zA-Z0-9ąćęłńóśźżĄĆĘŁŃÓŚŹŻ]/g, '_')}.ics`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+    showToast('Pobrano przypomnienie do kalendarza (.ics)');
+    announceSR('Pobrano plik kalendarza dla: ' + title);
+  } catch (err) {
+    showToast('Błąd eksportu do kalendarza');
+  }
+}
+
+// --- 10. Oficjalne Zaświadczenie Urzędowe PDF z pieczęcią RP ---
+function openOfficialCertificate(type = 'pesel') {
+  haptic('card');
+  let modal = document.getElementById('certModal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'certModal';
+    modal.className = 'upo-modal-wrap';
+    document.body.appendChild(modal);
+  }
+
+  let certTitle = 'ZAŚWIADCZENIE Z REJESTRU';
+  let certNumber = 'MC-RP/' + new Date().getFullYear() + '/' + Math.floor(100000 + Math.random() * 900000);
+  let rows = [];
+  let legal = '';
+
+  if (type === 'pesel') {
+    certTitle = 'ZAŚWIADCZENIE O STANIE ZASTRZEŻENIA NUMERU PESEL';
+    const isBlocked = MobStore.isPeselBlocked();
+    rows = [
+      ['Imię i nazwisko', `${OS.imie} ${OS.nazwisko}`],
+      ['Numer PESEL', OS.moje.pesel],
+      ['Data i godzina stanu', now() + ' ' + today()],
+      ['Status zastrzeżenia', isBlocked ? 'ZASTRZEŻONY' : 'NIEZASTRZEŻONY'],
+      ['Podstawa prawna', 'art. 23 ust. 1 ustawy z dnia 24 września 2010 r. o ewidencji ludności'],
+      ['Organ wydający', 'Ministerstwo Cyfryzacji']
+    ];
+    legal = 'Zaświadczenie wydane w postaci elektronicznej opatrzone zaawansowaną pieczęcią elektroniczną Ministra Cyfryzacji. Ważne na terenie całego kraju we wszystkich instytucjach finansowych i urzędach.';
+  } else if (type === 'punkty') {
+    certTitle = 'ZAŚWIADCZENIE O WPISACH W EWIDENCJI KIEROWCÓW (CEPiK)';
+    const pj = OS.docs.find(d => d.id === 'pj');
+    let pkt = '0';
+    if (pj) { const f = pj.f.find(x => /Punkt/.test(x[0])); if (f) pkt = f[1]; }
+    rows = [
+      ['Kierowca', `${OS.imie} ${OS.nazwisko}`],
+      ['Numer PESEL', OS.moje.pesel],
+      ['Numer prawa jazdy', pj ? pj.f.find(x => /numer/i.test(x[0]))?.[1] || 'PJ/84729/21' : 'PJ/84729/21'],
+      ['Liczba aktywnych punktów karnych', pkt],
+      ['Ewidencja', 'Centralna Ewidencja Kierowców (CEPiK)'],
+      ['Data weryfikacji', today()]
+    ];
+    legal = 'Zaświadczenie stanowi odpis stanu konta kierowcy z Centralnej Ewidencji Kierowców na dzień sporządzenia dokumentu.';
+  } else if (type === 'pojazd') {
+    certTitle = 'ODPIS DANYCH POJAZDU Z CENTRALNEJ EWIDENCJI POJAZDÓW';
+    const auto = OS.docs.find(d => d.id === 'auto') || {};
+    rows = [
+      ['Właściciel', `${OS.imie} ${OS.nazwisko}`],
+      ['Marka i model', auto.model || 'Škoda Octavia Combi'],
+      ['Numer rejestracyjny', auto.f?.find(x => /Rejestracja/i.test(x[0]))?.[1] || 'WI 7824P'],
+      ['Numer VIN', auto.f?.find(x => /VIN/i.test(x[0]))?.[1] || 'TMBJJ7NE8L0129841'],
+      ['Badanie techniczne', auto.f?.find(x => /Badanie/i.test(x[0]))?.[1] || 'Ważne do 14.04.2026'],
+      ['Polisa OC', auto.f?.find(x => /Polisa/i.test(x[0]))?.[1] || 'Ważna do 20.07.2026 (PZU S.A.)']
+    ];
+    legal = 'Dokument potwierdza aktualne dane techniczne pojazdu i stan ubezpieczenia OC zarejestrowany w CEPiK i Ubezpieczeniowym Funduszu Gwarancyjnym.';
+  } else {
+    certTitle = 'ODPIS DANYCH DOWODU TOŻSAMOŚCI Z REJESTRU DOWODÓW';
+    rows = [
+      ['Imię i nazwisko', `${OS.imie} ${OS.nazwisko}`],
+      ['Numer PESEL', OS.moje.pesel],
+      ['Seria i numer dowodu', OS.moje.seria || 'ABC 123456'],
+      ['Data urodzenia', OS.moje.urodz || '14.05.1994'],
+      ['Obywatelstwo', 'Polskie (POL)'],
+      ['Status mDowodu', 'AKTYWNY I WAŻNY']
+    ];
+    legal = 'Dokument elektroniczny mDowód jest prawnie równoważny z tradycyjnym plastikowym dowodem osobistym na podstawie ustawy o aplikacji mObywatel.';
+  }
+
+  const rowsHtml = rows.map(([k, v]) => `
+    <div class="upo-row">
+      <span class="upo-label">${k}</span>
+      <b class="upo-val">${v}</b>
+    </div>
+  `).join('');
+
+  modal.innerHTML = `
+    <div class="upo-scrim" onclick="closeCertModal()"></div>
+    <div class="upo-sheet" role="dialog" aria-modal="true" aria-labelledby="certDocTitle">
+      <div class="upo-header-bar">
+        <button class="upo-close-btn" type="button" onclick="closeCertModal()">✕ Zamknij</button>
+        <button class="upo-print-btn" type="button" onclick="window.print()">🖨️ Drukuj / Zapisz PDF</button>
+      </div>
+      <div class="upo-document" id="printableCert">
+        <div class="upo-doc-head">
+          <div class="upo-eagle" aria-hidden="true">
+            <svg viewBox="0 0 48 48" width="52" height="52" fill="none" stroke="#dc143c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M24 4l4 8 8-2-4 8 8 4-8 4 4 8-8-2-4 8-4-8-8 2 4-8-8-4 8-4-4-8 8 2z"/>
+              <circle cx="24" cy="24" r="6"/>
+            </svg>
+          </div>
+          <div class="upo-doc-title">
+            <h2>RZECZPOSPOLITA POLSKA</h2>
+            <h1 id="certDocTitle">${certTitle}</h1>
+            <p>Nr zaświadczenia: <b>${certNumber}</b></p>
+          </div>
+        </div>
+        
+        <div class="upo-meta-box">
+          <div class="upo-meta-item"><span>Organ wydający:</span> <b>Ministerstwo Cyfryzacji / Rejestry Państwowe</b></div>
+          <div class="upo-meta-item"><span>Data sporządzenia:</span> <b>${today()}, godz. ${now()}</b></div>
+          <div class="upo-meta-item"><span>Weryfikacja autentyczności:</span> <b class="upo-status-ok">PIECZĘĆ KWALIFIKOWANA RP – WAŻNA</b></div>
+        </div>
+
+        <div class="upo-data-box">
+          <h3>Dane urzędowe:</h3>
+          <div class="upo-rows">${rowsHtml}</div>
+        </div>
+
+        <div class="upo-footer-legal">
+          <div class="upo-stamp" aria-hidden="true">
+            <div class="upo-stamp-circle">
+              <span>PIECZĘĆ CYFROWA</span>
+              <b>MINISTERSTWO CYFRYZACJI</b>
+              <small>RZECZPOSPOLITA POLSKA</small>
+            </div>
+          </div>
+          <div class="upo-note">${legal}</div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  openDialogFocus('cert', modal.querySelector('.upo-sheet'), '.upo-close-btn');
+  modal.classList.add('open');
+  announceSR('Otwarto zaświadczenie urzędowe: ' + certTitle);
+}
+
+function closeCertModal() {
+  const modal = document.getElementById('certModal');
+  if (!modal || !modal.classList.contains('open')) return;
+  modal.classList.remove('open');
+  restoreDialogFocus('cert');
+}
+
+// --- 11. Inteligentne podpowiedzi w czasie rzeczywistym ---
+const SEARCH_DATABASE = [
+  { text: 'Zastrzeż mój PESEL', cat: 'Bezpieczeństwo', icon: 'shield', desc: 'Blokada wyłudzeń kredytów' },
+  { text: 'Ile mam punktów karnych?', cat: 'Kierowca', icon: 'clock', desc: 'Stan konta CEPiK' },
+  { text: 'Kiedy kończy się OC auta?', cat: 'Kierowca', icon: 'car', desc: 'Termin ubezpieczenia i przegląd' },
+  { text: 'Miałam stłuczkę', cat: 'Kierowca', icon: 'car', desc: 'Oświadczenie sprawcy kolizji' },
+  { text: 'Chcę zapłacić podatek', cat: 'Płatności', icon: 'coin', desc: 'ePłatności BLIK bez prowizji' },
+  { text: 'Zgubiłam portfel i dowód', cat: 'Dokumenty', icon: 'alert', desc: 'Zastrzeżenie dowodu i kart' },
+  { text: 'Paszport dla dziecka', cat: 'Rodzina', icon: 'doc', desc: 'Wniosek online' },
+  { text: 'Wniosek o 800+', cat: 'Rodzina', icon: 'doc', desc: 'Świadczenie wychowawcze ZUS' },
+  { text: 'Urodziło nam się dziecko', cat: 'Rodzina', icon: 'doc', desc: 'Zgłoszenie narodzin w USC' },
+  { text: 'Dostałam podejrzanego SMS-a', cat: 'Bezpieczeństwo', icon: 'alert', desc: 'Zgłoszenie do CSIRT NASK' },
+  { text: 'Kto sprawdzał mój PESEL?', cat: 'Bezpieczeństwo', icon: 'shield', desc: 'Historia weryfikacji' },
+  { text: 'Kupuję używane auto', cat: 'Kierowca', icon: 'car', desc: 'Historia pojazdu z CEPiK' }
+];
+
+let selectedSuggestIndex = -1;
+
+function initLiveSearch() {
+  const input = document.getElementById('prompt');
+  const suggest = document.getElementById('searchSuggest');
+  if (!input || !suggest) return;
+
+  function hideSuggest() {
+    suggest.hidden = true;
+    suggest.innerHTML = '';
+    selectedSuggestIndex = -1;
+  }
+
+  function renderMatches(matches) {
+    if (!matches.length) { hideSuggest(); return; }
+    selectedSuggestIndex = -1;
+    suggest.innerHTML = matches.slice(0, 4).map((m, idx) => `
+      <button type="button" class="ss-item" role="option" data-idx="${idx}" data-val="${m.text}">
+        <span class="ss-ic">${svg(m.icon || 'chev')}</span>
+        <span class="ss-tx">
+          <b>${m.text}</b>
+          <small>${m.desc}</small>
+        </span>
+        <span class="ss-badge">${m.cat}</span>
+      </button>
+    `).join('');
+    suggest.hidden = false;
+
+    suggest.querySelectorAll('.ss-item').forEach(btn => {
+      btn.onclick = () => {
+        haptic('tap');
+        const val = btn.dataset.val;
+        hideSuggest();
+        send(val);
+      };
+    });
+  }
+
+  input.addEventListener('input', () => {
+    const query = input.value.trim().toLowerCase();
+    if (query.length < 2) {
+      hideSuggest();
+      return;
+    }
+    const matches = SEARCH_DATABASE.filter(item =>
+      item.text.toLowerCase().includes(query) ||
+      item.desc.toLowerCase().includes(query) ||
+      item.cat.toLowerCase().includes(query)
+    );
+    renderMatches(matches);
+  });
+
+  input.addEventListener('keydown', e => {
+    if (suggest.hidden) return;
+    const items = suggest.querySelectorAll('.ss-item');
+    if (!items.length) return;
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      selectedSuggestIndex = (selectedSuggestIndex + 1) % items.length;
+      items.forEach((it, i) => it.classList.toggle('active', i === selectedSuggestIndex));
+      if (items[selectedSuggestIndex]) items[selectedSuggestIndex].scrollIntoView({ block: 'nearest' });
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      selectedSuggestIndex = (selectedSuggestIndex - 1 + items.length) % items.length;
+      items.forEach((it, i) => it.classList.toggle('active', i === selectedSuggestIndex));
+      if (items[selectedSuggestIndex]) items[selectedSuggestIndex].scrollIntoView({ block: 'nearest' });
+    } else if (e.key === 'Enter' && selectedSuggestIndex >= 0) {
+      e.preventDefault();
+      if (items[selectedSuggestIndex]) items[selectedSuggestIndex].click();
+    } else if (e.key === 'Escape') {
+      hideSuggest();
+    }
+  });
+
+  document.addEventListener('click', e => {
+    if (!suggest.contains(e.target) && e.target !== input) {
+      hideSuggest();
+    }
+  });
+}
+
 // Inicjalizacja przy załadowaniu DOM
 document.addEventListener('DOMContentLoaded', () => {
   A11Y.init();
   renderDashboard();
   updateErrorBadge();
+  initLiveSearch();
+  if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1')) {
+    navigator.serviceWorker.register('sw.js').then(reg => {
+      console.log('mObywatel PWA SW registered:', reg.scope);
+    }).catch(err => {
+      console.warn('SW registration failed:', err);
+    });
+  }
   const skip = document.getElementById('skipToChat');
   if (skip) {
     skip.addEventListener('click', e => {

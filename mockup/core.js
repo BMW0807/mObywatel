@@ -135,20 +135,30 @@ function openDoc(id){
  const hero=id==='dowod'&&d.screen
   ?`<div class="idcard"><div class="crop"><img src="${d.screen}" alt="mDowód: ${OS.imie} ${OS.nazwisko}" loading="lazy" decoding="async">${window.LANG&&window.LANG!=='pl'?`<div class="valid idv">${svg('check')}Dokument ważny</div>`:''}</div></div>`
   :`<div class="bigcard" style="background-image:url(${d.img})">${faceHTML(d)}</div><div class="valid">${svg('check')}Dokument ważny</div><div class="ui"><div class="rows" style="padding-top:2px">${rowsH(d.rows)}</div></div>`;
- const q=id==='dowod'?[['scan','Potwierdź swoje dane','qr'],['id','Dane dowodu','data'],['shield','Zastrzeż PESEL','pesel'],['dots','Zapytaj asystenta','ask']]
-                     :[['scan','Potwierdź dane','qr'],['doc','Szczegóły','data'],['shield','Zgubiony portfel','lost'],['dots','Zapytaj asystenta','ask']];
+ const q=id==='dowod'?[['scan','Potwierdź swoje dane','qr'],['id','Dane dowodu','data'],['shield','Zastrzeż PESEL','pesel'],['doc','Zaświadczenie PDF','cert'],['dots','Zapytaj asystenta','ask']]
+                     :[['scan','Potwierdź dane','qr'],['doc','Szczegóły','data'],['clock','Kalendarz','cal'],['doc','Zaświadczenie PDF','cert'],['dots','Zapytaj asystenta','ask']];
  det.innerHTML=`<div style="height:${top}px;flex:none"></div><div class="nav"><button class="back" id="dclose">${svg('back')}Wróć</button><b>${d.name}</b><span></span></div>
   <div class="clock" id="dclock"></div>
   <div class="body">${hero}<div class="quick">${q.map(x=>`<button data-a="${x[2]}"><i>${svg(x[0])}</i>${x[1]}</button>`).join('')}</div><div class="qrbox" id="qrbox"></div></div>`;
  tick();
  if(typeof openDialogFocus==='function')openDialogFocus('detail',det,'#dclose');
  det.classList.add('on');
+ if(typeof haptic==='function')haptic('card');
  if(typeof announceSR==='function')announceSR('Otwarto dokument: '+d.name);
  $('#dclose').onclick=closeDoc;
  det.querySelectorAll('.quick button').forEach(b=>b.onclick=()=>{
   const a=b.dataset.a;
   if(a==='qr'){qrFlow({doc:id});return}
   if(a==='data'){$('#qrbox').innerHTML=`<div class="ui"><div class="rows" style="padding-top:4px">${rowsH(d.rows)}</div></div>`;if(typeof announceSR==='function')announceSR('Wyświetlono szczegółowe dane dokumentu')}
+  if(a==='cert'){openOfficialCertificate(id==='dowod'?'dowod':(id==='auto'?'pojazd':(id==='pj'?'punkty':'dowod')));return}
+  if(a==='cal'){
+    if(id==='auto'){
+      exportToCalendar({ title: 'Koniec polisy OC ('+(d.model||'Pojazd')+')', desc: 'Ważność OC i badanie techniczne', date: '20.07.2026', daysBefore: 7 });
+    } else {
+      exportToCalendar({ title: 'Ważność dokumentu '+d.name, desc: 'Ważność dokumentu w mObywatelu', date: '14.05.2031', daysBefore: 30 });
+    }
+    return;
+  }
   if(a==='pesel'||a==='lost'){closeDoc();startTopic(a==='pesel'?'Zastrzeż mój PESEL':rodz('Zgubiłam portfel','Zgubiłem portfel'))}
   if(a==='ask'){closeDoc();startTopic(OS.ask[id]||'Opowiedz mi o tym dokumencie')}
  });
@@ -196,7 +206,7 @@ function multi(opts,next,noT){
  const n=el('<button class="next">Dalej</button>');n.onclick=()=>{if(!sel.size)return;act(()=>{row.remove();const a=opts.filter(o=>sel.has(o));addUser(a.join(', '));next(a)})};row.append(n);
  msgs.append(row);end();
 }
-function faceid(){inflight++;return new Promise(r=>{const f=$('#faceid');f.classList.add('on');setTimeout(()=>f.classList.add('done'),FAST?5:900);setTimeout(()=>{f.classList.remove('on','done');r();settle()},FAST?10:1450)})}
+function faceid(){if(typeof haptic==='function')haptic('success');inflight++;return new Promise(r=>{const f=$('#faceid');f.classList.add('on');setTimeout(()=>f.classList.add('done'),FAST?5:900);setTimeout(()=>{f.classList.remove('on','done');r();settle()},FAST?10:1450)})}
 let pending=null;
 
 function emptyState(box=VIS.el){
@@ -217,7 +227,7 @@ function emptyState(box=VIS.el){
 }
 function enterChat(){if(!app.classList.contains('chatting')){app.classList.add('chatting');emptyState();layout()}}
 function exitChat(){closeHist();app.classList.remove('chatting');input.blur();layout()}
-function send(t){if(!t)return;enterChat();act(()=>{addUser(t);route(t)})}
+function send(t){if(!t)return;if(typeof haptic==='function')haptic('tap');enterChat();act(()=>{addUser(t);route(t)})}
 
 /* ---------- rozmowy: osobne wątki z historią (w pamięci, do odświeżenia) ---------- */
 const CONVS=[];let VIS=null,WR=null,idleQ=[],convSeq=0;

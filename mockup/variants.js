@@ -140,7 +140,13 @@ function renderMenu(){
  m.querySelectorAll('.ml button').forEach(b=>b.onclick=()=>setVariant(b.dataset.k));
  const ma=m.querySelector('.ma11y');if(ma&&typeof A11Y!=='undefined'){
   const errCnt=(typeof MobStore!=='undefined'&&MobStore.getAiErrors)?MobStore.getAiErrors().length:0;
+  const curLang=new URLSearchParams(location.search).get('lang')||(function(){try{return localStorage.getItem('mobLang')}catch(e){return null}})()||'pl';
   ma.innerHTML=`
+   <div class="ap-lang-row" style="margin-bottom:8px">
+    <button type="button" class="lang-btn ${curLang==='pl'?'active':''}" data-lang="pl" onclick="A11Y.setLang('pl')"><span class="flag">🇵🇱</span> Polski</button>
+    <button type="button" class="lang-btn ${curLang==='uk'?'active':''}" data-lang="uk" onclick="A11Y.setLang('uk')"><span class="flag">🇺🇦</span> Українська</button>
+    <button type="button" class="lang-btn ${curLang==='en'?'active':''}" data-lang="en" onclick="A11Y.setLang('en')"><span class="flag">🇬🇧</span> English</button>
+   </div>
    <div class="ma-row">
     <button type="button" class="ma-btn" onclick="A11Y.toggleLargeText();renderMenu()">
      <span>Tekst: <b>${A11Y.largeText?'Duży (A+)':'Standard'}</b></span>
@@ -155,6 +161,14 @@ function renderMenu(){
     </button>
     <button type="button" class="ma-btn" onclick="closeMenu();openErrorHistory()">
      <span>⚠️ Błędy AI${errCnt?` (<b>${errCnt}</b>)`:''}</span>
+    </button>
+   </div>
+   <div class="ma-row" style="margin-top:6px">
+    <button type="button" class="ma-btn" onclick="closeMenu();openOfficialCertificate('pesel')">
+     <span>📜 Zaświadczenie PESEL</span>
+    </button>
+    <button type="button" class="ma-btn" onclick="closeMenu();openOfficialCertificate('punkty')">
+     <span>📜 Odpis CEPiK (PDF)</span>
     </button>
    </div>
    <div class="ma-row" style="margin-top:6px">

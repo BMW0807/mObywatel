@@ -1,0 +1,20 @@
+{
+  "name": "mObywatel 2.0",
+  "short_name": "mObywatel",
+  "description": "Oficjalny asystent obywatelski i dokumenty w telefonie",
+  "start_url": "/?pwa=1",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f2f3f7",
+  "theme_color": "#dc143c",
+  "categories": ["government", "productivity", "utilities"],
+  "icons": [
+    {
+      "src": "assets/icon-mobywatel.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

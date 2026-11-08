@@ -5,6 +5,8 @@ import gzip, ipaddress, mimetypes, re, json, os, sys, time, uuid, threading, url
 from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
 from urllib.parse import urlparse, unquote
 mimetypes.add_type('image/webp', '.webp')
+mimetypes.add_type('application/manifest+json', '.webmanifest')
+mimetypes.add_type('application/manifest+json', '.json')
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 
