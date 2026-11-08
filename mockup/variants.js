@@ -148,6 +148,9 @@ function renderMenu(){
     <button type="button" class="lang-btn ${curLang==='en'?'active':''}" data-lang="en" onclick="A11Y.setLang('en')"><span class="flag">🇬🇧</span> English</button>
    </div>
    <div class="ma-row">
+    <button type="button" class="ma-btn" onclick="A11Y.toggleDarkMode();renderMenu()">
+     <span>Motyw: <b>${A11Y.darkMode?'🌙 Ciemny':'☀️ Jasny'}</b></span>
+    </button>
     <button type="button" class="ma-btn" onclick="A11Y.toggleLargeText();renderMenu()">
      <span>Tekst: <b>${A11Y.largeText?'Duży (A+)':'Standard'}</b></span>
     </button>

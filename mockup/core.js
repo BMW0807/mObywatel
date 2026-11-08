@@ -302,3 +302,37 @@ function openTodo(){
 function closeTodo(){if(!app.classList.contains('todo'))return;app.classList.remove('todo');$('#todo').setAttribute('aria-hidden','true');if(typeof restoreDialogFocus==='function')restoreDialogFocus('todo')}
 $('#todo .scrim').onclick=closeTodo;$('#todoClose').onclick=closeTodo;
 $('#todoAsk').onclick=()=>{closeTodo();setTimeout(()=>startTopic('Co mam do załatwienia?',()=>S.todo()),180)};
+
+
+/* ---------- nawigacja dolna mObywatel 2.0 (bnav) ---------- */
+function switchNavTab(tab) {
+  document.querySelectorAll('.bnav-btn').forEach(b => {
+    const on = b.dataset.view === tab;
+    b.classList.toggle('active', on);
+    if(on) b.setAttribute('aria-current', 'page');
+    else b.removeAttribute('aria-current');
+  });
+
+  const sw = $('#stackwrap');
+  const alt = $('#alt');
+  const rem = $('#reminders');
+  const vs = $('#viewServices');
+  const comp = $('#composer');
+
+  if (tab === 'services') {
+    if (sw) sw.style.display = 'none';
+    if (alt) alt.style.display = 'none';
+    if (rem) rem.style.display = 'none';
+    if (vs) { vs.hidden = false; vs.style.display = 'block'; }
+    if (comp) comp.style.display = 'none';
+    if (typeof renderUslugiTab === 'function') renderUslugiTab();
+    if (typeof announceSR === 'function') announceSR('Przełączono na widok: Usługi publiczne');
+  } else if (tab === 'docs') {
+    if (sw) sw.style.display = '';
+    if (alt) alt.style.display = '';
+    if (rem) rem.style.display = '';
+    if (vs) { vs.hidden = true; vs.style.display = 'none'; }
+    if (comp) comp.style.display = '';
+    if (typeof announceSR === 'function') announceSR('Przełączono na widok: Dokumenty');
+  }
+}

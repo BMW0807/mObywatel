@@ -164,13 +164,22 @@ function getActiveTrapContainer() {
 const A11Y = {
   largeText: false,
   highContrast: false,
+  darkMode: false,
 
   init() {
     try {
       this.largeText = localStorage.getItem('mob_large_text') === '1';
       this.highContrast = localStorage.getItem('mob_high_contrast') === '1';
+      this.darkMode = localStorage.getItem('mob_dark_mode') === '1';
     } catch (e) {}
     this.apply();
+  },
+
+  toggleDarkMode() {
+    this.darkMode = !this.darkMode;
+    try { localStorage.setItem('mob_dark_mode', this.darkMode ? '1' : '0'); } catch (e) {}
+    this.apply();
+    showToast(this.darkMode ? '🌙 Włączono elegancki tryb ciemny (Dark Mode)' : '☀️ Włączono standardowy tryb jasny');
   },
 
   toggleLargeText() {
@@ -203,14 +212,18 @@ const A11Y = {
   apply() {
     document.body.classList.toggle('large-text', this.largeText);
     document.body.classList.toggle('high-contrast', this.highContrast);
+    document.body.classList.toggle('dark-mode', this.darkMode);
+    document.documentElement.classList.toggle('dark-mode', this.darkMode);
     const appEl = document.getElementById('app');
     if (appEl) {
       appEl.classList.toggle('large-text', this.largeText);
       appEl.classList.toggle('high-contrast', this.highContrast);
+      appEl.classList.toggle('dark-mode', this.darkMode);
     }
-    const f = document.getElementById('apFont'), c = document.getElementById('apContrast');
+    const f = document.getElementById('apFont'), c = document.getElementById('apContrast'), d = document.getElementById('apDark');
     if (f) { f.classList.toggle('on', this.largeText); f.setAttribute('aria-checked', this.largeText); }
     if (c) { c.classList.toggle('on', this.highContrast); c.setAttribute('aria-checked', this.highContrast); }
+    if (d) { d.classList.toggle('on', this.darkMode); d.setAttribute('aria-checked', this.darkMode); }
     const curLang = new URLSearchParams(location.search).get('lang') || (function() { try { return localStorage.getItem('mobLang'); } catch (e) { return null; } })() || 'pl';
     document.querySelectorAll('.lang-btn').forEach(btn => {
       btn.classList.toggle('active', btn.dataset.lang === curLang.toLowerCase());

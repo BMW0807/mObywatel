@@ -14,7 +14,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=34">
+<link rel="stylesheet" href="style.css?v=35">
 </head>
 <body>
 <div class="phone" id="app">
@@ -42,6 +42,7 @@
       <button type="button" class="lang-btn" data-lang="uk" onclick="A11Y.setLang('uk')"><span class="flag" aria-hidden="true">🇺🇦</span> Українська</button>
       <button type="button" class="lang-btn" data-lang="en" onclick="A11Y.setLang('en')"><span class="flag" aria-hidden="true">🇬🇧</span> English</button>
     </div>
+    <button type="button" class="ap-row" id="apDark" onclick="A11Y.toggleDarkMode()" role="switch" aria-checked="false"><span class="ap-ic" aria-hidden="true">🌙</span><span class="ap-tx"><b>Tryb ciemny (Dark Mode)</b><small>Grafitowe tło, oszczędność baterii</small></span><i class="sw" aria-hidden="true"></i></button>
     <button type="button" class="ap-row" id="apFont" onclick="A11Y.toggleLargeText()" role="switch" aria-checked="false"><span class="ap-ic" aria-hidden="true">A+</span><span class="ap-tx"><b>Duży tekst</b><small>Czytelniej, większe przyciski</small></span><i class="sw" aria-hidden="true"></i></button>
     <button type="button" class="ap-row" id="apContrast" onclick="A11Y.toggleHighContrast()" role="switch" aria-checked="false"><span class="ap-ic" aria-hidden="true">◐</span><span class="ap-tx"><b>Wysoki kontrast</b><small>Mocne kolory i obramowania</small></span><i class="sw" aria-hidden="true"></i></button>
     <button type="button" class="ap-row" onclick="closeA11yPanel();openGlossary()"><span class="ap-ic" aria-hidden="true">?</span><span class="ap-tx"><b>Słowniczek „Po ludzku”</b><small>Trudne pojęcia prostym językiem</small></span></button>
@@ -185,21 +186,149 @@
     </div>
   </div>
 
-  <div class="auth" id="faceid" aria-hidden="true"><div class="box">
+    <!-- Modale e-Usług i Bezpieczeństwa -->
+  <div class="sheet-modal" id="peselModal" role="dialog" aria-modal="true" aria-labelledby="peselModalTitle">
+    <div class="scrim" onclick="closeZastrzezPeselModal()"></div>
+    <div class="modal-box">
+      <div class="modal-head">
+        <h2 id="peselModalTitle">Zastrzeż PESEL</h2>
+        <button class="tx-close" onclick="closeZastrzezPeselModal()" aria-label="Zamknij"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></svg></button>
+      </div>
+      <p class="modal-sub">Oficjalny Rejestr Zastrzeżeń PESEL (Ministerstwo Cyfryzacji)</p>
+      <div class="pesel-hero-box"></div>
+      <h3 class="sec-h" style="margin-top:16px">Historia weryfikacji przez instytucje</h3>
+      <div class="pesel-hist-list"></div>
+    </div>
+  </div>
+
+  <div class="sheet-modal" id="busModal" role="dialog" aria-modal="true" aria-labelledby="busModalTitle">
+    <div class="scrim" onclick="closeBezpiecznyAutobusModal()"></div>
+    <div class="modal-box">
+      <div class="modal-head">
+        <h2 id="busModalTitle">Bezpieczny autobus</h2>
+        <button class="tx-close" onclick="closeBezpiecznyAutobusModal()" aria-label="Zamknij"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></svg></button>
+      </div>
+      <p class="modal-sub">Baza Centralnej Ewidencji Pojazdów (CEPiK)</p>
+      <div class="bus-search-bar">
+        <input type="text" id="busSearchInput" placeholder="Wpisz numer rejestracyjny (np. KR 12345)" value="KR 12345" enterkeyhint="search" style="text-transform:uppercase">
+        <button type="button" class="btn primary btn-sm" onclick="renderBusDetails(document.getElementById('busSearchInput').value)">Sprawdź</button>
+      </div>
+      <div class="bus-presets">
+        <span class="bp-lbl">Szybki wybór:</span>
+        <button type="button" class="chip-sm" onclick="openBezpiecznyAutobusModal('KR 12345')">KR 12345</button>
+        <button type="button" class="chip-sm" onclick="openBezpiecznyAutobusModal('WWA 8821')">WWA 8821</button>
+        <button type="button" class="chip-sm" onclick="openBezpiecznyAutobusModal('GD 4490')">GD 4490</button>
+      </div>
+      <div class="bus-result-box"></div>
+    </div>
+  </div>
+
+  <div class="sheet-modal" id="platnosciModal" role="dialog" aria-modal="true" aria-labelledby="platModalTitle">
+    <div class="scrim" onclick="closeEPlatnosciModal()"></div>
+    <div class="modal-box">
+      <div class="modal-head">
+        <h2 id="platModalTitle">ePłatności</h2>
+        <button class="tx-close" onclick="closeEPlatnosciModal()" aria-label="Zamknij"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></svg></button>
+      </div>
+      <p class="modal-sub">Podatki lokalne i opłaty samorządowe z płatnością BLIK</p>
+      <div class="eplat-list"></div>
+    </div>
+  </div>
+
+  <div class="sheet-modal" id="airModal" role="dialog" aria-modal="true" aria-labelledby="airModalTitle">
+    <div class="scrim" onclick="closeJakoscPowietrzaModal()"></div>
+    <div class="modal-box">
+      <div class="modal-head">
+        <h2 id="airModalTitle">Jakość powietrza</h2>
+        <button class="tx-close" onclick="closeJakoscPowietrzaModal()" aria-label="Zamknij"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></svg></button>
+      </div>
+      <p class="modal-sub">Główny Inspektorat Ochrony Środowiska (GIOŚ)</p>
+      <div class="air-hero-box"></div>
+    </div>
+  </div>
+
+  <div class="sheet-modal" id="aptekaModal" role="dialog" aria-modal="true" aria-label="Ekran apteczny e-Recepty">
+    <div class="scrim" onclick="closeAptekaModal()"></div>
+    <div class="modal-box apteka-box"></div>
+  </div>
+
+  <div class="sheet-modal" id="pocztaModal" role="dialog" aria-modal="true" aria-labelledby="pocztaModalTitle">
+    <div class="scrim" onclick="closePocztaModal()"></div>
+    <div class="modal-box">
+      <div class="modal-head">
+        <h2 id="pocztaModalTitle">e-Doręczenia (Skrzynka)</h2>
+        <button class="tx-close" onclick="closePocztaModal()" aria-label="Zamknij"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></svg></button>
+      </div>
+      <p class="modal-sub">Oficjalna korespondencja urzędowa z potwierdzeniem UPO</p>
+      <div class="poczta-list"></div>
+    </div>
+  </div>
+
+  <div class="sheet-modal" id="notifModal" role="dialog" aria-modal="true" aria-labelledby="notifModalTitle">
+    <div class="scrim" onclick="closePowiadomieniaModal()"></div>
+    <div class="modal-box">
+      <div class="modal-head">
+        <h2 id="notifModalTitle">Centrum Powiadomień</h2>
+        <button class="tx-close" onclick="closePowiadomieniaModal()" aria-label="Zamknij"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></svg></button>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <p class="modal-sub" style="margin:0">Alerty RCB, przypomnienia terminowe i statusy</p>
+        <button type="button" class="btn-xs ghost" onclick="markAllNotificationsRead()">Odczytaj wszystkie</button>
+      </div>
+      <div class="notif-list"></div>
+    </div>
+  </div>
+
+  <!-- Ekran Główny Usług (przełączany w nawigacji dolnej) -->
+  <section class="view-services" id="viewServices" aria-label="Katalog e-usług" hidden></section>
+
+  <!-- Pasek nawigacyjny mObywatela (Dolny Dock) -->
+  <nav class="bnav" id="bnav" aria-label="Główna nawigacja mObywatel">
+    <button type="button" class="bnav-btn active" data-view="docs" onclick="switchNavTab('docs')" aria-label="Dokumenty" aria-current="page">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M7 8h10M7 12h6M7 16h4"/></svg>
+      <span>Dokumenty</span>
+    </button>
+    <button type="button" class="bnav-btn" data-view="services" onclick="switchNavTab('services')" aria-label="Usługi">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2M12 12v3M9 13.5h6"/></svg>
+      <span>Usługi</span>
+    </button>
+    <button type="button" class="bnav-btn qr-center" onclick="document.getElementById('qrBtn').click()" aria-label="Kod QR i Znak mObywatel">
+      <div class="bnav-qr-circle">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/><rect x="7" y="7" width="3" height="3"/><rect x="14" y="7" width="3" height="3"/><rect x="7" y="14" width="3" height="3"/><rect x="14" y="14" width="3" height="3"/></svg>
+      </div>
+      <span>Kod QR</span>
+    </button>
+    <button type="button" class="bnav-btn" data-view="messages" onclick="openPocztaModal()" aria-label="Wiadomości">
+      <div style="position:relative;display:inline-block">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
+        <span class="bnav-badge" id="bnavMailBadge">1</span>
+      </div>
+      <span>Poczta</span>
+    </button>
+    <button type="button" class="bnav-btn" data-view="more" onclick="openMenu('a11y')" aria-label="Więcej i Opcje">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+      <span>Więcej</span>
+    </button>
+  </nav>
+
+<div class="auth" id="faceid" aria-hidden="true"><div class="box">
     <svg class="face" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 15V10a4 4 0 0 1 4-4h5M33 6h5a4 4 0 0 1 4 4v5M42 33v5a4 4 0 0 1-4 4h-5M15 42h-5a4 4 0 0 1-4-4v-5M17 18v3M31 18v3M24 18v8h-2M18 32s2.4 2.6 6 2.6 6-2.6 6-2.6"/></svg>
     <svg class="ok" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="24" cy="24" r="18"/><path d="m16 24.5 5.5 5.5L32 19"/></svg>
     <span>Face ID</span>
   </div></div>
   <div class="homebar" aria-hidden="true"></div>
 </div>
-<script src="osoby.js?v=34"></script>
-<script src="sylwetki.js?v=34"></script>
-<script src="core.js?v=34"></script>
-<script src="accessibility.js?v=34"></script>
-<script src="variants.js?v=34"></script>
-<script src="scenarios.js?v=34"></script>
-<script src="agent.js?v=34"></script>
-<script src="znak-kod.js?v=34"></script>
-<script src="znak.js?v=34"></script>
+<script src="osoby.js?v=35"></script>
+<script src="sylwetki.js?v=35"></script>
+<script src="core.js?v=35"></script>
+<script src="accessibility.js?v=35"></script>
+<script src="variants.js?v=35"></script>
+<script src="scenarios.js?v=35"></script>
+<script src="agent.js?v=35"></script>
+<script src="znak-kod.js?v=35"></script>
+<script src="znak.js?v=35"></script>
+<script src="uslugi.js?v=35"></script>
+<script src="weryfikacja.js?v=35"></script>
+<script src="poczta.js?v=35"></script>
 </body>
 </html>
