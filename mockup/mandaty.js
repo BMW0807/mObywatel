@@ -613,6 +613,51 @@
         line-height: 1;
         opacity: .8;
       }
+
+      /* High Contrast dla Modalu Mandatów */
+      .high-contrast #mandatyModal .modal-box {
+        background: #000000 !important;
+        border: 2px solid #ffd700 !important;
+        color: #ffffff !important;
+      }
+      .high-contrast .mandaty-hero-gauge {
+        background: #000000 !important;
+        border: 2px solid #ffffff !important;
+      }
+      .high-contrast .gauge-num {
+        color: #ffd700 !important;
+      }
+      .high-contrast .mandat-item-card {
+        background: #000000 !important;
+        border: 2px solid #ffffff !important;
+        color: #ffffff !important;
+      }
+      .high-contrast .m-art {
+        color: #ffffff !important;
+      }
+      .high-contrast .m-desc {
+        color: #ffd700 !important;
+      }
+      .high-contrast .exp-calc-box {
+        background: #000000 !important;
+        border: 1.5px solid #ffd700 !important;
+      }
+      .high-contrast .exp-calc-head {
+        color: #ffd700 !important;
+      }
+      .high-contrast .exp-date-highlight {
+        color: #ffffff !important;
+      }
+      .high-contrast .word-sec-box {
+        background: #000000 !important;
+        border: 2px solid #ffd700 !important;
+      }
+      .high-contrast .word-h {
+        color: #ffd700 !important;
+      }
+      .high-contrast .word-rules-list {
+        color: #ffffff !important;
+      }
     `;
     document.head.appendChild(style);
   }

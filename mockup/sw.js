@@ -1,23 +1,29 @@
 // Service Worker dla aplikacji mObywatel PWA
-const CACHE_NAME = 'mobywatel-pwa-v10';
+const CACHE_NAME = 'mobywatel-pwa-v11';
 const PRECACHE = [
   '/',
   '/index.html',
-  '/style.css?v=40',
-  '/core.js?v=40',
-  '/accessibility.js?v=40',
-  '/osoby.js?v=40',
-  '/variants.js?v=40',
-  '/scenarios.js?v=40',
-  '/agent.js?v=40',
-  '/uslugi.js?v=40',
-  '/weryfikacja.js?v=40',
-  '/poczta.js?v=40',
-  '/ikp-integracja.js?v=40',
+  '/style.css?v=41',
+  '/core.js?v=41',
+  '/accessibility.js?v=41',
+  '/osoby.js?v=41',
+  '/variants.js?v=41',
+  '/scenarios.js?v=41',
+  '/agent.js?v=41',
+  '/uslugi.js?v=41',
+  '/weryfikacja.js?v=41',
+  '/poczta.js?v=41',
+  '/ikp-integracja.js?v=41',
   '/manifest.json',
   '/assets/icon-mobywatel.svg',
   '/assets/card-ikp-v2.svg',
-  '/assets/card-firma-v2.svg'
+  '/assets/card-firma-v2.svg',
+  '/assets/card-emeryt.svg',
+  '/assets/card-karta-polaka.svg',
+  '/assets/card-nauczyciel.svg',
+  '/assets/card-pwz-lekarz.svg',
+  '/assets/card-pwz-pielegniarka.svg',
+  '/assets/card-legitymacja-szkolna.svg'
 ];
 
 self.addEventListener('install', event => {

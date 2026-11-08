@@ -1122,17 +1122,28 @@
       /* --- Wysoki kontrast --- */
       .high-contrast .spotlight-box {
         background: #000 !important;
-        border: 2px solid #fff !important;
+        border: 2px solid #ffd700 !important;
       }
+      .high-contrast .sp-head-titles h2 { color: #ffffff !important; }
+      .high-contrast .sp-head-titles small { color: #ffd700 !important; }
+      .high-contrast .sp-close-btn { background: #000 !important; color: #ffd700 !important; border: 1.5px solid #ffd700 !important; }
       .high-contrast .sp-input-wrap {
         background: #000 !important;
-        border: 2px solid #fff !important;
+        border: 2px solid #ffd700 !important;
       }
+      .high-contrast .sp-input-field { color: #ffffff !important; }
+      .high-contrast .sp-input-field::placeholder { color: #ffd700 !important; opacity: 0.85 !important; }
+      .high-contrast .sp-cat-chip { background: #000 !important; border: 1.5px solid #ffffff !important; color: #ffffff !important; }
+      .high-contrast .sp-cat-chip.active { background: #ffd700 !important; color: #000000 !important; border-color: #ffd700 !important; font-weight: 700 !important; }
       .high-contrast .sp-item-card {
-        background: #111 !important;
-        border: 2px solid #fff !important;
+        background: #000 !important;
+        border: 2px solid #ffffff !important;
       }
-      .high-contrast .sp-card-title { color: #fff !important; }
+      .high-contrast .sp-card-title { color: #ffffff !important; font-weight: 700 !important; }
+      .high-contrast .sp-card-desc { color: #ffd700 !important; }
+      .high-contrast .sp-badge { color: #00ff66 !important; border: 1px solid #00ff66 !important; background: #000000 !important; }
+      .high-contrast .sp-act-open { background: #ffd700 !important; color: #000000 !important; border: 2px solid #ffffff !important; font-weight: 700 !important; }
+      .high-contrast .sp-act-ai { background: #000000 !important; color: #ffd700 !important; border: 1.5px solid #ffd700 !important; font-weight: 700 !important; }
       .high-contrast .sp-card-desc { color: #ffd700 !important; }
       .high-contrast .sp-cat-chip.active {
         background: #ffd700 !important;
@@ -1613,6 +1624,8 @@
   };
 
   root.SPOTLIGHT = SPOTLIGHT;
+  root.openSpotlight = function(q) { return SPOTLIGHT.open(q); };
+  root.closeSpotlight = function() { return SPOTLIGHT.close(); };
 
   // Inicjalizacja po załadowaniu DOM
   if (document.readyState === 'loading') {

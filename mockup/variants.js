@@ -32,7 +32,7 @@ function buildAlt(){
  const stripUrl = d => (typeof cardImgUrl === 'function' ? cardImgUrl(d.strip) : d.strip);
 
  if(VARIANT==='karuzela'){
-  ALT.innerHTML=`<div class="car" id="car">${DOCS.map(d=>`<button class="ccard dface" style="background-image:url(${imgUrl(d)})" aria-label="${d.name}" data-id="${d.id}">${faceHTML(d)}</button>`).join('')}</div>
+  ALT.innerHTML=`<div class="car" id="car">${DOCS.map(d=>`<button class="ccard dface" style="background-image:url(&quot;${imgUrl(d)}&quot;)" aria-label="${d.name}" data-id="${d.id}">${faceHTML(d)}</button>`).join('')}</div>
    <div class="dots">${DOCS.map((d,i)=>`<i class="${i===carIdx?'on':''}"></i>`).join('')}</div><div class="cstat" id="cstat"></div><div class="acts" id="acts"></div>`;
   const car=$('#car');
   car.querySelectorAll('.ccard').forEach((c,i)=>c.onclick=()=>{if(i!==carIdx){car.scrollTo({left:i*(c.offsetWidth+12),behavior:'smooth'});return}openDoc(c.dataset.id)});
@@ -40,7 +40,7 @@ function buildAlt(){
   renderActs();
  }
  if(VARIANT==='pion'){
-  ALT.innerHTML=`<div class="vwrap"><div class="vcar" id="vcar">${DOCS.map(d=>`<button class="vcard dface" style="background-image:url(${imgUrl(d)})" aria-label="${d.name}" data-id="${d.id}">${faceHTML(d)}</button>`).join('')}</div>
+  ALT.innerHTML=`<div class="vwrap"><div class="vcar" id="vcar">${DOCS.map(d=>`<button class="vcard dface" style="background-image:url(&quot;${imgUrl(d)}&quot;)" aria-label="${d.name}" data-id="${d.id}">${faceHTML(d)}</button>`).join('')}</div>
    <div class="dots vdots">${DOCS.map((d,i)=>`<i class="${i===carIdx?'on':''}"></i>`).join('')}</div></div><div class="cstat" id="cstat"></div><div class="acts" id="acts"></div>`;
   const vc=$('#vcar');
   vc.querySelectorAll('.vcard').forEach((c,i)=>c.onclick=()=>{if(i!==carIdx){vc.scrollTo({top:i*(c.offsetHeight+12),behavior:'smooth'});return}openDoc(c.dataset.id)});
@@ -48,14 +48,14 @@ function buildAlt(){
   renderActs();
  }
  if(VARIANT==='lista'){
-  ALT.innerHTML=DOCS.map(d=>`<button class="strip" style="background-image:url(${stripUrl(d)})" data-id="${d.id}">
+  ALT.innerHTML=DOCS.map(d=>`<button class="strip" style="background-image:url(&quot;${stripUrl(d)}&quot;)" data-id="${d.id}">
    <span class="lead">${d.photo?`<span class="avatar">${PHOTO}</span>`:d.plate?plateH(d.plate):''}</span>
    <span class="st"><b>${d.name}</b><small>${d.id==='dowod'?PRIV(OS.imie+' '+OS.nazwisko,OS.imie):(d.who||OS.imie+' '+OS.nazwisko)}</small><em>${d.id==='dowod'?PRIV(d.line,'Dane ukryte'):d.line}</em></span>
    ${d.alert?`<span class="pill">${d.alert}</span>`:`<span class="chev">${svg('chev')}</span>`}</button>`).join('');
   ALT.querySelectorAll('.strip').forEach(b=>b.onclick=()=>openDoc(b.dataset.id));
  }
  if(VARIANT==='siatka'){
-  ALT.innerHTML=`<div class="grid">${DOCS.map(d=>`<button class="gitem" data-id="${d.id}"><span class="gmini dface" style="background-image:url(${imgUrl(d)})">${faceHTML(d)}</span><span class="gcap"><b>${d.name}</b>${statusH(d)}</span></button>`).join('')}</div>`;
+  ALT.innerHTML=`<div class="grid">${DOCS.map(d=>`<button class="gitem" data-id="${d.id}"><span class="gmini dface" style="background-image:url(&quot;${imgUrl(d)}&quot;)">${faceHTML(d)}</span><span class="gcap"><b>${d.name}</b>${statusH(d)}</span></button>`).join('')}</div>`;
   ALT.querySelectorAll('.gitem').forEach(b=>b.onclick=()=>openDoc(b.dataset.id));
  }
 }

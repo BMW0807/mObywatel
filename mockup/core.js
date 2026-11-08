@@ -1,6 +1,7 @@
 function cardImgUrl(u) {
   if (!u) return '';
-  return u + (u.indexOf('?') !== -1 ? '&' : '?') + 'v=40';
+  if (u.startsWith('data:')) return u;
+  return u + (u.indexOf('?') !== -1 ? '&' : '?') + 'v=41';
 }
 const $=s=>document.querySelector(s);
 const app=$('#app'),input=$('#prompt');app.classList.add('ukryte');let msgs=$('#msgs'),inflight=0;
@@ -58,7 +59,7 @@ function faceHTML(d){
 const STACK_ORDER=DOCS.map(d=>d.id).reverse();
 function renderStack(){
  const st=$('#stack');st.innerHTML='';
- STACK_ORDER.map(id=>DOCS.find(d=>d.id===id)).forEach((d,i)=>{const c=document.createElement('button');c.className='card';c.style.backgroundImage=`url(${cardImgUrl(d.img)})`;c.setAttribute('aria-label',d.name);c.style.zIndex=i+1;c.innerHTML=faceHTML(d);
+ STACK_ORDER.map(id=>DOCS.find(d=>d.id===id)).forEach((d,i)=>{const c=document.createElement('button');c.className='card';c.style.backgroundImage=`url("${cardImgUrl(d.img)}")`;c.setAttribute('aria-label',d.name);c.style.zIndex=i+1;c.innerHTML=faceHTML(d);
   c.onclick=()=>{if(app.classList.contains('chatting')){exitChat();return}openDoc(d.id)};st.append(c)});
 }
 renderStack();
@@ -143,7 +144,7 @@ function openDoc(id){
  const stEl=$('.status'),top=getComputedStyle(stEl).display!=='none'?(stEl.offsetHeight||36):6;
  const hero=id==='dowod'&&d.screen
   ?`<div class="idcard"><div class="crop"><img src="${d.screen}" alt="mDowód: ${OS.imie} ${OS.nazwisko}" loading="lazy" decoding="async">${window.LANG&&window.LANG!=='pl'?`<div class="valid idv">${svg('check')}Dokument ważny</div>`:''}</div></div>`
-  :`<div class="bigcard" style="background-image:url(${cardImgUrl(d.img)})">${faceHTML(d)}</div><div class="valid">${svg('check')}Dokument ważny</div><div class="ui"><div class="rows" style="padding-top:2px">${rowsH(d.rows)}</div></div>`;
+  :`<div class="bigcard" style="background-image:url(&quot;${cardImgUrl(d.img)}&quot;)">${faceHTML(d)}</div><div class="valid">${svg('check')}Dokument ważny</div><div class="ui"><div class="rows" style="padding-top:2px">${rowsH(d.rows)}</div></div>`;
  let q;
  if(id==='dowod'){
   q=[['scan','Potwierdź swoje dane','qr'],['id','Dane dowodu','data'],['shield','Zastrzeż PESEL','pesel'],['doc','Zaświadczenie PDF','cert'],['dots','Zapytaj asystenta','ask']];
