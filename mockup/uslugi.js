@@ -375,6 +375,15 @@ function renderUslugiTab() {
     </div>
 
     <div class="services-grid">
+      <button type="button" class="service-card highlight" onclick="openIkpModal('recepty')">
+        <div class="sc-icon" style="background:rgba(16,185,129,.12);color:#059669">🏥</div>
+        <div class="sc-content">
+          <b>Zdrowie i e-Recepty (IKP)</b>
+          <small>Recepty z kodem kreskowym, skierowania, eWUŚ, EKUZ i leki stałe</small>
+        </div>
+        <span class="sc-arrow">→</span>
+      </button>
+
       <button type="button" class="service-card highlight" onclick="openZastrzezPeselModal()">
         <div class="sc-icon" style="background:rgba(220,20,60,.1);color:var(--red)">🔒</div>
         <div class="sc-content">

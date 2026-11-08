@@ -1,18 +1,19 @@
 // Service Worker dla aplikacji mObywatel PWA
-const CACHE_NAME = 'mobywatel-pwa-v6';
+const CACHE_NAME = 'mobywatel-pwa-v7';
 const PRECACHE = [
   '/',
   '/index.html',
-  '/style.css?v=35',
-  '/core.js?v=35',
-  '/accessibility.js?v=35',
-  '/osoby.js?v=35',
-  '/variants.js?v=35',
-  '/scenarios.js?v=35',
-  '/agent.js?v=35',
-  '/uslugi.js?v=35',
-  '/weryfikacja.js?v=35',
-  '/poczta.js?v=35',
+  '/style.css?v=36',
+  '/core.js?v=36',
+  '/accessibility.js?v=36',
+  '/osoby.js?v=36',
+  '/variants.js?v=36',
+  '/scenarios.js?v=36',
+  '/agent.js?v=36',
+  '/uslugi.js?v=36',
+  '/weryfikacja.js?v=36',
+  '/poczta.js?v=36',
+  '/ikp-integracja.js?v=36',
   '/manifest.json',
   '/assets/icon-mobywatel.svg'
 ];
@@ -37,7 +38,6 @@ self.addEventListener('activate', event => {
 
 self.addEventListener('fetch', event => {
   if (event.request.method !== 'GET') return;
-  // Network first dla API i statyków z fallbackiem do cache
   event.respondWith(
     fetch(event.request).then(response => {
       if (response && response.status === 200) {
