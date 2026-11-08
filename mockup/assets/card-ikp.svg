@@ -23,9 +23,7 @@
   </g>
   <!-- ECG / Pulse wave -->
   <path d="M 30 330 L 120 330 L 140 310 L 155 355 L 175 285 L 195 345 L 210 330 L 320 330" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-  <!-- Emblem header text -->
-  <text x="40" y="55" font-family="'Inter', sans-serif" font-size="13" font-weight="700" letter-spacing="1.5" fill="rgba(255,255,255,0.75)">RZECZPOSPOLITA POLSKA</text>
-  <text x="40" y="74" font-family="'Inter', sans-serif" font-size="11" font-weight="500" letter-spacing="1" fill="rgba(255,255,255,0.55)">MINISTERSTWO ZDROWIA • NFZ</text>
-  <circle cx="550" cy="55" r="18" fill="rgba(255,255,255,0.1)"/>
-  <path d="M 544 55 L 556 55 M 550 49 L 550 61" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+  <!-- Top right medical emblem -->
+  <circle cx="550" cy="52" r="16" fill="rgba(255,255,255,0.12)"/>
+  <path d="M 544 52 L 556 52 M 550 46 L 550 58" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/>
 </svg>

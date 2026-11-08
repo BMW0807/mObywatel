@@ -62,6 +62,11 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--red);outline-of
   transition:top .5s var(--ease),transform .5s var(--ease),filter .3s}
 .card:active{filter:brightness(.96)}
 .phone.chatting .card{cursor:default}
+.stack .card:not(:last-child) .face .ov,
+.stack .card:not(:last-child) .face .syl {
+  opacity: 0;
+  pointer-events: none;
+}
 .pocket-hint{position:absolute;left:50%;bottom:6px;transform:translateX(-50%);width:36px;height:5px;border-radius:3px;background:rgba(255,255,255,.75);opacity:0;transition:opacity .3s;pointer-events:none;z-index:30}
 .phone.chatting .pocket-hint{opacity:1}
 
