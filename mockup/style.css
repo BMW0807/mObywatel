@@ -121,9 +121,11 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--red);outline-of
 .ui.warn .ic{background:var(--warn-wash);color:var(--warn)}
 .ui .tt{font-weight:600;font-size:16px;line-height:21px;letter-spacing:-.01em}
 .ui .rows{padding:0 16px 4px}
-.ui .row{display:flex;justify-content:space-between;gap:16px;padding:9px 0;border-top:1px solid var(--hair);font-size:14px;line-height:19px}
-.ui .row span{color:var(--ink2);flex:none}
-.ui .row b{font-weight:500;text-align:right;min-width:0;overflow-wrap:anywhere}
+.ui .row{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:3px 12px;padding:9px 0;border-top:1px solid var(--hair);font-size:14px;line-height:20px}
+.ui .row span{color:var(--ink2);flex:1 1 auto;min-width:90px;max-width:100%;word-break:normal;overflow-wrap:break-word}
+.ui .row b{font-weight:500;text-align:right;flex:1 1 auto;min-width:100px;max-width:100%;word-break:normal;overflow-wrap:break-word}
+.ui .row.row-stack{flex-direction:column;align-items:flex-start;gap:3px}
+.ui .row.row-stack b{text-align:left;width:100%}
 .ui .body{padding:0 16px 12px;font-size:14.5px;line-height:21px}
 .ui .note{margin:0 16px 12px;font-size:13px;line-height:18px;color:var(--ink2)}
 .ui .flag{margin:4px 16px 12px;padding:10px 12px;border-radius:12px;background:var(--warn-wash);color:var(--warn);font-size:13.5px;line-height:19px}
@@ -760,7 +762,9 @@ html:not([lang="pl"]) .quick button{flex:1 1 0;width:auto;min-width:0;font-size:
 .upo-data-box { margin-bottom: 20px; }
 .upo-data-box h3 { font-size: 13.5px; font-weight: 700; color: #334155; margin: 0 0 8px; }
 .upo-rows { border-top: 1px solid #e2e8f0; }
-.upo-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e2e8f0; font-size: 13px; }
+.upo-row { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 4px 10px; padding: 8px 0; border-bottom: 1px solid #e2e8f0; font-size: 13px; }
+.upo-label { color: #64748b; flex: 1 1 auto; max-width: 100%; }
+.upo-val { font-weight: 600; text-align: right; flex: 1 1 auto; max-width: 100%; word-break: normal; overflow-wrap: break-word; }
 .upo-label { color: #64748b; }
 .upo-val { font-weight: 600; }
 .upo-footer-legal { display: flex; gap: 14px; align-items: center; border-top: 1px dashed #cbd5e1; padding-top: 16px; }

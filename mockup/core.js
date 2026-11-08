@@ -136,7 +136,7 @@ function qrSVG(seed=7){
  for(let y=0;y<n;y++)for(let x=0;x<n;x++){if((x<8&&y<8)||(x>16&&y<8)||(x<8&&y>16))continue;if(r()>.52)p+=`<rect x="${x}" y="${y}" width="1" height="1"/>`}
  return `<svg viewBox="-1 -1 27 27" fill="currentColor" shape-rendering="crispEdges">${p}${fin(0.5,0.5)}${fin(18.5,0.5)}${fin(0.5,18.5)}</svg>`;
 }
-function rowsH(rows){return rows.map(([k,v])=>`<div class="row"><span>${k}</span><b>${v}</b></div>`).join('')}
+function rowsH(rows){return rows.map(([k,v])=>{const s=(k&&k.length>22)||(v&&v.length>30);return `<div class="row${s?' row-stack':''}"><span>${k}</span><b>${v}</b></div>`}).join('')}
 function closeDoc(){const det=$('#detail');if(!det||!det.classList.contains('on'))return;det.classList.remove('on');if(typeof restoreDialogFocus==='function')restoreDialogFocus('detail')}
 function openDoc(id){
  const d=DOCS.find(x=>x.id===id),det=$('#detail');
