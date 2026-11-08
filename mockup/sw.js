@@ -1,25 +1,23 @@
 // Service Worker dla aplikacji mObywatel PWA
-const CACHE_NAME = 'mobywatel-pwa-v9';
+const CACHE_NAME = 'mobywatel-pwa-v10';
 const PRECACHE = [
   '/',
   '/index.html',
-  '/style.css?v=38',
-  '/core.js?v=38',
-  '/accessibility.js?v=38',
-  '/osoby.js?v=38',
-  '/variants.js?v=38',
-  '/scenarios.js?v=38',
-  '/agent.js?v=38',
-  '/uslugi.js?v=38',
-  '/weryfikacja.js?v=38',
-  '/poczta.js?v=38',
-  '/ikp-integracja.js?v=38',
-  '/mandaty.js?v=38',
-  '/powiadomienia-eksport.js?v=38',
-  '/katalog-kart.js?v=38',
-  '/spotlight.js?v=38',
+  '/style.css?v=40',
+  '/core.js?v=40',
+  '/accessibility.js?v=40',
+  '/osoby.js?v=40',
+  '/variants.js?v=40',
+  '/scenarios.js?v=40',
+  '/agent.js?v=40',
+  '/uslugi.js?v=40',
+  '/weryfikacja.js?v=40',
+  '/poczta.js?v=40',
+  '/ikp-integracja.js?v=40',
   '/manifest.json',
-  '/assets/icon-mobywatel.svg'
+  '/assets/icon-mobywatel.svg',
+  '/assets/card-ikp-v2.svg',
+  '/assets/card-firma-v2.svg'
 ];
 
 self.addEventListener('install', event => {

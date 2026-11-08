@@ -1,320 +1,837 @@
-/* ==========================================================================
-   mObywatel 2.0 - Katalog Dokumentów Publicznych (+ Dodaj dokument)
-   (katalog-kart.js)
-   ========================================================================== */
+/**
+ * Katalog Dokumentów Państwowych (mObywatel 2.0)
+ * Moduł "+ Dodaj dokument" umożliwiający dynamiczne pobieranie i dodawanie
+ * oficjalnych dokumentów państwowych do portfela mObywatela.
+ */
 
-const KATALOG_KART = {
-  katalog: [
+(function () {
+  'use strict';
+
+  // --- 1. Definicje tła kart SVG (jako gotowe data URI) ---
+  const SVG_BGS = {
+    emeryt: `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400" width="600" height="400"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="%23064e3b"/><stop offset="50%" stop-color="%23047857"/><stop offset="100%" stop-color="%23065f46"/></linearGradient><radialGradient id="gl" cx="80%" cy="20%" r="60%"><stop offset="0%" stop-color="rgba(52,211,153,0.35)"/><stop offset="100%" stop-color="rgba(6,78,59,0)"/></radialGradient></defs><rect width="600" height="400" rx="36" fill="url(%23g)"/><rect width="600" height="400" rx="36" fill="url(%23gl)"/><path d="M0 110 Q300 150 600 100" fill="none" stroke="rgba(255,255,255,0.14)" stroke-width="2"/><path d="M0 320 Q300 270 600 325" fill="none" stroke="rgba(52,211,153,0.18)" stroke-width="2"/><g transform="translate(440,220)" stroke="rgba(255,255,255,0.08)" stroke-width="3" fill="none"><circle cx="0" cy="0" r="62"/><path d="M-28 -14 L0 -42 L28 -14 L16 32 L-16 32 Z"/><circle cx="0" cy="-4" r="11"/></g><rect x="496" y="34" width="68" height="26" rx="6" fill="rgba(255,255,255,0.15)" stroke="rgba(255,255,255,0.3)" stroke-width="1.5"/><text x="530" y="52" font-family="sans-serif" font-size="11" font-weight="700" fill="%23fff" text-anchor="middle">ZUS</text></svg>`,
+
+    karta_polaka: `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400" width="600" height="400"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="%23881337"/><stop offset="50%" stop-color="%239f1239"/><stop offset="100%" stop-color="%234c0519"/></linearGradient><radialGradient id="gl" cx="80%" cy="20%" r="60%"><stop offset="0%" stop-color="rgba(251,113,133,0.3)"/><stop offset="100%" stop-color="rgba(136,19,55,0)"/></radialGradient></defs><rect width="600" height="400" rx="36" fill="url(%23g)"/><rect width="600" height="400" rx="36" fill="url(%23gl)"/><path d="M0 100 Q300 135 600 95" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="2"/><path d="M0 108 Q300 143 600 103" fill="none" stroke="rgba(225,29,72,0.4)" stroke-width="2"/><g transform="translate(440,225)" stroke="rgba(255,255,255,0.09)" stroke-width="3" fill="none"><path d="M0 -50 L12 -24 L38 -18 L16 2 L26 32 L0 16 L-26 32 L-16 2 L-38 -18 L-12 -24 Z"/><circle cx="0" cy="-6" r="12"/></g><rect x="510" y="34" width="54" height="26" rx="6" fill="rgba(255,255,255,0.15)" stroke="rgba(255,255,255,0.3)" stroke-width="1.5"/><text x="537" y="52" font-family="sans-serif" font-size="11" font-weight="700" fill="%23fff" text-anchor="middle">RP</text></svg>`,
+
+    nauczyciel: `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400" width="600" height="400"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="%231e3a8a"/><stop offset="50%" stop-color="%231d4ed8"/><stop offset="100%" stop-color="%23172554"/></linearGradient><radialGradient id="gl" cx="80%" cy="20%" r="60%"><stop offset="0%" stop-color="rgba(96,165,250,0.35)"/><stop offset="100%" stop-color="rgba(30,58,138,0)"/></radialGradient></defs><rect width="600" height="400" rx="36" fill="url(%23g)"/><rect width="600" height="400" rx="36" fill="url(%23gl)"/><path d="M0 115 Q300 150 600 110" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="2"/><g transform="translate(440,220)" stroke="rgba(255,255,255,0.08)" stroke-width="3" fill="none"><path d="M-40 20 Q-20 0 0 10 Q20 0 40 20 L40 -20 Q20 -40 0 -30 Q-20 -40 -40 -20 Z"/><line x1="0" y1="-30" x2="0" y2="10"/></g><rect x="496" y="34" width="68" height="26" rx="6" fill="rgba(255,255,255,0.15)" stroke="rgba(255,255,255,0.3)" stroke-width="1.5"/><text x="530" y="52" font-family="sans-serif" font-size="11" font-weight="700" fill="%23fff" text-anchor="middle">MEN</text></svg>`,
+
+    pwz_lekarz: `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400" width="600" height="400"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="%230f766e"/><stop offset="50%" stop-color="%230284c7"/><stop offset="100%" stop-color="%23134e4a"/></linearGradient><radialGradient id="gl" cx="80%" cy="20%" r="60%"><stop offset="0%" stop-color="rgba(56,189,248,0.35)"/><stop offset="100%" stop-color="rgba(15,118,110,0)"/></radialGradient></defs><rect width="600" height="400" rx="36" fill="url(%23g)"/><rect width="600" height="400" rx="36" fill="url(%23gl)"/><path d="M0 105 Q300 145 600 95" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="2"/><g transform="translate(440,220)" stroke="rgba(255,255,255,0.09)" stroke-width="3" fill="none"><line x1="0" y1="-55" x2="0" y2="55"/><path d="M-15 -35 C-5 -45 15 -30 0 -15 C-20 0 20 20 0 35"/></g><rect x="502" y="34" width="62" height="26" rx="6" fill="rgba(255,255,255,0.15)" stroke="rgba(255,255,255,0.3)" stroke-width="1.5"/><text x="533" y="52" font-family="sans-serif" font-size="11" font-weight="700" fill="%23fff" text-anchor="middle">NIL</text></svg>`,
+
+    pwz_pielegniarka: `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400" width="600" height="400"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="%234338ca"/><stop offset="50%" stop-color="%236366f1"/><stop offset="100%" stop-color="%23312e81"/></linearGradient><radialGradient id="gl" cx="80%" cy="20%" r="60%"><stop offset="0%" stop-color="rgba(165,180,252,0.35)"/><stop offset="100%" stop-color="rgba(67,56,202,0)"/></radialGradient></defs><rect width="600" height="400" rx="36" fill="url(%23g)"/><rect width="600" height="400" rx="36" fill="url(%23gl)"/><path d="M0 105 Q300 140 600 100" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="2"/><g transform="translate(440,220)" stroke="rgba(255,255,255,0.09)" stroke-width="3" fill="none"><circle cx="0" cy="0" r="48"/><path d="M-18 0 H18 M0 -18 V18"/></g><rect x="490" y="34" width="74" height="26" rx="6" fill="rgba(255,255,255,0.15)" stroke="rgba(255,255,255,0.3)" stroke-width="1.5"/><text x="527" y="52" font-family="sans-serif" font-size="10" font-weight="700" fill="%23fff" text-anchor="middle">NIPiP</text></svg>`,
+
+    legitymacja_szkolna: `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400" width="600" height="400"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="%239a3412"/><stop offset="50%" stop-color="%23ea580c"/><stop offset="100%" stop-color="%237c2d12"/></linearGradient><radialGradient id="gl" cx="80%" cy="20%" r="60%"><stop offset="0%" stop-color="rgba(253,186,116,0.35)"/><stop offset="100%" stop-color="rgba(154,52,18,0)"/></radialGradient></defs><rect width="600" height="400" rx="36" fill="url(%23g)"/><rect width="600" height="400" rx="36" fill="url(%23gl)"/><path d="M0 110 Q300 145 600 105" fill="none" stroke="rgba(255,255,255,0.16)" stroke-width="2"/><g transform="translate(440,220)" stroke="rgba(255,255,255,0.08)" stroke-width="3" fill="none"><rect x="-35" y="-35" width="70" height="70" rx="14"/><path d="M-20 -5 L0 15 L20 -5"/></g><rect x="496" y="34" width="68" height="26" rx="6" fill="rgba(255,255,255,0.15)" stroke="rgba(255,255,255,0.3)" stroke-width="1.5"/><text x="530" y="52" font-family="sans-serif" font-size="11" font-weight="700" fill="%23fff" text-anchor="middle">MEN</text></svg>`
+  };
+
+  // --- 2. Baza wzorcowa dokumentów do dodania (Katalog Państwowy) ---
+  const KATALOG_DOKUMENTOW = [
     {
-      id: 'zus_emeryt',
-      name: 'mLegitymacja emeryta/rencisty',
-      sub: 'ZUS • Emerytura powszechna',
-      cat: 'Spółeczne i emerytalne',
-      icon: '🛡️',
-      source: 'Zakład Ubezpieczeń Społecznych (ZUS)',
+      id: 'emeryt',
+      kategoria: 'emerytura',
+      kategoriaLabel: 'Emerytury i ZUS',
+      nazwa: 'mLegitymacja emeryta/rencisty',
+      instytucja: 'ZUS • Zakład Ubezpieczeń Społecznych',
       badge: 'ZUS',
-      color: '#065f46',
-      gradient: 'linear-gradient(135deg, #064e3b 0%, #047857 50%, #065f46 100%)',
-      docData: (os) => ({
-        id: 'zus_emeryt',
-        name: 'mLegitymacja emeryta/rencisty',
-        img: 'assets/card-emeryt.svg',
-        sub: 'ZUS • Ważna bezterminowo',
-        holder: `${os.imie} ${os.nazwisko}`.toUpperCase(),
-        line: 'Nr legitymacji: EL/2026/89412',
-        f: [
-          ['Nr legitymacji', 'EL/2026/89412'],
-          ['Świadczenie', 'Emerytura'],
-          ['Wydana przez', 'ZUS I O/Warszawa'],
-          ['Status', 'Ważna']
-        ],
-        rows: [
-          ['Posiadacz', `${os.imie} ${os.nazwisko}`],
-          ['PESEL', os.moje.pesel || '83051203455'],
-          ['Numer legitymacji', 'EL/2026/89412'],
-          ['Rodzaj świadczenia', 'Emerytura powszechna'],
-          ['Organ wydający', 'Zakład Ubezpieczeń Społecznych, Oddział I'],
-          ['Data wydania', '12.01.2024'],
-          ['Ważność', 'Bezterminowo'],
-          ['Uprawnienia', 'Ulga na przejazdy PKP/KM, zniżki komunalne, apteczne']
-        ]
-      })
-    },
-    {
-      id: 'karta_nauczyciela',
-      name: 'Karta Nauczyciela',
-      sub: 'MEN • Nauczyciel mianowany',
-      cat: 'Karty zawodowe i edukacja',
-      icon: '🎓',
-      source: 'Ministerstwo Edukacji Narodowej (MEN)',
-      badge: 'MEN',
-      color: '#1e3a8a',
-      gradient: 'linear-gradient(135deg, #172554 0%, #1e40af 50%, #1d4ed8 100%)',
-      docData: (os) => ({
-        id: 'karta_nauczyciela',
-        name: 'Karta Nauczyciela',
-        img: 'assets/card-legitymacja-bez.webp',
-        sub: 'MEN • Legitymacja służbowa',
-        holder: `${os.imie} ${os.nazwisko}`.toUpperCase(),
-        line: 'Szkoła Podstawowa nr 15 w Krakowie',
-        f: [
-          ['Nr legitymacji', 'KN/2025/0412'],
-          ['Stopień', 'Nauczyciel mianowany'],
-          ['Ważna do', '31.08.2028'],
-          ['Ulga', '33% przejazdy kolejowe']
-        ],
-        rows: [
-          ['Nauczyciel', `${os.imie} ${os.nazwisko}`],
-          ['Szkoła', 'Szkoła Podstawowa nr 15 im. Jana III Sobieskiego'],
-          ['Numer służbowy', 'KN/2025/0412'],
-          ['Stopień awansu', 'Nauczyciel mianowany'],
-          ['Ważność', 'Ważna do 31.08.2028'],
-          ['Uprawnienia', 'Zniżki na przejazdy kolejowe 33%, ulgi do muzeów państwowych']
-        ]
-      })
-    },
-    {
-      id: 'pwz_lekarza',
-      name: 'Prawo Wykonywania Zawodu Lekarza',
-      sub: 'NIL • Naczelna Izba Lekarska',
-      cat: 'Karty zawodowe i edukacja',
-      icon: '🩺',
-      source: 'Naczelna Izba Lekarska (NIL)',
-      badge: 'PWZ',
-      color: '#0f766e',
-      gradient: 'linear-gradient(135deg, #134e4a 0%, #0f766e 50%, #14b8a6 100%)',
-      docData: (os) => ({
-        id: 'pwz_lekarza',
-        name: 'PWZ Lekarza',
-        img: 'assets/card-ikp.svg',
-        sub: 'Naczelna Izba Lekarska • Aktywne',
-        holder: `LEK. MED. ${os.imie} ${os.nazwisko}`.toUpperCase(),
-        line: 'PWZ nr 3829104, OIL Warszawa',
-        f: [
-          ['Nr PWZ', '3829104'],
-          ['Izba', 'OIL w Warszawie'],
-          ['Tytuł', 'Lekarz medycyny'],
-          ['Status', 'Prawo stałe']
-        ],
-        rows: [
-          ['Lekarz', `${os.imie} ${os.nazwisko}`],
-          ['Numer PWZ', '3829104'],
-          ['Okręgowa Izba', 'Okręgowa Izba Lekarska w Warszawie'],
-          ['Data przyznania prawa', '24.10.2010'],
-          ['Specjalizacja', 'Medycyna rodzinna (w trakcie certyfikacji)'],
-          ['Status prawa', 'Wykonywanie zawodu aktywne, bez ograniczeń']
-        ]
-      })
+      ikona: 'id',
+      opis: 'Elektroniczne potwierdzenie prawa do świadczeń emerytalno-rentowych ZUS, ulgowych przejazdów i bezpłatnych leków.',
+      build: function (os) {
+        const pesel = (os && os.moje && os.moje.pesel) || '91071427765';
+        const imieNazw = (os && os.moje && os.moje.imie_nazwisko) || 'Marta Kowalska';
+        return {
+          id: 'emeryt',
+          name: 'mLegitymacja emeryta-rencisty',
+          img: SVG_BGS.emeryt,
+          strip: SVG_BGS.emeryt,
+          sub: 'ZUS • Ważna bezterminowo',
+          photo: 1,
+          holder: imieNazw.toUpperCase(),
+          line: 'ZUS EL/140284/2026',
+          f: [
+            ['PESEL', pesel],
+            ['Nr legitymacji', 'EL/140284/2026'],
+            ['Świadczenie', 'Emerytura ZUS'],
+            ['Ważna do', 'bezterminowo']
+          ],
+          rows: [
+            ['Posiadacz', imieNazw],
+            ['PESEL', pesel],
+            ['Numer legitymacji', 'EL/140284/2026'],
+            ['Rodzaj świadczenia', 'Emerytura powszechna'],
+            ['Organ wydający', 'Zakład Ubezpieczeń Społecznych, I Oddział'],
+            ['Ważność', 'Bezterminowo'],
+            ['Uprawnienia', 'Zniżki PKP/Polregio, ulgi komunikacji miejskiej, program Leki 65+']
+          ]
+        };
+      }
     },
     {
       id: 'karta_polaka',
-      name: 'Karta Polaka',
-      sub: 'MSZ • Przynależność do Narodu Polskiego',
-      cat: 'Tożsamość i obywatelstwo',
-      icon: '🇵🇱',
-      source: 'Ministerstwo Spraw Zagranicznych (MSZ)',
-      badge: 'MSZ',
-      color: '#831843',
-      gradient: 'linear-gradient(135deg, #500724 0%, #9d174d 50%, #be185d 100%)',
-      docData: (os) => ({
-        id: 'karta_polaka',
-        name: 'Karta Polaka',
-        img: 'assets/card-mdowod-bez.webp',
-        sub: 'MSZ • Ważna 10 lat',
-        holder: `${os.imie} ${os.nazwisko}`.toUpperCase(),
-        line: 'Decyzja Konsula RP, seria KP 002148',
-        f: [
-          ['Seria i numer', 'KP 002148'],
-          ['Obywatelstwo', 'Polskie pochodzenie'],
-          ['Wydana przez', 'Konsulat Generalny RP'],
-          ['Ważna do', '14.05.2034']
-        ],
-        rows: [
-          ['Posiadacz', `${os.imie} ${os.nazwisko}`],
-          ['Numer Karty Polaka', 'KP 002148'],
-          ['Organ wydający', 'Konsulat Generalny Rzeczypospolitej Polskiej'],
-          ['Ważność', 'Ważna do 14.05.2034 (10 lat od wydania)'],
-          ['Uprawnienia', 'Zwolnienie z opłat za wizy, legalna praca bez zezwolenia, ulga 37% PKP']
-        ]
-      })
+      kategoria: 'tozsamosc',
+      kategoriaLabel: 'Tożsamość i status',
+      nazwa: 'Karta Polaka',
+      instytucja: 'Rzeczpospolita Polska • MSZ',
+      badge: 'RP / MSZ',
+      ikona: 'shield',
+      opis: 'Dokument potwierdzający przynależność do Narodu Polskiego, dający prawo do zwolnienia z wizy i 37% ulgi kolejowej.',
+      build: function (os) {
+        const imieNazw = (os && os.moje && os.moje.imie_nazwisko) || 'Marta Kowalska';
+        return {
+          id: 'karta_polaka',
+          name: 'Karta Polaka',
+          img: SVG_BGS.karta_polaka,
+          strip: SVG_BGS.karta_polaka,
+          sub: 'RP • Ważna do 18.06.2034',
+          photo: 1,
+          holder: imieNazw.toUpperCase(),
+          line: 'Karta Polaka KP/908234/24',
+          f: [
+            ['Nr Karty', 'KP/908234/24'],
+            ['Ważna do', '18.06.2034'],
+            ['Obywatelstwo', 'Polskie pochodzenie'],
+            ['Wojewoda', 'Mazowiecki']
+          ],
+          rows: [
+            ['Posiadacz', imieNazw],
+            ['Obywatelstwo', 'Przynależność do Narodu Polskiego'],
+            ['Numer Karty', 'KP/908234/24'],
+            ['Data wydania', '18.06.2024'],
+            ['Data ważności', '18.06.2034'],
+            ['Organ wydający', 'Wojewoda Mazowiecki'],
+            ['Uprawnienia', 'Zwolnienie z opłat wizowych, prawo do pracy w RP, 37% ulgi na przejazdy PKP, darmowy wstęp do muzeów państwowych']
+          ]
+        };
+      }
+    },
+    {
+      id: 'nauczyciel',
+      kategoria: 'edukacja',
+      kategoriaLabel: 'Edukacja i nauka',
+      nazwa: 'Karta Nauczyciela (MEN)',
+      instytucja: 'Ministerstwo Edukacji Narodowej',
+      badge: 'MEN',
+      ikona: 'doc',
+      opis: 'Służbowa legitymacja nauczyciela potwierdzająca zatrudnienie w oświacie oraz uprawniająca do 33% ulgi PKP.',
+      build: function (os) {
+        const imieNazw = (os && os.moje && os.moje.imie_nazwisko) || 'Marta Kowalska';
+        return {
+          id: 'nauczyciel',
+          name: 'Karta Nauczyciela',
+          img: SVG_BGS.nauczyciel,
+          strip: SVG_BGS.nauczyciel,
+          sub: 'MEN • Ważna do 31.08.2027',
+          photo: 1,
+          holder: imieNazw.toUpperCase(),
+          line: 'MEN nr 33421/2025',
+          f: [
+            ['Nr legitymacji', 'MEN/33421/2025'],
+            ['Ważna do', '31.08.2027'],
+            ['Stopień', 'Nauczyciel mianowany'],
+            ['Placówka', 'Liceum Ogólnokształcące']
+          ],
+          rows: [
+            ['Posiadacz', imieNazw],
+            ['Numer legitymacji', 'MEN/33421/2025'],
+            ['Stanowisko', 'Nauczyciel mianowany'],
+            ['Szkoła', 'XVII Liceum Ogólnokształcące z Oddziałami Dwujęzycznymi'],
+            ['Organ prowadzący', 'Miasto Stołeczne Warszawa'],
+            ['Ważność', 'Do 31.08.2027'],
+            ['Uprawnienia', '33% ulgi na przejazdy koleją PKP, preferencyjny wstęp do muzeów i teatrów']
+          ]
+        };
+      }
+    },
+    {
+      id: 'pwz_lekarz',
+      kategoria: 'zawodowe',
+      kategoriaLabel: 'Uprawnienia zawodowe',
+      nazwa: 'Prawo Wykonywania Zawodu Lekarza (NIL)',
+      instytucja: 'Naczelna Izba Lekarska',
+      badge: 'NIL',
+      ikona: 'shield',
+      opis: 'Dokument PWZ Lekarza wydany przez Okręgową Izbę Lekarską potwierdzający kwalifikacje i prawo ordynacji leków.',
+      build: function (os) {
+        const imieNazw = (os && os.moje && os.moje.imie_nazwisko) || 'Marta Kowalska';
+        return {
+          id: 'pwz_lekarz',
+          name: 'PWZ Lekarza (NIL)',
+          img: SVG_BGS.pwz_lekarz,
+          strip: SVG_BGS.pwz_lekarz,
+          sub: 'NIL • PWZ nr 5482103',
+          photo: 1,
+          holder: ('LEK. ' + imieNazw).toUpperCase(),
+          line: 'PWZ Lekarza nr 5482103',
+          f: [
+            ['Nr PWZ', '5482103'],
+            ['Izba', 'OIL Warszawa'],
+            ['Specjalizacja', 'Choroby wewnętrzne'],
+            ['Status', 'Aktywne prawo']
+          ],
+          rows: [
+            ['Lekarz', 'lek. ' + imieNazw],
+            ['Tytuł zawodowy', 'Lekarz medycyny'],
+            ['Numer PWZ', '5482103'],
+            ['Izba Lekarska', 'Okręgowa Izba Lekarska w Warszawie'],
+            ['Data uchwały', '22.10.2018'],
+            ['Status uprawnień', 'Prawo wykonywania zawodu bez ograniczeń'],
+            ['Specjalizacja', 'Medycyna rodzinna / Interna (st. II)']
+          ]
+        };
+      }
+    },
+    {
+      id: 'pwz_pielegniarka',
+      kategoria: 'zawodowe',
+      kategoriaLabel: 'Uprawnienia zawodowe',
+      nazwa: 'Prawo Wykonywania Zawodu Pielęgniarki (NIPiP)',
+      instytucja: 'Naczelna Izba Pielęgniarek i Położnych',
+      badge: 'NIPiP',
+      ikona: 'shield',
+      opis: 'Cyfrowe PWZ Pielęgniarki potwierdzające kwalifikacje zawodowe, specjalizację i przynależność do samorządu NIPiP.',
+      build: function (os) {
+        const imieNazw = (os && os.moje && os.moje.imie_nazwisko) || 'Marta Kowalska';
+        return {
+          id: 'pwz_pielegniarka',
+          name: 'PWZ Pielęgniarki (NIPiP)',
+          img: SVG_BGS.pwz_pielegniarka,
+          strip: SVG_BGS.pwz_pielegniarka,
+          sub: 'NIPiP • PWZ nr 8814201P',
+          photo: 1,
+          holder: imieNazw.toUpperCase(),
+          line: 'PWZ Pielęgniarki nr 8814201P',
+          f: [
+            ['Nr PWZ', '8814201P'],
+            ['Izba', 'OIPiP Warszawa'],
+            ['Specjalność', 'Pielęgniarstwo anestezjologiczne'],
+            ['Status', 'Aktywne prawo']
+          ],
+          rows: [
+            ['Pielęgniarka', imieNazw],
+            ['Tytuł zawodowy', 'Pielęgniarka dyplomowana'],
+            ['Numer PWZ', '8814201P'],
+            ['Izba', 'Warszawska Okręgowa Izba Pielęgniarek i Położnych'],
+            ['Status uprawnień', 'Prawo wykonywania zawodu bez ograniczeń'],
+            ['Specjalizacja', 'Pielęgniarstwo anestezjologiczne i intensywnej opieki']
+          ]
+        };
+      }
+    },
+    {
+      id: 'kdr',
+      kategoria: 'rodzina',
+      kategoriaLabel: 'Rodzina i świadczenia',
+      nazwa: 'Karta Dużej Rodziny',
+      instytucja: 'Ministerstwo Rodziny, Pracy i Polityki Społecznej',
+      badge: 'MRPiPS',
+      ikona: 'baby',
+      opis: 'System zniżek i dodatkowych uprawnień dla rodzin wielodzietnych 3+ w całej Polsce (kolej, paliwa, zakupy).',
+      build: function (os) {
+        const pesel = (os && os.moje && os.moje.pesel) || '91071427765';
+        const imieNazw = (os && os.moje && os.moje.imie_nazwisko) || 'Marta Kowalska';
+        return {
+          id: 'kdr',
+          name: 'Karta Dużej Rodziny',
+          img: 'assets/card-kdr-bez.webp',
+          strip: 'assets/strip-kdr.webp',
+          sub: 'Ważna bezterminowo',
+          photo: 1,
+          holder: imieNazw.toUpperCase(),
+          line: 'Nr KDR 2026/118 554',
+          f: [
+            ['Nr karty', '2026/118 554'],
+            ['Ważna', 'bezterminowo'],
+            ['PESEL', pesel]
+          ],
+          rows: [
+            ['Posiadacz', imieNazw],
+            ['PESEL', pesel],
+            ['Numer karty', 'KDR 2026/118 554'],
+            ['Ważna', 'bezterminowo (rodzic)'],
+            ['Uprawnienia', 'Zniżki handlowe, 37% ulgi PKP, tańszy paszport, zniżki na paliwo Orlen/Lotos']
+          ]
+        };
+      }
     },
     {
       id: 'leg',
-      name: 'mLegitymacja studencka',
-      sub: 'MEiN • Szkolnictwo wyższe',
-      cat: 'Karty zawodowe i edukacja',
-      icon: '📚',
-      source: 'Ministerstwo Nauki i Szkolnictwa Wyższego',
-      badge: 'STUDENT',
-      color: '#4c1d95',
-      gradient: 'linear-gradient(135deg, #2e1065 0%, #5b21b6 50%, #7c3aed 100%)',
-      docData: (os) => ({
-        id: 'leg',
-        name: 'mLegitymacja studencka',
-        img: 'assets/card-legitymacja-bez.webp',
-        sub: 'Uniwersytet Jagielloński • Ważna',
-        holder: `${os.imie} ${os.nazwisko}`.toUpperCase(),
-        line: 'Nr albumu 194821, UJ Kraków',
-        f: [
-          ['Nr albumu', '194821'],
-          ['Ważna do', '31.03.2027'],
-          ['Uczelnia', 'UJ Kraków'],
-          ['Ulga PKP', '51%']
-        ],
-        rows: [
-          ['Student', `${os.imie} ${os.nazwisko}`],
-          ['Uczelnia', 'Uniwersytet Jagielloński w Krakowie'],
-          ['Wydział', 'Wydział Prawa i Administracji'],
-          ['Numer albumu', '194821'],
-          ['Ważność', 'Ważna do 31.03.2027 (hologram semestralny ważny)'],
-          ['Uprawnienia', 'Ustawowa ulga 51% na przejazdy PKP, 50% komunikacja miejska']
-        ]
-      })
+      kategoria: 'edukacja',
+      kategoriaLabel: 'Edukacja i nauka',
+      nazwa: 'mLegitymacja studencka',
+      instytucja: 'Ministerstwo Nauki i Szkolnictwa Wyższego',
+      badge: 'MNiSW / Uczelnia',
+      ikona: 'doc',
+      opis: 'Elektroniczny odpowiednik ELS dla studentów uczelni wyższych potwierdzający status studenta i 51% ulgi PKP.',
+      build: function (os) {
+        const imieNazw = (os && os.moje && os.moje.imie_nazwisko) || 'Kacper Zieliński';
+        return {
+          id: 'leg',
+          name: 'mLegitymacja studencka',
+          img: 'assets/card-legitymacja-bez.webp',
+          strip: 'assets/strip-legitymacja.webp',
+          sub: 'Ważna do 31.03.2027',
+          photo: 1,
+          holder: imieNazw.toUpperCase(),
+          line: 'Uniwersytet Warszawski, nr albumu 241908',
+          f: [
+            ['Nr albumu', '241908'],
+            ['Ważna do', '31.03.2027'],
+            ['Uczelnia', 'UW'],
+            ['Ulga PKP', '51%']
+          ],
+          rows: [
+            ['Student', imieNazw],
+            ['Uczelnia', 'Uniwersytet Warszawski'],
+            ['Wydział', 'Wydział Prawa i Administracji'],
+            ['Numer albumu', '241908'],
+            ['Ważna do', '31.03.2027'],
+            ['Uprawnienia', '51% ulgi na bilety PKP/Polregio, 50% ulgi na komunikację miejską']
+          ]
+        };
+      }
+    },
+    {
+      id: 'legitymacja_szkolna',
+      kategoria: 'edukacja',
+      kategoriaLabel: 'Edukacja i nauka',
+      nazwa: 'mLegitymacja szkolna',
+      instytucja: 'Ministerstwo Edukacji Narodowej',
+      badge: 'MEN / Szkoła',
+      ikona: 'doc',
+      opis: 'Elektroniczna legitymacja ucznia szkoły podstawowej lub ponadpodstawowej z ulgą 37% PKP i 50% MPK.',
+      build: function (os) {
+        const imieNazw = (os && os.moje && os.moje.imie_nazwisko) || 'Marta Kowalska';
+        return {
+          id: 'legitymacja_szkolna',
+          name: 'mLegitymacja szkolna',
+          img: SVG_BGS.legitymacja_szkolna,
+          strip: SVG_BGS.legitymacja_szkolna,
+          sub: 'MEN • Ważna do 30.09.2027',
+          photo: 1,
+          holder: imieNazw.toUpperCase(),
+          line: 'Szkoła nr LS/8812/2026',
+          f: [
+            ['Nr legitymacji', 'LS/8812/2026'],
+            ['Ważna do', '30.09.2027'],
+            ['Szkoła', 'XIV LO im. S. Staszica'],
+            ['Ulga', '37% PKP / 50% MPK']
+          ],
+          rows: [
+            ['Uczeń', imieNazw],
+            ['Szkoła', 'XIV Liceum Ogólnokształcące im. Stanisława Staszica w Warszawie'],
+            ['Numer legitymacji', 'LS/8812/2026'],
+            ['Data ważności', '30.09.2027'],
+            ['Uprawnienia', '37% ulgi na przejazdy kolejowe, 50% ulgi na komunikację miejską']
+          ]
+        };
+      }
     }
-  ]
-};
+  ];
 
-// ----------------- MODAL KATALOGU DOKUMENTÓW -----------------
-function openKatalogKartModal() {
-  if (typeof haptic === 'function') haptic('tap');
-  let modal = document.getElementById('katalogKartModal');
-  if (!modal) {
-    modal = document.createElement('div');
-    modal.id = 'katalogKartModal';
-    modal.className = 'sheet-modal';
-    modal.setAttribute('role', 'dialog');
-    modal.setAttribute('aria-modal', 'true');
-    modal.setAttribute('aria-labelledby', 'katalogKartTitle');
-    document.getElementById('app').appendChild(modal);
-  }
+  // Stan aktywnego filtru w modalnym katalogu
+  let activeFilter = 'wszystkie';
+  let searchQuery = '';
 
-  const activeDocIds = (typeof DOCS !== 'undefined') ? DOCS.map(d => d.id) : [];
+  // --- 3. Wstrzykiwanie kontenera modalu do DOM ---
+  function ensureModalElement() {
+    let m = document.getElementById('katalogKartModal');
+    if (m) return m;
 
-  const itemsHtml = KATALOG_KART.katalog.map(item => {
-    const isAdded = activeDocIds.includes(item.id);
-    return `
-      <div class="katalog-item ${isAdded ? 'added' : ''}">
-        <div class="kat-item-badge" style="background:${item.gradient}">${item.badge}</div>
-        <div class="kat-item-meta">
-          <b>${item.name}</b>
-          <small>${item.source}</small>
-          <span class="kat-cat-tag">${item.cat}</span>
+    m = document.createElement('div');
+    m.id = 'katalogKartModal';
+    m.className = 'sheet-modal katalog-modal';
+    m.setAttribute('role', 'dialog');
+    m.setAttribute('aria-modal', 'true');
+    m.setAttribute('aria-labelledby', 'katalogModalTitle');
+
+    m.innerHTML = `
+      <div class="scrim" onclick="closeKatalogKartModal()"></div>
+      <div class="modal-box katalog-modal-box">
+        <div class="modal-head">
+          <div>
+            <h2 id="katalogModalTitle">Dodaj dokument</h2>
+            <p class="modal-sub" style="margin:2px 0 0">Katalog oficjalnych dokumentów państwowych</p>
+          </div>
+          <button type="button" class="tx-close" onclick="closeKatalogKartModal()" aria-label="Zamknij">
+            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></svg>
+          </button>
         </div>
-        <div class="kat-item-act">
-          ${isAdded ? `
-            <span class="kat-added-pill">${typeof svg === 'function' ? svg('check') : '✓'} W portfelu</span>
-          ` : `
-            <button type="button" class="btn primary kat-add-btn" onclick="dodajDokumentDoPortfela('${item.id}')">
-              + Dodaj
-            </button>
-          `}
+
+        <!-- Wyszukiwarka i filtry kategorii -->
+        <div class="katalog-search-bar">
+          <input type="text" id="katalogSearchInput" placeholder="Szukaj dokumentu (np. ZUS, lekarz, szkoła)…" enterkeyhint="search" aria-label="Wyszukaj dokument w katalogu">
         </div>
+
+        <div class="katalog-filters" role="tablist" aria-label="Kategorie dokumentów">
+          <button type="button" class="chip-sm active" data-filter="wszystkie" onclick="setKatalogFilter('wszystkie')">Wszystkie</button>
+          <button type="button" class="chip-sm" data-filter="emerytura" onclick="setKatalogFilter('emerytura')">ZUS i emerytury</button>
+          <button type="button" class="chip-sm" data-filter="edukacja" onclick="setKatalogFilter('edukacja')">Edukacja i nauka</button>
+          <button type="button" class="chip-sm" data-filter="zawodowe" onclick="setKatalogFilter('zawodowe')">Zawodowe</button>
+          <button type="button" class="chip-sm" data-filter="rodzina" onclick="setKatalogFilter('rodzina')">Rodzina i KDR</button>
+          <button type="button" class="chip-sm" data-filter="tozsamosc" onclick="setKatalogFilter('tozsamosc')">Tożsamość</button>
+        </div>
+
+        <!-- Lista dokumentów do wyboru -->
+        <div class="katalog-items-list" id="katalogItemsList" role="list"></div>
       </div>
     `;
-  }).join('');
 
-  modal.innerHTML = `
-    <div class="scrim" onclick="closeKatalogKartModal()"></div>
-    <div class="modal-box">
-      <div class="modal-head">
-        <h2 id="katalogKartTitle">+ Dodaj dokument do mObywatela</h2>
-        <button class="tx-close" onclick="closeKatalogKartModal()" aria-label="Zamknij">
-          <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></svg>
-        </button>
-      </div>
-      <p class="modal-sub">Wybierz dokument państwowy, aby pobrać go z rejestru i przypiąć do portfela.</p>
+    document.body.appendChild(m);
 
-      <div class="katalog-list">
-        ${itemsHtml}
-      </div>
+    // Obsługa wpisywania w wyszukiwarkę
+    const input = m.querySelector('#katalogSearchInput');
+    if (input) {
+      input.addEventListener('input', (e) => {
+        searchQuery = (e.target.value || '').trim().toLowerCase();
+        renderKatalogList();
+      });
+    }
 
-      <div class="modal-actions" style="margin-top:16px">
-        <button type="button" class="btn ghost wide" onclick="closeKatalogKartModal()">Zamknij</button>
-      </div>
-    </div>
-  `;
-
-  if (typeof openDialogFocus === 'function') openDialogFocus('katalog', modal.querySelector('.modal-box'), '.tx-close');
-  modal.classList.add('open');
-  if (typeof announceSR === 'function') announceSR('Otwarto katalog dokumentów do dodania');
-}
-
-function closeKatalogKartModal() {
-  const modal = document.getElementById('katalogKartModal');
-  if (modal && modal.classList.contains('open')) {
-    modal.classList.remove('open');
-    if (typeof restoreDialogFocus === 'function') restoreDialogFocus('katalog');
-  }
-}
-
-// ----------------- DODAWANIE DOKUMENTU DO PORTFELA -----------------
-function dodajDokumentDoPortfela(docId) {
-  const entry = KATALOG_KART.katalog.find(k => k.id === docId);
-  if (!entry) return;
-
-  if (typeof haptic === 'function') haptic('confirm');
-
-  // Sprawdź czy już jest w DOCS
-  if (DOCS.some(d => d.id === docId)) {
-    if (typeof showToast === 'function') showToast(`Dokument "${entry.name}" znajduje się już w portfelu.`);
-    return;
+    return m;
   }
 
-  // Wygeneruj strukturę dokumentu dla aktywnej osoby
-  const newDoc = entry.docData(OS);
+  // --- 4. Renderowanie listy dokumentów w modalu ---
+  function renderKatalogList() {
+    const listEl = document.getElementById('katalogItemsList');
+    if (!listEl) return;
 
-  // Dodaj na początek lub odpowiednie miejsce w stosie
-  DOCS.unshift(newDoc);
-  if (OS.docs && !OS.docs.some(d => d.id === docId)) {
-    OS.docs.unshift(newDoc);
-  }
+    const currentDocs = (typeof DOCS !== 'undefined') ? DOCS : ((typeof OS !== 'undefined' && OS.docs) ? OS.docs : []);
 
-  // Odśwież renderowanie stosu kart i przelicz layout
-  if (typeof renderStack === 'function') renderStack();
-  if (typeof layout === 'function') layout();
-
-  closeKatalogKartModal();
-
-  if (typeof showToast === 'function') {
-    showToast(`Pobrano z rejestru i dodano dokument: ${entry.name}`);
-  }
-
-  if (typeof showSystemPush === 'function') {
-    showSystemPush({
-      title: 'Nowy dokument w mObywatelu',
-      body: `Dokument "${entry.name}" został zweryfikowany w rejestrze państwowym i dodany do portfela.`,
-      icon: '🛡️',
-      badge: 'REJESTR',
-      onClick: () => { if (typeof openDoc === 'function') openDoc(docId); }
+    const filtered = KATALOG_DOKUMENTOW.filter(item => {
+      // Filtr kategorii
+      if (activeFilter !== 'wszystkie' && item.kategoria !== activeFilter) {
+        return false;
+      }
+      // Filtr tekstu wyszukiwania
+      if (searchQuery) {
+        const text = (item.nazwa + ' ' + item.instytucja + ' ' + item.opis + ' ' + item.badge).toLowerCase();
+        if (!text.includes(searchQuery)) return false;
+      }
+      return true;
     });
+
+    if (filtered.length === 0) {
+      listEl.innerHTML = `
+        <div class="katalog-empty">
+          <p>Nie znaleziono dokumentów dla podanych kryteriów.</p>
+          <button type="button" class="btn ghost btn-sm" onclick="setKatalogFilter('wszystkie')">Pokaż wszystkie dokumenty</button>
+        </div>
+      `;
+      return;
+    }
+
+    listEl.innerHTML = filtered.map(item => {
+      const alreadyInWallet = currentDocs.some(d => d.id === item.id);
+      return `
+        <div class="katalog-card ${alreadyInWallet ? 'in-wallet' : ''}" role="listitem">
+          <div class="kc-preview" style="background-image:url('${item.build ? item.build(typeof OS !== 'undefined' ? OS : {}).img : ''}')">
+            <span class="kc-badge">${item.badge}</span>
+          </div>
+          <div class="kc-info">
+            <div class="kc-inst">${item.instytucja}</div>
+            <h3 class="kc-title">${item.nazwa}</h3>
+            <p class="kc-desc">${item.opis}</p>
+          </div>
+          <div class="kc-action">
+            ${alreadyInWallet
+              ? `<button type="button" class="btn secondary btn-sm kc-btn" onclick="openDoc('${item.id}');closeKatalogKartModal();" aria-label="Otwórz dokument ${item.nazwa}">
+                   <span class="kc-check">✓</span> W portfelu
+                 </button>`
+              : `<button type="button" class="btn primary btn-sm kc-btn" onclick="dodajDokumentDoPortfela('${item.id}')" aria-label="Dodaj ${item.nazwa} do portfela">
+                   + Dodaj
+                 </button>`
+            }
+          </div>
+        </div>
+      `;
+    }).join('');
   }
 
-  // Otwórz podgląd nowo dodanego dokumentu z animacją
-  setTimeout(() => {
-    if (typeof openDoc === 'function') openDoc(docId);
-  }, 350);
-}
+  // Zmiana aktywnego filtru w modalu
+  window.setKatalogFilter = function (filter) {
+    activeFilter = filter;
+    const m = document.getElementById('katalogKartModal');
+    if (m) {
+      m.querySelectorAll('.katalog-filters .chip-sm').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.filter === filter);
+      });
+    }
+    renderKatalogList();
+    if (typeof haptic === 'function') haptic('tap');
+  };
 
-// Pomocnicze podpięcie przycisku "+ Dodaj dokument"
-function injectDodajBtn() {
-  const pbar = document.getElementById('personBtn');
-  if (!pbar || document.getElementById('btnAddDocGlobal')) return;
+  // --- 5. Otwieranie i zamykanie modalu katalogu ---
+  function openKatalogKartModal() {
+    const m = ensureModalElement();
+    activeFilter = 'wszystkie';
+    searchQuery = '';
+    const input = m.querySelector('#katalogSearchInput');
+    if (input) input.value = '';
 
-  const btn = document.createElement('button');
-  btn.id = 'btnAddDocGlobal';
-  btn.type = 'button';
-  btn.className = 'btn-add-doc-top';
-  btn.setAttribute('aria-label', 'Dodaj nowy dokument do portfela');
-  btn.innerHTML = `
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
-    <span>Dodaj</span>
-  `;
-  btn.onclick = openKatalogKartModal;
-  pbar.parentElement.insertBefore(btn, pbar.nextSibling);
-}
+    m.querySelectorAll('.katalog-filters .chip-sm').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.filter === 'wszystkie');
+    });
 
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', injectDodajBtn);
-} else {
-  setTimeout(injectDodajBtn, 50);
-}
+    renderKatalogList();
+    m.classList.add('open');
+
+    if (typeof haptic === 'function') haptic('tap');
+    if (typeof openDialogFocus === 'function') openDialogFocus('katalogKartModal', m, '#katalogSearchInput');
+    if (typeof announceSR === 'function') announceSR('Otwarto katalog dokumentów państwowych. Wybierz dokument do dodania.');
+  }
+
+  function closeKatalogKartModal() {
+    const m = document.getElementById('katalogKartModal');
+    if (m) {
+      m.classList.remove('open');
+      if (typeof restoreDialogFocus === 'function') restoreDialogFocus('katalogKartModal');
+    }
+  }
+
+  // --- 6. Dynamiczne dodawanie dokumentu do portfela ---
+  function dodajDokumentDoPortfela(docId) {
+    const item = KATALOG_DOKUMENTOW.find(x => x.id === docId);
+    if (!item) {
+      if (typeof showToast === 'function') showToast('Nie znaleziono szablonu dokumentu.');
+      return;
+    }
+
+    const currentOS = (typeof OS !== 'undefined') ? OS : null;
+    const docObj = item.build(currentOS);
+
+    // Sprawdzenie czy dokument jest już w DOCS
+    if (typeof DOCS !== 'undefined') {
+      if (DOCS.some(d => d.id === docId)) {
+        if (typeof showToast === 'function') showToast(`Dokument "${docObj.name}" znajduje się już w Twoim portfelu.`);
+        closeKatalogKartModal();
+        if (typeof openDoc === 'function') openDoc(docId);
+        return;
+      }
+      DOCS.push(docObj);
+    }
+
+    if (currentOS && currentOS.docs && !currentOS.docs.some(d => d.id === docId)) {
+      currentOS.docs.push(docObj);
+    }
+
+    // Synchronizacja kolejności stosu (STACK_ORDER)
+    if (typeof STACK_ORDER !== 'undefined') {
+      STACK_ORDER.length = 0;
+      STACK_ORDER.push(...DOCS.map(d => d.id).reverse());
+    }
+
+    // Przeliczenie stosu kart i układu
+    if (typeof renderStack === 'function') {
+      renderStack();
+    }
+    if (typeof buildAlt === 'function') {
+      buildAlt();
+    }
+    if (typeof layout === 'function') {
+      layout();
+    }
+
+    // Haptyka i powiadomienie
+    if (typeof haptic === 'function') haptic('success');
+    if (typeof showToast === 'function') {
+      showToast(`✅ Pomyślnie dodano: ${docObj.name}`);
+    }
+    if (typeof announceSR === 'function') {
+      announceSR(`Pomyślnie dodano dokument ${docObj.name} do Twojego portfela.`);
+    }
+
+    // Zamknięcie modalu
+    closeKatalogKartModal();
+
+    // Opcjonalne otwarcie podglądu nowo dodanego dokumentu po krótkiej animacji
+    setTimeout(() => {
+      if (typeof openDoc === 'function') {
+        openDoc(docId);
+      }
+    }, 380);
+  }
+
+  // --- 7. Wstrzykiwanie przycisku "+ Dodaj dokument" w widoku dokumentów ---
+  function injectDodajBtn() {
+    if (document.getElementById('btnDodajDokument')) return;
+
+    // Przycisk tworzymy jako elegancki element nad sekcją przypomnień / bezpośrednio pod kartami
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'btn-dodaj-dok-bar';
+    btn.id = 'btnDodajDokument';
+    btn.setAttribute('aria-label', 'Dodaj nowy dokument państwowy do portfela');
+    btn.onclick = openKatalogKartModal;
+
+    btn.innerHTML = `
+      <svg class="bdd-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="9.5" stroke-width="1.6"/>
+        <path d="M12 8v8M8 12h8"/>
+      </svg>
+      <span class="bdd-label">+ Dodaj dokument</span>
+      <span class="bdd-badge">Katalog</span>
+    `;
+
+    // Szukamy sekcji reminders lub stackwrap
+    const rem = document.getElementById('reminders');
+    const searchPill = document.getElementById('searchPill');
+
+    if (rem && searchPill) {
+      rem.insertBefore(btn, searchPill);
+    } else if (rem) {
+      rem.prepend(btn);
+    } else {
+      const app = document.getElementById('app');
+      if (app) app.appendChild(btn);
+    }
+
+    // Przeliczenie układu po dodaniu przycisku
+    if (typeof layout === 'function') {
+      layout();
+    }
+  }
+
+  // --- 8. Style CSS specyficzne dla modułu katalogu i przycisku dodawania ---
+  function injectStyles() {
+    if (document.getElementById('katalogKartStyles')) return;
+    const s = document.createElement('style');
+    s.id = 'katalogKartStyles';
+    s.textContent = `
+      /* Przycisk "+ Dodaj dokument" na ekranie głównym */
+      .btn-dodaj-dok-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        width: 100%;
+        padding: 9px 14px;
+        margin-bottom: 8px;
+        background: var(--surface, #ffffff);
+        border: 1px dashed rgba(0, 82, 165, 0.35);
+        border-radius: 14px;
+        color: var(--brand, #0052a5);
+        font-family: inherit;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        box-shadow: 0 2px 6px rgba(15, 25, 60, 0.03);
+        transition: transform .18s ease, background .18s ease, border-color .18s ease, box-shadow .18s ease;
+      }
+      .btn-dodaj-dok-bar:hover {
+        background: rgba(0, 82, 165, 0.05);
+        border-color: var(--brand, #0052a5);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0, 82, 165, 0.1);
+      }
+      .btn-dodaj-dok-bar:active {
+        transform: scale(0.985);
+      }
+      .btn-dodaj-dok-bar .bdd-icon {
+        width: 18px;
+        height: 18px;
+        flex: none;
+        color: var(--brand, #0052a5);
+      }
+      .btn-dodaj-dok-bar .bdd-label {
+        flex: 1;
+        text-align: left;
+        color: var(--brand, #0052a5);
+        letter-spacing: -0.01em;
+      }
+      .btn-dodaj-dok-bar .bdd-badge {
+        flex: none;
+        font-size: 10.5px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        padding: 2px 7px;
+        border-radius: 6px;
+        background: rgba(0, 82, 165, 0.1);
+        color: var(--brand, #0052a5);
+      }
+      .phone.dark-mode .btn-dodaj-dok-bar {
+        background: #1e293b;
+        border-color: rgba(96, 165, 250, 0.3);
+        color: #60a5fa;
+      }
+      .phone.dark-mode .btn-dodaj-dok-bar .bdd-icon,
+      .phone.dark-mode .btn-dodaj-dok-bar .bdd-label,
+      .phone.dark-mode .btn-dodaj-dok-bar .bdd-badge {
+        color: #60a5fa;
+      }
+      .phone.dark-mode .btn-dodaj-dok-bar .bdd-badge {
+        background: rgba(96, 165, 250, 0.18);
+      }
+      .high-contrast .btn-dodaj-dok-bar {
+        background: #000 !important;
+        color: #ffd700 !important;
+        border: 2px solid #ffd700 !important;
+      }
+      .phone.compact-h .btn-dodaj-dok-bar {
+        padding: 6px 10px;
+        font-size: 12px;
+        margin-bottom: 5px;
+      }
+
+      /* Modal Katalogu */
+      .katalog-modal-box {
+        max-height: 88% !important;
+        display: flex;
+        flex-direction: column;
+      }
+      .katalog-search-bar {
+        margin: 12px 0 10px;
+      }
+      .katalog-search-bar input {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 10px 14px;
+        border-radius: 12px;
+        border: 1px solid var(--border, #d1d5db);
+        background: var(--bg, #f9fafb);
+        color: var(--ink, #111827);
+        font-family: inherit;
+        font-size: 13.5px;
+        outline: none;
+        transition: border-color .18s ease;
+      }
+      .katalog-search-bar input:focus {
+        border-color: var(--brand, #0052a5);
+        background: #ffffff;
+      }
+      .katalog-filters {
+        display: flex;
+        gap: 6px;
+        overflow-x: auto;
+        padding-bottom: 8px;
+        margin-bottom: 10px;
+        -webkit-overflow-scrolling: touch;
+      }
+      .katalog-filters::-webkit-scrollbar {
+        display: none;
+      }
+      .katalog-items-list {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        overflow-y: auto;
+        padding-right: 2px;
+        flex: 1;
+      }
+      .katalog-card {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px;
+        background: var(--surface, #ffffff);
+        border: 1px solid var(--border, #e5e7eb);
+        border-radius: 16px;
+        transition: border-color .18s ease, background .18s ease;
+      }
+      .katalog-card.in-wallet {
+        background: rgba(16, 185, 129, 0.04);
+        border-color: rgba(16, 185, 129, 0.25);
+      }
+      .kc-preview {
+        width: 60px;
+        height: 40px;
+        border-radius: 8px;
+        flex: none;
+        background-size: cover;
+        background-position: center;
+        position: relative;
+        display: flex;
+        align-items: flex-end;
+        justify-content: flex-end;
+        padding: 3px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.12);
+      }
+      .kc-badge {
+        font-size: 8.5px;
+        font-weight: 800;
+        background: rgba(0,0,0,0.6);
+        color: #fff;
+        padding: 1px 4px;
+        border-radius: 4px;
+        letter-spacing: 0.02em;
+      }
+      .kc-info {
+        flex: 1;
+        min-width: 0;
+      }
+      .kc-inst {
+        font-size: 10.5px;
+        font-weight: 600;
+        color: var(--ink2, #6b7280);
+        margin-bottom: 1px;
+      }
+      .kc-title {
+        font-size: 13.5px;
+        line-height: 17px;
+        font-weight: 700;
+        color: var(--ink, #111827);
+        margin: 0 0 2px 0;
+      }
+      .kc-desc {
+        font-size: 11px;
+        line-height: 15px;
+        color: var(--ink2, #4b5563);
+        margin: 0;
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+        overflow: hidden;
+      }
+      .kc-action {
+        flex: none;
+      }
+      .kc-btn {
+        padding: 7px 12px !important;
+        font-size: 12px !important;
+        border-radius: 10px !important;
+      }
+      .kc-check {
+        font-weight: 800;
+        color: #10b981;
+        margin-right: 3px;
+      }
+      .katalog-empty {
+        padding: 24px 12px;
+        text-align: center;
+        color: var(--ink2, #6b7280);
+        font-size: 13px;
+      }
+      .phone.dark-mode .katalog-card {
+        background: #1e293b;
+        border-color: #334155;
+      }
+      .phone.dark-mode .kc-title {
+        color: #f1f5f9;
+      }
+      .phone.dark-mode .kc-desc {
+        color: #94a3b8;
+      }
+      .phone.dark-mode .kc-inst {
+        color: #cbd5e1;
+      }
+    `;
+    document.head.appendChild(s);
+  }
+
+  // --- 9. Inicjalizacja modułu ---
+  function init() {
+    injectStyles();
+    injectDodajBtn();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+
+  // --- 10. Eksport globalnych funkcji API ---
+  window.KATALOG_DOKUMENTOW = KATALOG_DOKUMENTOW;
+  window.openKatalogKartModal = openKatalogKartModal;
+  window.closeKatalogKartModal = closeKatalogKartModal;
+  window.dodajDokumentDoPortfela = dodajDokumentDoPortfela;
+  window.injectDodajBtn = injectDodajBtn;
+
+})();

@@ -30,11 +30,11 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--red);outline-of
 .status .bat::before{content:"";position:absolute;inset:1.6px 5px 1.6px 1.6px;background:currentColor;border-radius:1.6px}
 .status .bat::after{content:"";position:absolute;right:-4px;top:3.5px;width:2px;height:4px;background:currentColor;border-radius:0 1px 1px 0;opacity:.5}
 .island{position:absolute;top:11px;left:50%;transform:translateX(-50%);width:122px;height:35px;border-radius:20px;background:#000;z-index:96}
-.homebar{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);width:134px;height:5px;border-radius:3px;background:#111;z-index:60;pointer-events:none}
+.homebar{position:absolute;bottom:3px;left:50%;transform:translateX(-50%);width:120px;height:4px;border-radius:2px;background:rgba(0,0,0,0.28);z-index:35;pointer-events:none}
 @media (min-width:601px) and (max-height:760px){
   .status{height:34px;padding:8px 26px 0 30px;font-size:13.5px}
   .island{top:6px;width:96px;height:23px;border-radius:14px}
-  .homebar{bottom:5px;width:112px;height:4px}
+  .homebar{bottom:2px;width:104px;height:3px}
 }
 @media (max-width:600px), (hover:none) and (pointer:coarse) and (max-width:800px), (display-mode:standalone){.status,.island,.homebar{display:none!important}}
 @media (max-height:620px){.title{font-size:28px;line-height:34px}}
@@ -2011,7 +2011,8 @@ body.dark-mode {
   left: 0;
   right: 0;
   bottom: 0;
-  height: 60px;
+  height: 64px;
+  box-sizing: border-box;
   background: rgba(255,255,255,.94);
   -webkit-backdrop-filter: blur(16px);
   backdrop-filter: blur(16px);
@@ -2019,7 +2020,7 @@ body.dark-mode {
   display: flex;
   align-items: center;
   justify-content: space-around;
-  padding: 0 4px max(env(safe-area-inset-bottom), 6px);
+  padding: 2px 4px max(env(safe-area-inset-bottom), 10px) 4px;
   z-index: 30;
   transition: transform .25s var(--ease), opacity .2s;
 }
@@ -2064,7 +2065,7 @@ body.dark-mode {
 }
 
 .bnav-btn.qr-center {
-  margin-top: -14px;
+  margin-top: -18px;
 }
 
 .bnav-qr-circle {
@@ -2213,195 +2214,6 @@ body.dark-mode {
 
 .phone.chatting .bnav {
   display: none !important;
-}
-
-/* ---------- Hub Kodów QR i Znak mObywatela (.qr-hub-grid) ---------- */
-.qr-hub-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin: 14px 0 8px;
-}
-
-.qr-hub-card {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  background: var(--bg);
-  border: 1px solid var(--hair);
-  border-radius: 18px;
-  padding: 14px 16px;
-  text-align: left;
-  cursor: pointer;
-  transition: all 0.2s var(--ease);
-}
-
-.qr-hub-card:hover {
-  background: #ffffff;
-  border-color: rgba(220, 20, 60, 0.4);
-  box-shadow: 0 6px 20px -6px rgba(15, 25, 60, 0.12);
-  transform: translateY(-1px);
-}
-
-.qr-hub-card:active {
-  transform: scale(0.985);
-}
-
-.qr-hub-card.primary {
-  background: linear-gradient(135deg, rgba(220, 20, 60, 0.08) 0%, rgba(220, 20, 60, 0.02) 100%);
-  border-color: rgba(220, 20, 60, 0.25);
-}
-
-.qrh-icon {
-  font-size: 26px;
-  width: 44px;
-  height: 44px;
-  display: grid;
-  place-items: center;
-  background: #ffffff;
-  border-radius: 14px;
-  box-shadow: 0 2px 8px rgba(15, 25, 60, 0.06);
-  flex: none;
-}
-
-.qrh-info {
-  flex: 1;
-  min-width: 0;
-}
-
-.qrh-info b {
-  display: block;
-  font-size: 15.5px;
-  font-weight: 700;
-  color: var(--ink);
-  margin-bottom: 3px;
-}
-
-.qrh-info small {
-  display: block;
-  font-size: 12.5px;
-  line-height: 16px;
-  color: var(--ink2);
-}
-
-.qrh-arrow {
-  font-size: 18px;
-  color: var(--ink2);
-  font-weight: 700;
-  flex: none;
-  transition: transform 0.2s;
-}
-
-.qr-hub-card:hover .qrh-arrow {
-  color: var(--red);
-  transform: translateX(3px);
-}
-
-/* Katalog kart (.katalog-list) */
-.katalog-list {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin: 12px 0;
-}
-
-.katalog-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  background: var(--bg);
-  border: 1px solid var(--hair);
-  border-radius: 16px;
-  padding: 12px 14px;
-  transition: all 0.2s var(--ease);
-}
-
-.katalog-item:hover {
-  background: #ffffff;
-  border-color: rgba(15, 25, 60, 0.15);
-  box-shadow: 0 4px 14px rgba(15, 25, 60, 0.06);
-}
-
-.kat-item-badge {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  color: #ffffff;
-  display: grid;
-  place-items: center;
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.5px;
-  flex: none;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-}
-
-.kat-item-meta {
-  flex: 1;
-  min-width: 0;
-}
-
-.kat-item-meta b {
-  display: block;
-  font-size: 14.5px;
-  font-weight: 700;
-  color: var(--ink);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.kat-item-meta small {
-  display: block;
-  font-size: 12px;
-  color: var(--ink2);
-  margin: 2px 0 4px;
-}
-
-.kat-cat-tag {
-  display: inline-block;
-  font-size: 10px;
-  font-weight: 600;
-  background: rgba(15, 25, 60, 0.06);
-  color: var(--ink2);
-  padding: 1px 6px;
-  border-radius: 6px;
-}
-
-.kat-add-btn {
-  font-size: 13px !important;
-  padding: 6px 12px !important;
-  border-radius: 10px !important;
-}
-
-.kat-added-pill {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--ok);
-  background: var(--ok-wash);
-  padding: 4px 10px;
-  border-radius: 12px;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-}
-
-/* Tryb ciemny dla QR Hub i Katalogu */
-.phone.dark-mode .qr-hub-card,
-.phone.dark-mode .katalog-item {
-  background: #1e293b;
-  border-color: rgba(255, 255, 255, 0.08);
-}
-.phone.dark-mode .qrh-icon {
-  background: #0f172a;
-}
-.phone.dark-mode .qrh-info b,
-.phone.dark-mode .kat-item-meta b {
-  color: #f1f5f9;
-}
-.phone.dark-mode .qrh-info small,
-.phone.dark-mode .kat-item-meta small {
-  color: #94a3b8;
 }
 
 /* ---------- 3. WIDOK KATALOGU USŁUG (#viewServices) ---------- */
@@ -3362,3 +3174,5 @@ body.dark-mode {
   font-size: 11.5px;
   color: var(--ink2);
 }
+
+.phone.dark-mode .homebar { background: rgba(255, 255, 255, 0.35); }
