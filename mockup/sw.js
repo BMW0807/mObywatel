@@ -1,15 +1,15 @@
 // Service Worker dla aplikacji mObywatel PWA
-const CACHE_NAME = 'mobywatel-pwa-v2';
+const CACHE_NAME = 'mobywatel-pwa-v3';
 const PRECACHE = [
   '/',
   '/index.html',
-  '/style.css?v=31',
-  '/core.js?v=31',
-  '/accessibility.js?v=31',
-  '/osoby.js?v=31',
-  '/variants.js?v=31',
-  '/scenarios.js?v=31',
-  '/agent.js?v=31',
+  '/style.css?v=32',
+  '/core.js?v=32',
+  '/accessibility.js?v=32',
+  '/osoby.js?v=32',
+  '/variants.js?v=32',
+  '/scenarios.js?v=32',
+  '/agent.js?v=32',
   '/manifest.json',
   '/assets/icon-mobywatel.svg'
 ];

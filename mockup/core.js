@@ -113,6 +113,7 @@ function layout(){
  $('#reminders').style.top=remTop+'px';
 }
 window.addEventListener('resize',layout);
+window.addEventListener('orientationchange',()=>setTimeout(layout,50));
 if(typeof ResizeObserver!=='undefined'){new ResizeObserver(()=>requestAnimationFrame(layout)).observe(app)}
 
 /* ---------- przypomnienia ---------- */
