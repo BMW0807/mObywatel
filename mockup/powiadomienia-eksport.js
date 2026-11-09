@@ -517,20 +517,20 @@
     rcb: {
       title: 'ALERT RCB – SILNY WIATR',
       body: 'Dziś w nocy i jutro prognozowany silny wiatr w porywach do 90 km/h. Zabezpiecz luźne przedmioty na balkonie.',
-      icon: '🚨',
+      icon: '<i class="ik ik-siren" aria-hidden="true"></i>',
       badge: 'ALERT RCB',
       action: () => {
         if (typeof global.openPowiadomieniaModal === 'function') {
           global.openPowiadomieniaModal();
         } else if (typeof global.showToast === 'function') {
-          global.showToast('🚨 Otwarto szczegóły ostrzeżenia RCB');
+          global.showToast('Otwarto szczegóły ostrzeżenia RCB');
         }
       }
     },
     recepta: {
       title: 'Nowa e-Recepta w IKP',
       body: 'Lek. med. Tomasz Lis wystawił e-receptę na Amoksiklav (kod PIN: 4821). Recepta gotowa do realizacji w aptece.',
-      icon: '💊',
+      icon: '<i class="ik ik-pill" aria-hidden="true"></i>',
       badge: 'Centrum e-Zdrowia',
       action: () => {
         if (typeof global.openIkpPrescriptionModal === 'function') {
@@ -538,14 +538,14 @@
         } else if (typeof global.openPowiadomieniaModal === 'function') {
           global.openPowiadomieniaModal();
         } else if (typeof global.showToast === 'function') {
-          global.showToast('💊 Otwarto e-receptę w IKP. Kod PIN: 4821');
+          global.showToast('Otwarto e-receptę w IKP. Kod PIN: 4821');
         }
       }
     },
     oc: {
       title: 'Ważność polisy OC (Fiat Panda)',
       body: 'Polisa OC dla pojazdu Fiat Panda (LU 5521P) kończy się za 14 dni. Zapisz przypomnienie w kalendarzu.',
-      icon: '🚗',
+      icon: '<i class="ik ik-car" aria-hidden="true"></i>',
       badge: 'mPojazd / CEPiK',
       action: () => {
         exportEventToCalendar({
@@ -559,7 +559,7 @@
     pismo: {
       title: 'Decyzja o zwrocie nadpłaty PIT-37',
       body: 'Pierwszy Urząd Skarbowy w Krakowie doręczył decyzję o zwrocie 1 482,00 zł. Pobierz oficjalne UPO.',
-      icon: '🏛️',
+      icon: '<i class="ik ik-institution" aria-hidden="true"></i>',
       badge: 'e-Doręczenia',
       action: () => {
         if (typeof global.openLetterDetail === 'function') {
@@ -580,7 +580,7 @@
     badanie: {
       title: 'Badanie techniczne pojazdu',
       body: 'Zbliża się termin badania technicznego pojazdu Fiat Panda (LU 5521P) – upływa za 21 dni.',
-      icon: '🔧',
+      icon: '<i class="ik ik-wrench" aria-hidden="true"></i>',
       badge: 'CEPiK 2.0',
       action: () => {
         exportEventToCalendar({
@@ -594,13 +594,13 @@
     podatek: {
       title: 'Rata podatku od nieruchomości',
       body: 'Termin płatności IV raty podatku od nieruchomości (148,00 zł) mija 15.11.2026 r. Opłać BLIK-iem.',
-      icon: '💳',
+      icon: '<i class="ik ik-card" aria-hidden="true"></i>',
       badge: 'e-Płatności',
       action: () => {
         if (typeof global.directPaymentClick === 'function') {
           global.directPaymentClick();
         } else if (typeof global.showToast === 'function') {
-          global.showToast('💳 Otwarto moduł ePłatności');
+          global.showToast('Otwarto moduł ePłatności');
         }
       }
     }
@@ -776,7 +776,7 @@
 
       triggerPushHaptic('success');
       if (typeof global.showToast === 'function') {
-        global.showToast('📅 Pobrano przypomnienie do kalendarza (.ics)');
+        global.showToast('Pobrano przypomnienie do kalendarza (.ics)');
       }
       if (typeof global.announceSR === 'function') {
         global.announceSR('Pobrano zdarzenie do kalendarza: ' + title);
@@ -963,7 +963,7 @@
 
       triggerPushHaptic('success');
       if (typeof global.showToast === 'function') {
-        global.showToast(`📜 Pobrano Urzędowe Poświadczenie Odbioru (${extension.toUpperCase()})`);
+        global.showToast(`Pobrano Urzędowe Poświadczenie Odbioru (${extension.toUpperCase()})`);
       }
       if (typeof global.announceSR === 'function') {
         global.announceSR('Pobrano plik Urzędowego Poświadczenia Odbioru.');

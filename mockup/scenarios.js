@@ -103,7 +103,7 @@ const S={
  async stl3(sprawca,poszkodowana){
   await say('Co się stało? Wybierz albo opisz własnymi słowami.');
   const fin=async opis=>{await say('Dodaj zdjęcia uszkodzeń, dołączę je do oświadczenia.');
-   chips([{label:'Dodaj 3 zdjęcia',say:'📷 3 zdjęcia',go:async()=>{
+   chips([{label:'Dodaj 3 zdjęcia',say:'Dodano 3 zdjęcia',go:async()=>{
     await confirmCard({icon:'doc',title:'Oświadczenie o zdarzeniu drogowym',source:'mStłuczka, CEPiK, rejestr PESEL',rows:[['Data',today()+', '+now()],['Miejsce','parking, lokalizacja z GPS'],['Sprawca',sprawca],['Okoliczności',opis],['Zdjęcia','3'],['Potwierdzenie','obie strony w mObywatelu']],note:'Dostaniecie oboje PDF z pieczęcią elektroniczną ministra cyfryzacji.',label:'Potwierdź oświadczenie',then:async()=>{
      await result({title:'Oświadczenie potwierdzone',source:'Zapisane w mStłuczce',rows:[['Numer','mS/2026/88 410'],['PDF','u obu kierowców']]});
      if(!poszkodowana){await say('Szkodę zgłosi drugi kierowca do Twojego ubezpieczyciela. Oświadczenie już ma.');return}
@@ -117,12 +117,12 @@ const S={
  },
  async auto(){
   await say('Sprawdzę historię auta, OC i badania. Potrzebuję numeru rejestracyjnego, VIN i daty pierwszej rejestracji. Najprościej zrób zdjęcie dowodu rejestracyjnego.');
-  chips([{label:'Zrób zdjęcie dowodu rejestracyjnego',say:'📷 zdjęcie dowodu rejestracyjnego',go:S.auto2},{label:'WE 4K221',go:S.autoNr}]);
+  chips([{label:'Zrób zdjęcie dowodu rejestracyjnego',say:'Zdjęcie dowodu rejestracyjnego',go:S.auto2},{label:'WE 4K221',go:S.autoNr}]);
   pending=()=>S.autoNr();
  },
  async autoNr(){
   await say('Do historii pojazdu potrzebuję jeszcze VIN i daty pierwszej rejestracji. Poproś sprzedającego o zdjęcie dowodu rejestracyjnego.');
-  chips([{label:'Mam zdjęcie dowodu rejestracyjnego',say:'📷 zdjęcie dowodu rejestracyjnego',go:S.auto2}]);
+  chips([{label:'Mam zdjęcie dowodu rejestracyjnego',say:'Zdjęcie dowodu rejestracyjnego',go:S.auto2}]);
  },
  async auto2(){
   await say('Odczytałem: <b>WE 4K221</b>, VIN WVWZZZAUZKW118204, pierwsza rejestracja 14.03.2019. Sprawdzam historię pojazdu i bazę UFG.');
@@ -346,6 +346,6 @@ $('#bellBtn').onclick=()=>{closeHist();startTopic('Co mam do załatwienia?')};
 input.addEventListener('focus',enterChat);
 $('#composer').onsubmit=e=>{e.preventDefault();const t=input.value.trim();input.value='';send(t)};
 $('#mic').onclick=async()=>{enterChat();const bar=$('.bar');bar.classList.add('listening');input.placeholder='Słucham…';await sleep(1600);bar.classList.remove('listening');input.placeholder='Co chcesz załatwić?';send('Miałam stłuczkę na parkingu')};
-$('#cam').onclick=()=>{enterChat();act(()=>{addUser('📷 zdjęcie dowodu rejestracyjnego');S.auto2()})};
+$('#cam').onclick=()=>{enterChat();act(()=>{addUser('Zdjęcie dowodu rejestracyjnego');S.auto2()})};
 layout();
 document.fonts&&document.fonts.ready.then(layout);

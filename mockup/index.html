@@ -14,7 +14,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=43">
+<link rel="stylesheet" href="style.css?v=45">
 </head>
 <body>
 <div class="phone" id="app">
@@ -38,11 +38,11 @@
 
   <div class="a11y-pop" id="a11yPanel" role="dialog" aria-label="Ustawienia wyglądu">
     <div class="ap-lang-row" role="group" aria-label="Wybór języka / Select language">
-      <button type="button" class="lang-btn" data-lang="pl" onclick="A11Y.setLang('pl')"><span class="flag" aria-hidden="true">🇵🇱</span> Polski</button>
-      <button type="button" class="lang-btn" data-lang="uk" onclick="A11Y.setLang('uk')"><span class="flag" aria-hidden="true">🇺🇦</span> Українська</button>
-      <button type="button" class="lang-btn" data-lang="en" onclick="A11Y.setLang('en')"><span class="flag" aria-hidden="true">🇬🇧</span> English</button>
+      <button type="button" class="lang-btn" data-lang="pl" onclick="A11Y.setLang('pl')"><span class="flag" aria-hidden="true"><i class="ikf ikf-pl" aria-hidden="true"></i></span> Polski</button>
+      <button type="button" class="lang-btn" data-lang="uk" onclick="A11Y.setLang('uk')"><span class="flag" aria-hidden="true"><i class="ikf ikf-ua" aria-hidden="true"></i></span> Українська</button>
+      <button type="button" class="lang-btn" data-lang="en" onclick="A11Y.setLang('en')"><span class="flag" aria-hidden="true"><i class="ikf ikf-gb" aria-hidden="true"></i></span> English</button>
     </div>
-    <button type="button" class="ap-row" id="apDark" onclick="A11Y.toggleDarkMode()" role="switch" aria-checked="false"><span class="ap-ic" aria-hidden="true">🌙</span><span class="ap-tx"><b>Tryb ciemny (Dark Mode)</b><small>Grafitowe tło, oszczędność baterii</small></span><i class="sw" aria-hidden="true"></i></button>
+    <button type="button" class="ap-row" id="apDark" onclick="A11Y.toggleDarkMode()" role="switch" aria-checked="false"><span class="ap-ic" aria-hidden="true"><i class="ik ik-moon" aria-hidden="true"></i></span><span class="ap-tx"><b>Tryb ciemny (Dark Mode)</b><small>Grafitowe tło, oszczędność baterii</small></span><i class="sw" aria-hidden="true"></i></button>
     <button type="button" class="ap-row" id="apFont" onclick="A11Y.toggleLargeText()" role="switch" aria-checked="false"><span class="ap-ic" aria-hidden="true">A+</span><span class="ap-tx"><b>Duży tekst</b><small>Czytelniej, większe przyciski</small></span><i class="sw" aria-hidden="true"></i></button>
     <button type="button" class="ap-row" id="apContrast" onclick="A11Y.toggleHighContrast()" role="switch" aria-checked="false"><span class="ap-ic" aria-hidden="true">◐</span><span class="ap-tx"><b>Wysoki kontrast</b><small>Mocne kolory i obramowania</small></span><i class="sw" aria-hidden="true"></i></button>
     <button type="button" class="ap-row" onclick="closeA11yPanel();openGlossary()"><span class="ap-ic" aria-hidden="true">?</span><span class="ap-tx"><b>Słowniczek „Po ludzku”</b><small>Trudne pojęcia prostym językiem</small></span></button>
@@ -62,9 +62,9 @@
     <div class="scrim"></div>
     <div class="panel" role="dialog" aria-modal="true" aria-label="Układ dokumentów i osoba">
       <div class="lmenu-tabs" role="tablist" aria-label="Sekcje menu">
-        <button type="button" class="lmenu-tab active" data-tab="osoba" role="tab" aria-selected="true" onclick="setMenuTab('osoba')">👤 Osoba</button>
-        <button type="button" class="lmenu-tab" data-tab="uklad" role="tab" aria-selected="false" onclick="setMenuTab('uklad')">🗂️ Układ</button>
-        <button type="button" class="lmenu-tab" data-tab="a11y" role="tab" aria-selected="false" onclick="setMenuTab('a11y')">⚙️ Opcje</button>
+        <button type="button" class="lmenu-tab active" data-tab="osoba" role="tab" aria-selected="true" onclick="setMenuTab('osoba')"><i class="ik ik-user" aria-hidden="true"></i> Osoba</button>
+        <button type="button" class="lmenu-tab" data-tab="uklad" role="tab" aria-selected="false" onclick="setMenuTab('uklad')"><i class="ik ik-layers" aria-hidden="true"></i> Układ</button>
+        <button type="button" class="lmenu-tab" data-tab="a11y" role="tab" aria-selected="false" onclick="setMenuTab('a11y')"><i class="ik ik-gear" aria-hidden="true"></i> Opcje</button>
       </div>
       <div class="lmenu-sec" id="secOsoba">
         <div class="mh">Wybierz osobę w demonstracji</div>
@@ -172,7 +172,7 @@
         </div>
       </div>
       <div style="display:flex;gap:8px;margin-top:10px">
-        <button class="btn secondary" style="flex:1" type="button" onclick="closePointsDetail();openOfficialCertificate('punkty')">📜 Zaświadczenie PDF</button>
+        <button class="btn secondary" style="flex:1" type="button" onclick="closePointsDetail();openOfficialCertificate('punkty')"><i class="ik ik-cert" aria-hidden="true"></i> Zaświadczenie PDF</button>
         <button class="btn primary pts-ask" style="flex:1.4" type="button">Zapytaj asystenta</button>
       </div>
     </div>
@@ -319,10 +319,10 @@
         <button type="button" class="btn-xs ghost" onclick="markAllNotificationsRead()">Odczytaj wszystkie</button>
       </div>
       <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px">
-        <button type="button" class="btn-xs ghost" onclick="closePowiadomieniaModal();setTimeout(()=>triggerDemoNotification('rcb'),200)" aria-label="Przetestuj powiadomienie push Alert RCB">🚨 Push RCB</button>
-        <button type="button" class="btn-xs ghost" onclick="closePowiadomieniaModal();setTimeout(()=>triggerDemoNotification('recepta'),200)" aria-label="Przetestuj powiadomienie push e-Recepta">💊 Push Recepta</button>
-        <button type="button" class="btn-xs ghost" onclick="closePowiadomieniaModal();setTimeout(()=>triggerDemoNotification('oc'),200)" aria-label="Przetestuj powiadomienie push OC i kalendarz">🚗 Push OC (.ics)</button>
-        <button type="button" class="btn-xs ghost" onclick="closePowiadomieniaModal();setTimeout(()=>triggerDemoNotification('pismo'),200)" aria-label="Przetestuj powiadomienie push e-Doręczenia i UPO">🏛️ Push Pismo (UPO)</button>
+        <button type="button" class="btn-xs ghost" onclick="closePowiadomieniaModal();setTimeout(()=>triggerDemoNotification('rcb'),200)" aria-label="Przetestuj powiadomienie push Alert RCB"><i class="ik ik-siren" aria-hidden="true"></i> Push RCB</button>
+        <button type="button" class="btn-xs ghost" onclick="closePowiadomieniaModal();setTimeout(()=>triggerDemoNotification('recepta'),200)" aria-label="Przetestuj powiadomienie push e-Recepta"><i class="ik ik-pill" aria-hidden="true"></i> Push Recepta</button>
+        <button type="button" class="btn-xs ghost" onclick="closePowiadomieniaModal();setTimeout(()=>triggerDemoNotification('oc'),200)" aria-label="Przetestuj powiadomienie push OC i kalendarz"><i class="ik ik-car" aria-hidden="true"></i> Push OC (.ics)</button>
+        <button type="button" class="btn-xs ghost" onclick="closePowiadomieniaModal();setTimeout(()=>triggerDemoNotification('pismo'),200)" aria-label="Przetestuj powiadomienie push e-Doręczenia i UPO"><i class="ik ik-institution" aria-hidden="true"></i> Push Pismo (UPO)</button>
       </div>
       <div class="notif-list"></div>
     </div>
@@ -364,22 +364,23 @@
   </div></div>
   <div class="homebar" aria-hidden="true"></div>
 </div>
-<script src="osoby.js?v=44"></script>
-<script src="sylwetki.js?v=44"></script>
-<script src="core.js?v=44"></script>
-<script src="accessibility.js?v=44"></script>
-<script src="variants.js?v=44"></script>
-<script src="scenarios.js?v=44"></script>
-<script src="agent.js?v=44"></script>
-<script src="znak-kod.js?v=44"></script>
-<script src="znak.js?v=44"></script>
-<script src="uslugi.js?v=44"></script>
-<script src="weryfikacja.js?v=44"></script>
-<script src="poczta.js?v=44"></script>
-<script src="ikp-integracja.js?v=44"></script>
-<script src="mandaty.js?v=44"></script>
-<script src="powiadomienia-eksport.js?v=44"></script>
-<script src="katalog-kart.js?v=44"></script>
-<script src="spotlight.js?v=44"></script>
+<script src="ikony.js?v=45"></script>
+<script src="osoby.js?v=45"></script>
+<script src="sylwetki.js?v=45"></script>
+<script src="core.js?v=45"></script>
+<script src="accessibility.js?v=45"></script>
+<script src="variants.js?v=45"></script>
+<script src="scenarios.js?v=45"></script>
+<script src="agent.js?v=45"></script>
+<script src="znak-kod.js?v=45"></script>
+<script src="znak.js?v=45"></script>
+<script src="uslugi.js?v=45"></script>
+<script src="weryfikacja.js?v=45"></script>
+<script src="poczta.js?v=45"></script>
+<script src="ikp-integracja.js?v=45"></script>
+<script src="mandaty.js?v=45"></script>
+<script src="powiadomienia-eksport.js?v=45"></script>
+<script src="katalog-kart.js?v=45"></script>
+<script src="spotlight.js?v=45"></script>
 </body>
 </html>

@@ -250,13 +250,13 @@ function renderMenu(){
   const curLang=new URLSearchParams(location.search).get('lang')||(function(){try{return localStorage.getItem('mobLang')}catch(e){return null}})()||'pl';
   ma.innerHTML=`
    <div class="ap-lang-row" style="margin-bottom:8px">
-    <button type="button" class="lang-btn ${curLang==='pl'?'active':''}" data-lang="pl" onclick="A11Y.setLang('pl')"><span class="flag">🇵🇱</span> Polski</button>
-    <button type="button" class="lang-btn ${curLang==='uk'?'active':''}" data-lang="uk" onclick="A11Y.setLang('uk')"><span class="flag">🇺🇦</span> Українська</button>
-    <button type="button" class="lang-btn ${curLang==='en'?'active':''}" data-lang="en" onclick="A11Y.setLang('en')"><span class="flag">🇬🇧</span> English</button>
+    <button type="button" class="lang-btn ${curLang==='pl'?'active':''}" data-lang="pl" onclick="A11Y.setLang('pl')"><span class="flag"><i class="ikf ikf-pl" aria-hidden="true"></i></span> Polski</button>
+    <button type="button" class="lang-btn ${curLang==='uk'?'active':''}" data-lang="uk" onclick="A11Y.setLang('uk')"><span class="flag"><i class="ikf ikf-ua" aria-hidden="true"></i></span> Українська</button>
+    <button type="button" class="lang-btn ${curLang==='en'?'active':''}" data-lang="en" onclick="A11Y.setLang('en')"><span class="flag"><i class="ikf ikf-gb" aria-hidden="true"></i></span> English</button>
    </div>
    <div class="ma-row">
     <button type="button" class="ma-btn" onclick="A11Y.toggleDarkMode();renderMenu()">
-     <span>Motyw: <b>${A11Y.darkMode?'🌙 Ciemny':'☀️ Jasny'}</b></span>
+     <span>Motyw: <b>${A11Y.darkMode?'<i class="ik ik-moon" aria-hidden="true"></i> Ciemny':'<i class="ik ik-sun" aria-hidden="true"></i> Jasny'}</b></span>
     </button>
     <button type="button" class="ma-btn" onclick="A11Y.toggleLargeText();renderMenu()">
      <span>Tekst: <b>${A11Y.largeText?'Duży (A+)':'Standard'}</b></span>
@@ -267,23 +267,23 @@ function renderMenu(){
    </div>
    <div class="ma-row" style="margin-top:6px">
     <button type="button" class="ma-btn" onclick="closeMenu();openGlossary()">
-     <span>📖 Słowniczek „Po ludzku”</span>
+     <span><i class="ik ik-book" aria-hidden="true"></i> Słowniczek „Po ludzku”</span>
     </button>
     <button type="button" class="ma-btn" onclick="closeMenu();openErrorHistory()">
-     <span>⚠️ Błędy AI${errCnt?` (<b>${errCnt}</b>)`:''}</span>
+     <span><i class="ik ik-warning" aria-hidden="true"></i> Błędy AI${errCnt?` (<b>${errCnt}</b>)`:''}</span>
     </button>
    </div>
    <div class="ma-row" style="margin-top:6px">
     <button type="button" class="ma-btn" onclick="closeMenu();openOfficialCertificate('pesel')">
-     <span>📜 Zaświadczenie PESEL</span>
+     <span><i class="ik ik-cert" aria-hidden="true"></i> Zaświadczenie PESEL</span>
     </button>
     <button type="button" class="ma-btn" onclick="closeMenu();openOfficialCertificate('punkty')">
-     <span>📜 Odpis CEPiK (PDF)</span>
+     <span><i class="ik ik-cert" aria-hidden="true"></i> Odpis CEPiK (PDF)</span>
     </button>
    </div>
    <div class="ma-row" style="margin-top:6px">
     <button type="button" class="ma-btn reset" onclick="if(confirm('Zresetować dane demonstracyjne wybranej osoby?')){MobStore.reset();location.reload()}">
-     <span>↺ Resetuj dane demo (${OS.imie})</span>
+     <span><i class="ik ik-reset" aria-hidden="true"></i> Resetuj dane demo (${OS.imie})</span>
     </button>
    </div>
   `;

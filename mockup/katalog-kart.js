@@ -439,7 +439,7 @@
           <div class="kc-action">
             ${alreadyInWallet
               ? `<button type="button" class="btn secondary btn-sm kc-btn" onclick="openDoc('${item.id}');closeKatalogKartModal();" aria-label="Otwórz dokument ${item.nazwa}">
-                   <span class="kc-check">✓</span> W portfelu
+                   <span class="kc-check"><i class="ik ik-check" aria-hidden="true"></i></span> W portfelu
                  </button>`
               : `<button type="button" class="btn primary btn-sm kc-btn" onclick="dodajDokumentDoPortfela('${item.id}')" aria-label="Dodaj ${item.nazwa} do portfela">
                    + Dodaj
@@ -538,7 +538,7 @@
     // Haptyka i powiadomienie
     if (typeof haptic === 'function') haptic('success');
     if (typeof showToast === 'function') {
-      showToast(`✅ Pomyślnie dodano: ${docObj.name}`);
+      showToast(`Pomyślnie dodano: ${docObj.name}`);
     }
     if (typeof announceSR === 'function') {
       announceSR(`Pomyślnie dodano dokument ${docObj.name} do Twojego portfela.`);
@@ -656,12 +656,12 @@
       .phone.dark-mode .btn-dodaj-dok-bar {
         background: #1e293b;
         border-color: rgba(96, 165, 250, 0.3);
-        color: #60a5fa;
+        color: #93c5fd;
       }
       .phone.dark-mode .btn-dodaj-dok-bar .bdd-icon,
       .phone.dark-mode .btn-dodaj-dok-bar .bdd-label,
       .phone.dark-mode .btn-dodaj-dok-bar .bdd-badge {
-        color: #60a5fa;
+        color: #93c5fd;
       }
       .phone.dark-mode .btn-dodaj-dok-bar .bdd-badge {
         background: rgba(96, 165, 250, 0.18);

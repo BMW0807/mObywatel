@@ -441,7 +441,7 @@ class H(SimpleHTTPRequestHandler):
                 return self.js(dict(ok=True))
             if p == '/api/stt':
                 data = self.body(MAX_AUDIO_BODY)
-                if zablokowane(): return self.js(dict(text='🎤 nagranie'))
+                if zablokowane(): return self.js(dict(text='Nagranie głosowe'))
                 if not (k('openai') or el_ok('stt')): return self.js(dict(error='brak klucza do rozpoznawania mowy'), 503)
                 if not data: return self.js(dict(error='puste nagranie'), 400)
                 from urllib.parse import parse_qs

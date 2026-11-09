@@ -131,7 +131,7 @@ function openAptekaModal(rxId) {
       </div>
 
       <div class="rx-pharm-card">
-        <div class="rx-screen-light-badge">💡 Maksymalna jasność ekranu włączona dla czytnika</div>
+        <div class="rx-screen-light-badge"><i class="ik ik-bulb" aria-hidden="true"></i> Maksymalna jasność ekranu włączona dla czytnika</div>
         <div class="rx-code-wrap">
           ${barcodeSvg}
           <div class="rx-barcode-num">${rx.barcode}</div>
@@ -154,7 +154,7 @@ function openAptekaModal(rxId) {
 
         <div class="rx-meta-grid">
           <div class="rxm-item"><span>Pacjent:</span><b>${rx.patient}</b></div>
-          <div class="rxm-item"><span>Odpłatność:</span><b style="color:#059669">${rx.refund}</b></div>
+          <div class="rxm-item"><span>Odpłatność:</span><b style="color:var(--ok-ink)">${rx.refund}</b></div>
           <div class="rxm-item"><span>Wystawił:</span><b>${rx.doctor}</b></div>
           <div class="rxm-item"><span>Placówka:</span><b>${rx.clinic}</b></div>
           <div class="rxm-item"><span>Data wystawienia:</span><b>${rx.issued}</b></div>
@@ -163,7 +163,7 @@ function openAptekaModal(rxId) {
       </div>
 
       <div class="rx-actions-row">
-        <button type="button" class="btn secondary" onclick="copyRxPin('${rx.pin}')">📋 Kopiuj kod PIN</button>
+        <button type="button" class="btn secondary" onclick="copyRxPin('${rx.pin}')"><i class="ik ik-clipboard" aria-hidden="true"></i> Kopiuj kod PIN</button>
         <button type="button" class="btn primary" onclick="closeAptekaModal();if(typeof askAssistantWithPrompt==='function')askAssistantWithPrompt('Czy lek ${rx.drug} ma tańsze zamienniki i jak go poprawnie dawkować?')">Zapytaj o zamienniki AI</button>
       </div>
     `;
@@ -257,30 +257,30 @@ function openQrHubModal() {
 
       <div class="qr-hub-grid">
         <button type="button" class="qr-hub-card primary" onclick="closeQrHubModal();if(typeof qrFlow==='function')qrFlow({})">
-          <div class="qrh-icon">📷</div>
+          <div class="qrh-icon"><i class="ik ik-camera" aria-hidden="true"></i></div>
           <div class="qrh-info">
             <b>Zeskanuj kod QR</b>
             <small>Skieruj aparat na znak mObywatela w urzędzie, firmie lub telefonie obok i przekaż dane.</small>
           </div>
-          <span class="qrh-arrow">→</span>
+          <span class="qrh-arrow"><i class="ik ik-arrow" aria-hidden="true"></i></span>
         </button>
 
         <button type="button" class="qr-hub-card" onclick="closeQrHubModal();if(typeof przyjmijFlow==='function')przyjmijFlow({})">
-          <div class="qrh-icon">🛡️</div>
+          <div class="qrh-icon"><i class="ik ik-shield" aria-hidden="true"></i></div>
           <div class="qrh-info">
             <b>Okaż mój Znak mObywatela</b>
             <small>Wyświetl animowany żeton kryptograficzny, aby inna osoba lub instytucja mogła przyjąć Twoje dane.</small>
           </div>
-          <span class="qrh-arrow">→</span>
+          <span class="qrh-arrow"><i class="ik ik-arrow" aria-hidden="true"></i></span>
         </button>
 
         <button type="button" class="qr-hub-card" onclick="closeQrHubModal();if(typeof openDoc==='function')openDoc('dowod')">
-          <div class="qrh-icon">✨</div>
+          <div class="qrh-icon"><i class="ik ik-sparkle" aria-hidden="true"></i></div>
           <div class="qrh-info">
             <b>mDowód z hologramem</b>
             <small>Ekran weryfikacyjny z żyroskopowym hologramem 3D, orłem RP i zegarem milisekundowym.</small>
           </div>
-          <span class="qrh-arrow">→</span>
+          <span class="qrh-arrow"><i class="ik ik-arrow" aria-hidden="true"></i></span>
         </button>
       </div>
 

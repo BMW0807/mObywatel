@@ -203,7 +203,7 @@ const esc=t=>t.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
 function el(h){const t=document.createElement('template');t.innerHTML=h.trim();return t.content.firstElementChild}
 function end(){requestAnimationFrame(()=>msgs.scrollTo({top:msgs.scrollHeight,behavior:FAST?'auto':'smooth'}))}
 function clearEmpty(){const e=msgs.querySelector('.empty');if(e)e.remove()}
-function addUser(t){clearEmpty();msgs.append(el(`<div class="msg user" data-t="0">${esc(t)}</div>`));end();touch('user',t)}
+function addUser(t){clearEmpty();const foto=/^(Zdjęcie dowodu|Dodano \d+ zdjęci)/.test(t);msgs.append(el(`<div class="msg user${foto?' foto':''}" data-t="0">${foto&&typeof ikona==='function'?ikona('camera')+' ':''}${esc(t)}</div>`));end();touch('user',t)}
 async function say(t){clearEmpty();const ty=el('<div class="typing" aria-hidden="true"><i></i><i></i><i></i></div>');msgs.append(ty);end();await sleep(Math.min(1100,400+t.replace(/<[^>]+>/g,'').length*6));ty.remove();const p=plain(t);msgs.append(el(`<div class="msg bot">${t}</div>`));end();touch('bot',p);if(typeof announceSR==='function')announceSR(p)}
 function hd(icon,title){return `<div class="hd"><div class="ic">${svg(icon)}</div><div class="tt">${title}</div></div>`}
 const srcH=s=>s?`<div class="src">${svg('db')}${s}</div>`:'';
@@ -215,7 +215,7 @@ function result(o){
  if(typeof MobStore!=='undefined'){
   try{
    const upo=MobStore.addUPO({title:o.title||'Załatwiona sprawa',source:o.source||'Rejestr Państwowy',rows:o.rows||[]});
-   const btnH=`<div class="upo-attach"><button type="button" class="btn ghost upo-view-btn" onclick='openUPO(${JSON.stringify(upo)})'>📄 Urzędowe Poświadczenie Odbioru (${upo.upo})</button></div>`;
+   const btnH=`<div class="upo-attach"><button type="button" class="btn ghost upo-view-btn" onclick='openUPO(${JSON.stringify(upo)})'><i class="ik ik-file" aria-hidden="true"></i> Urzędowe Poświadczenie Odbioru (${upo.upo})</button></div>`;
    o.body=(o.body||'')+btnH;
   }catch(e){}
  }
@@ -314,7 +314,7 @@ function topicIcon(t){const n=norm(t);return /portfel|zgubil|ukrad|zastrz/.test(
 const plain=h=>{const d=document.createElement('div');d.innerHTML=h;return d.textContent.replace(/\s+/g,' ').trim()};
 function touch(kind,text){
  const c=WR;if(!c)return;c.t=Date.now();
- if(kind==='user'&&!c.title){c.title=text.replace(/^📷\s*/,'Zdjęcie: ');c.icon=topicIcon(text)}
+ if(kind==='user'&&!c.title){c.title=text;c.icon=topicIcon(text)}
  if(kind==='bot')c.last=text;
  if(c!==VIS)c.unread=true;
  renderHist();

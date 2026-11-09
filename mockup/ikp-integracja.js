@@ -223,7 +223,7 @@ function openIkpModal(tab = 'recepty') {
                   <span>Ważna do: <b>${r.exp}</b></span>
                 </div>
                 <div class="rx-card-actions" style="margin-top:8px">
-                  <button type="button" class="btn primary btn-sm" onclick="event.stopPropagation();openAptekaModal('${r.id}')">🔍 Pokaż kod kreskowy</button>
+                  <button type="button" class="btn primary btn-sm" onclick="event.stopPropagation();openAptekaModal('${r.id}')"><i class="ik ik-search" aria-hidden="true"></i> Pokaż kod kreskowy</button>
                   <button type="button" class="btn ghost btn-sm" onclick="event.stopPropagation();copyRxPin('${r.pin}')">Kopiuj PIN</button>
                 </div>
               </div>
@@ -231,7 +231,7 @@ function openIkpModal(tab = 'recepty') {
           </div>
         ` : `
           <div class="ikp-empty-box">
-            <span style="font-size:36px">💊</span>
+            <span style="font-size:36px"><i class="ik ik-pill" aria-hidden="true"></i></span>
             <b>Brak aktywnych e-recept</b>
             <p>Wszystkie recepty dla profilu ${curProf.name} zostały już zrealizowane.</p>
             <button type="button" class="btn secondary btn-sm" onclick="openZamowRecepteModal()">Zamów receptę na leki stałe</button>
@@ -263,7 +263,7 @@ function openIkpModal(tab = 'recepty') {
                   </div>
                 </div>
                 <div class="rx-card-actions" style="margin-top:10px">
-                  <button type="button" class="btn primary btn-sm" onclick="closeIkpModal();openERejestracjaModal()">🗓️ Umów termin (e-Rejestracja)</button>
+                  <button type="button" class="btn primary btn-sm" onclick="closeIkpModal();openERejestracjaModal()"><i class="ik ik-calendar" aria-hidden="true"></i> Umów termin (e-Rejestracja)</button>
                   <button type="button" class="btn ghost btn-sm" onclick="copyRxPin('${s.code}')">Kopiuj kod</button>
                 </div>
               </div>
@@ -271,7 +271,7 @@ function openIkpModal(tab = 'recepty') {
           </div>
         ` : `
           <div class="ikp-empty-box">
-            <span style="font-size:36px">📋</span>
+            <span style="font-size:36px"><i class="ik ik-clipboard" aria-hidden="true"></i></span>
             <b>Brak oczekujących skierowań</b>
             <p>Nie masz żadnych otwartych skierowań wymagających rejestracji.</p>
           </div>
@@ -296,7 +296,7 @@ function openIkpModal(tab = 'recepty') {
         <div class="ekuz-card-preview" onclick="openEkuzModal()">
           <div class="ekp-head">
             <div style="display:flex;align-items:center;gap:8px">
-              <span style="font-size:24px">🇪🇺</span>
+              <span style="font-size:24px"><i class="ikf ikf-eu" aria-hidden="true"></i></span>
               <b>Karta EKUZ w mObywatelu</b>
             </div>
             <span class="bh-badge ok">AKTYWNA</span>
@@ -307,11 +307,11 @@ function openIkpModal(tab = 'recepty') {
 
         <div class="ikp-action-grid" style="margin-top:12px">
           <button type="button" class="ikp-grid-btn" onclick="closeIkpModal();openOfficialCertificate('nfz')">
-            <span class="ikp-gb-ic">📜</span>
+            <span class="ikp-gb-ic"><i class="ik ik-cert" aria-hidden="true"></i></span>
             <span class="ikp-gb-tx"><b>Zaświadczenie NFZ (PDF)</b><small>Urzędowy odpis uprawnień z pieczęcią RP</small></span>
           </button>
           <button type="button" class="ikp-grid-btn" onclick="closeIkpModal();openDiloModal()">
-            <span class="ikp-gb-ic">🛡️</span>
+            <span class="ikp-gb-ic"><i class="ik ik-shield" aria-hidden="true"></i></span>
             <span class="ikp-gb-tx"><b>Karta DiLO (Onkologia)</b><small>Szybka ścieżka terapii onkologicznej</small></span>
           </button>
         </div>
@@ -327,16 +327,16 @@ function openIkpModal(tab = 'recepty') {
 
         <div class="poz-card">
           <div class="poz-head">
-            <span style="font-size:26px">🏥</span>
+            <span style="font-size:26px"><i class="ik ik-hospital" aria-hidden="true"></i></span>
             <div>
               <b class="poz-title">${pData.poz.clinic}</b>
-              <small class="poz-addr">📍 ${pData.poz.address}</small>
+              <small class="poz-addr"><i class="ik ik-pin" aria-hidden="true"></i> ${pData.poz.address}</small>
             </div>
           </div>
           <div class="poz-rows">
             <div class="poz-r"><span>Lekarz podstawowy:</span><b>${pData.poz.doctor}</b></div>
             <div class="poz-r"><span>Pielęgniarka POZ:</span><b>${pData.poz.nurse}</b></div>
-            <div class="poz-r"><span>Numer telefonu:</span><b style="color:var(--red)"><a href="tel:${pData.poz.phone.replace(/\s/g,'')}">${pData.poz.phone}</a></b></div>
+            <div class="poz-r"><span>Numer telefonu:</span><b style="color:var(--red-ink)"><a href="tel:${pData.poz.phone.replace(/\s/g,'')}">${pData.poz.phone}</a></b></div>
             <div class="poz-r"><span>Ostatnia wizyta:</span><b>${pData.poz.lastVisit}</b></div>
           </div>
           <div class="poz-actions" style="margin-top:12px;display:flex;gap:8px">
@@ -362,7 +362,7 @@ function openIkpModal(tab = 'recepty') {
                 <span class="zi-cost">${z.cost}</span>
               </div>
               <div class="zi-foot">
-                <small>📍 ${z.where}</small>
+                <small><i class="ik ik-pin" aria-hidden="true"></i> ${z.where}</small>
                 <small>${z.date}</small>
               </div>
             </div>
@@ -377,7 +377,7 @@ function openIkpModal(tab = 'recepty') {
     <div class="modal-box ikp-full-box">
       <div class="modal-head">
         <div style="display:flex;align-items:center;gap:10px">
-          <span style="font-size:24px">🏥</span>
+          <span style="font-size:24px"><i class="ik ik-hospital" aria-hidden="true"></i></span>
           <div>
             <h2 id="ikpTitle">Internetowe Konto Pacjenta</h2>
             <small style="color:var(--ink2)">Zintegrowane w mObywatelu • Narodowy Fundusz Zdrowia</small>
@@ -393,7 +393,7 @@ function openIkpModal(tab = 'recepty') {
           <div class="ifb-chips">
             ${profiles.map(pr => `
               <button type="button" class="chip-sm ${pr.id === curProf.id ? 'active' : ''}" onclick="IKP.switchProfile('${pr.id}', '${tab}')">
-                ${/^c\d/.test(pr.id) ? '👶 ' : '👤 '}${pr.name}
+                ${/^c\d/.test(pr.id) ? '<i class="ik ik-baby" aria-hidden="true"></i> ' : '<i class="ik ik-user" aria-hidden="true"></i> '}${pr.name}
               </button>
             `).join('')}
           </div>
@@ -402,11 +402,11 @@ function openIkpModal(tab = 'recepty') {
 
       <!-- Zakładki IKP -->
       <div class="lmenu-tabs ikp-tabs" role="tablist">
-        <button type="button" class="lmenu-tab ${tab==='recepty'?'active':''}" onclick="openIkpModal('recepty')">💊 Recepty</button>
-        <button type="button" class="lmenu-tab ${tab==='skierowania'?'active':''}" onclick="openIkpModal('skierowania')">📋 Skierowania</button>
-        <button type="button" class="lmenu-tab ${tab==='ewus'?'active':''}" onclick="openIkpModal('ewus')">🇪🇺 eWUŚ & EKUZ</button>
-        <button type="button" class="lmenu-tab ${tab==='poz'?'active':''}" onclick="openIkpModal('poz')">👨‍⚕️ Lekarz POZ</button>
-        <button type="button" class="lmenu-tab ${tab==='historia'?'active':''}" onclick="openIkpModal('historia')">📊 Koszty NFZ</button>
+        <button type="button" class="lmenu-tab ${tab==='recepty'?'active':''}" onclick="openIkpModal('recepty')"><i class="ik ik-pill" aria-hidden="true"></i> Recepty</button>
+        <button type="button" class="lmenu-tab ${tab==='skierowania'?'active':''}" onclick="openIkpModal('skierowania')"><i class="ik ik-clipboard" aria-hidden="true"></i> Skierowania</button>
+        <button type="button" class="lmenu-tab ${tab==='ewus'?'active':''}" onclick="openIkpModal('ewus')"><i class="ikf ikf-eu" aria-hidden="true"></i> eWUŚ & EKUZ</button>
+        <button type="button" class="lmenu-tab ${tab==='poz'?'active':''}" onclick="openIkpModal('poz')"><i class="ik ik-doctor" aria-hidden="true"></i> Lekarz POZ</button>
+        <button type="button" class="lmenu-tab ${tab==='historia'?'active':''}" onclick="openIkpModal('historia')"><i class="ik ik-chart" aria-hidden="true"></i> Koszty NFZ</button>
       </div>
 
       <div class="ikp-body-content">
@@ -471,7 +471,7 @@ function openZamowRecepteModal() {
       });
     }
 
-    if (typeof showToast === 'function') showToast(`✅ Sukces! Lekarz wystawił e-receptę na ${drugName}. PIN: ${pin}`);
+    if (typeof showToast === 'function') showToast(`Sukces! Lekarz wystawił e-receptę na ${drugName}. PIN: ${pin}`);
     openIkpModal('recepty');
   }, 1200);
 }
@@ -500,7 +500,7 @@ function openEkuzModal() {
 
       <div class="ekuz-plastic-card">
         <div class="epc-top">
-          <div class="epc-eu-flag">🇪🇺</div>
+          <div class="epc-eu-flag"><i class="ikf ikf-eu" aria-hidden="true"></i></div>
           <b>EUROPEAN HEALTH INSURANCE CARD</b>
           <span class="epc-pl">PL</span>
         </div>
@@ -515,7 +515,7 @@ function openEkuzModal() {
       </div>
 
       <div class="bus-actions-row" style="margin-top:14px">
-        <button type="button" class="btn secondary" onclick="if(typeof showToast==='function')showToast('Pobrano certyfikat EKUZ w formacie PDF');">📜 Pobierz certyfikat PDF</button>
+        <button type="button" class="btn secondary" onclick="if(typeof showToast==='function')showToast('Pobrano certyfikat EKUZ w formacie PDF');"><i class="ik ik-cert" aria-hidden="true"></i> Pobierz certyfikat PDF</button>
         <button type="button" class="btn primary" onclick="closeEkuzModal();if(typeof askAssistantWithPrompt==='function')askAssistantWithPrompt('Jak skorzystać z karty EKUZ w przypadku nagłego zachorowania za granicą?')">Zapytaj asystenta AI</button>
       </div>
     </div>

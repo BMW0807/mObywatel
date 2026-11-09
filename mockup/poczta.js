@@ -211,7 +211,7 @@ function renderInboxLetters() {
       <b class="lc-subject">${l.subject}</b>
       <div class="lc-sender">${l.sender}</div>
       <div class="lc-foot">
-        <span class="lc-upo">📜 ${l.upo}</span>
+        <span class="lc-upo"><i class="ik ik-cert" aria-hidden="true"></i> ${l.upo}</span>
         ${!l.read ? '<span class="lc-new-dot">Nowe</span>' : ''}
       </div>
     </div>
@@ -232,8 +232,8 @@ function renderSentLetters() {
       <b class="lc-subject">${s.subject}</b>
       <div class="lc-sender">Do: <b>${s.recipient}</b></div>
       <div class="lc-foot">
-        <span class="lc-upo upp-badge">🛡️ ${s.upp}</span>
-        <span class="lc-status-signed">✓ Podpisane mDowodem</span>
+        <span class="lc-upo upp-badge"><i class="ik ik-shield" aria-hidden="true"></i> ${s.upp}</span>
+        <span class="lc-status-signed"><i class="ik ik-check" aria-hidden="true"></i> Podpisane mDowodem</span>
       </div>
     </div>
   `).join('');
@@ -253,7 +253,7 @@ function openLetterDetail(letterId) {
   l.read = true;
   updateBadges();
 
-  const msg = `📬 ${l.sender}\n\nTemat: ${l.subject}\nData: ${l.date}\nUPO: ${l.upo}\n\n${l.content.replace(/\\n/g, '\n')}\n\nCzy chcesz pobrać oficjalne Urzędowe Poświadczenie Odbioru (UPO .xml)?`;
+  const msg = `${l.sender}\n\nTemat: ${l.subject}\nData: ${l.date}\nUPO: ${l.upo}\n\n${l.content.replace(/\\n/g, '\n')}\n\nCzy chcesz pobrać oficjalne Urzędowe Poświadczenie Odbioru (UPO .xml)?`;
   if (confirm(msg)) {
     if (typeof exportUpoToFile === 'function') {
       exportUpoToFile({
@@ -270,7 +270,7 @@ function openLetterDetail(letterId) {
 function openSentDetail(sentId) {
   const s = POCZTA.getSent().find(x => x.id === sentId);
   if (!s) return;
-  const msg = `📤 Pismo wysłane do: ${s.recipient}\n\nTemat: ${s.subject}\nData nadania: ${s.date}\nUPP: ${s.upp}\nSkrót SHA-256: ${s.sha256 || 'a4f9...8ef'}\n\nTreść:\n${s.content}\n\nCzy chcesz pobrać Urzędowe Poświadczenie Przedłożenia (UPP)?`;
+  const msg = `Pismo wysłane do: ${s.recipient}\n\nTemat: ${s.subject}\nData nadania: ${s.date}\nUPP: ${s.upp}\nSkrót SHA-256: ${s.sha256 || 'a4f9...8ef'}\n\nTreść:\n${s.content}\n\nCzy chcesz pobrać Urzędowe Poświadczenie Przedłożenia (UPP)?`;
   if (confirm(msg)) {
     if (typeof exportUpoToFile === 'function') {
       exportUpoToFile({
@@ -326,16 +326,16 @@ function openNowePismoModal() {
         </div>
 
         <div class="pf-attachment-box">
-          <span class="pab-lbl">📎 Załączniki (opcjonalnie):</span>
+          <span class="pab-lbl"><i class="ik ik-clip" aria-hidden="true"></i> Załączniki (opcjonalnie):</span>
           <div class="pab-chip">
-            <span>📄 Pelnomocnictwo_2026.pdf (142 KB)</span>
-            <button type="button" class="pab-del" onclick="this.parentElement.remove()">✕</button>
+            <span><i class="ik ik-file" aria-hidden="true"></i> Pelnomocnictwo_2026.pdf (142 KB)</span>
+            <button type="button" class="pab-del" onclick="this.parentElement.remove()"><i class="ik ik-close" aria-hidden="true"></i></button>
           </div>
           <button type="button" class="btn-xs ghost" onclick="if(typeof showToast==='function')showToast('Dodano załącznik do pisma.')">+ Dodaj kolejny plik</button>
         </div>
 
         <div class="pf-signature-banner">
-          <span class="psb-ic">✍️</span>
+          <span class="psb-ic"><i class="ik ik-sign" aria-hidden="true"></i></span>
           <div>
             <b>Kwalifikowany podpis elektroniczny mDowód</b>
             <p>Pismo zostanie opatrzone urzędowym podpisem elektronicznym potwierdzającym Twoją tożsamość biometryczną.</p>
@@ -345,7 +345,7 @@ function openNowePismoModal() {
         <div class="pf-actions">
           <button type="button" class="btn ghost" onclick="closeNowePismoModal()">Anuluj</button>
           <button type="button" class="btn primary pf-sign-btn" onclick="submitAndSignPismo()">
-            🔐 Podpisz biometrią i wyślij
+            <i class="ik ik-faceid" aria-hidden="true"></i> Podpisz biometrią i wyślij
           </button>
         </div>
       </div>
@@ -404,7 +404,7 @@ function finalizePismoSubmission(recipient, subject, type, content) {
   closeNowePismoModal();
 
   if (typeof showToast === 'function') {
-    showToast(`✓ Pismo wysłane! Wygenerowano ${uppCode}`);
+    showToast(`Pismo wysłane! Wygenerowano ${uppCode}`);
   }
 
   // Otwarcie skrzynki w zakładce Wysłane
@@ -440,7 +440,7 @@ function openPowiadomieniaModal() {
   if (listEl) {
     listEl.innerHTML = powiadomieniaOsoby().map(n => `
       <div class="notif-item ${n.type} ${n.unread ? 'unread' : ''}">
-        <div class="ni-icon">${n.type === 'rcb' ? '🚨' : (n.type === 'car' ? '🚗' : (n.type === 'health' ? '💊' : '🔒'))}</div>
+        <div class="ni-icon">${n.type === 'rcb' ? '<i class="ik ik-siren" aria-hidden="true"></i>' : (n.type === 'car' ? '<i class="ik ik-car" aria-hidden="true"></i>' : (n.type === 'health' ? '<i class="ik ik-pill" aria-hidden="true"></i>' : '<i class="ik ik-lock" aria-hidden="true"></i>'))}</div>
         <div class="ni-body">
           <div class="ni-head">
             <b class="ni-title">${n.title}</b>

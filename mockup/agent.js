@@ -42,7 +42,7 @@ function renderAiError(c,{code,err,onRetry,onDemo}){
   </div>
   <div class="actions">
    ${onDemo?`<button type="button" class="btn ghost ai-demo-btn">Tryb demo</button>`:''}
-   <button type="button" class="btn primary ai-retry-btn">↻ Spróbuj ponownie</button>
+   <button type="button" class="btn primary ai-retry-btn"><i class="ik ik-retry" aria-hidden="true"></i> Spróbuj ponownie</button>
   </div>
  </div>`);
  const retryBtn=cardEl.querySelector('.ai-retry-btn');
@@ -293,7 +293,7 @@ async function initAgent(){
  $('#vkbd').onclick=()=>{exitVoice();setTimeout(()=>input.focus(),50)};
  const _exit=exitChat;exitChat=function(){if(VOICE)exitVoice();_exit()};
  const _sw=switchTo;switchTo=function(c){if(VOICE)exitVoice();_sw(c)};
- $('#cam').onclick=()=>{enterChat();act(()=>{addUser('📷 zdjęcie dowodu rejestracyjnego');agentSend('',{hidden:'[zdjęcie] Zdjęcie dowodu rejestracyjnego pojazdu. Odczyt: numer rejestracyjny WE 4K221, VIN WVWZZZAUZKW118204, data pierwszej rejestracji 14.03.2019, Volkswagen Golf. Właściciel: Marek Zieliński.'})})};
+ $('#cam').onclick=()=>{enterChat();act(()=>{addUser('Zdjęcie dowodu rejestracyjnego');agentSend('',{hidden:'[zdjęcie] Zdjęcie dowodu rejestracyjnego pojazdu. Odczyt: numer rejestracyjny WE 4K221, VIN WVWZZZAUZKW118204, data pierwszej rejestracji 14.03.2019, Volkswagen Golf. Właściciel: Marek Zieliński.'})})};
  document.addEventListener('pointerdown',()=>audioCtx(),{once:true});
 }
 initAgent();

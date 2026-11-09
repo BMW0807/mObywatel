@@ -15,7 +15,7 @@
       category: 'Zdrowie',
       catKey: 'zdrowie',
       desc: 'Aktywne e-recepty w IKP, kod kreskowy w aptece i 4-cyfrowy PIN',
-      icon: '💊',
+      icon: '<i class="ik ik-pill" aria-hidden="true"></i>',
       badge: 'IKP / Apteka',
       keywords: ['recepta', 'recepty', 'leki', 'antybiotyk', 'apteka', 'pin', 'farmaceuta', 'dawkowanie', 'ikp', 'kod kreskowy'],
       query: 'Moje aktywne e-recepty w IKP i dawkowanie leków',
@@ -33,7 +33,7 @@
       category: 'Zdrowie',
       catKey: 'zdrowie',
       desc: 'Skierowania na badania diagnostyczne, rezonans, USG i do poradni NFZ',
-      icon: '📋',
+      icon: '<i class="ik ik-clipboard" aria-hidden="true"></i>',
       badge: 'NFZ Badania',
       keywords: ['skierowanie', 'skierowania', 'badania', 'usg', 'rezonans', 'poradnia', 'specjalista', 'tomografia', 'krew'],
       query: 'Jakie mam ważne e-skierowania i gdzie mogę umówić wizytę?',
@@ -51,7 +51,7 @@
       category: 'Zdrowie',
       catKey: 'zdrowie',
       desc: 'Twój lekarz rodzinny, dane przychodni rejonowej i rejestracja na wizytę',
-      icon: '🏥',
+      icon: '<i class="ik ik-hospital" aria-hidden="true"></i>',
       badge: 'Podstawowa Opieka',
       keywords: ['lekarz poz', 'lekarz', 'poz', 'przychodnia', 'rodzinny', 'internista', 'kontakt', 'wizyta', 'pielegniarka'],
       query: 'Kto jest moim lekarzem rodzinnym POZ i jaki jest numer przychodni?',
@@ -69,7 +69,7 @@
       category: 'Zdrowie',
       catKey: 'zdrowie',
       desc: 'Europejska Karta Ubezpieczenia Zdrowotnego – leczenie w UE/EFTA',
-      icon: '🇪🇺',
+      icon: '<i class="ikf ikf-eu" aria-hidden="true"></i>',
       badge: 'Unia Europejska',
       keywords: ['ekuz', 'karta ekuz', 'europa', 'ue', 'wyjazd', 'ubezpieczenie za granica', 'leczenie w ue', 'podroz'],
       query: 'Jak wyrobić lub okazać Kartę EKUZ na wyjazd do Unii Europejskiej?',
@@ -87,7 +87,7 @@
       category: 'Zdrowie',
       catKey: 'zdrowie',
       desc: 'Elektroniczna weryfikacja prawa do bezpłatnych świadczeń NFZ (zielony status)',
-      icon: '🛡️',
+      icon: '<i class="ik ik-shield" aria-hidden="true"></i>',
       badge: 'Status NFZ',
       keywords: ['ewus', 'nfz', 'ubezpieczenie zdrowotne', 'status ubezpieczenia', 'skladka zdrowotna', 'zielony ewus', 'uprawnienia'],
       query: 'Czy mam aktywny zielony status ubezpieczenia zdrowotnego eWUŚ w NFZ?',
@@ -103,7 +103,7 @@
       category: 'Zdrowie',
       catKey: 'zdrowie',
       desc: 'Karta Szybkiej Terapii Onkologicznej i koordynator leczenia NFZ',
-      icon: '🎗️',
+      icon: '<i class="ik ik-ribbon" aria-hidden="true"></i>',
       badge: 'Szybka Terapia',
       keywords: ['dilo', 'karta dilo', 'onkologia', 'rak', 'nowotwor', 'terapia onkologiczna', 'koordynator nfz', 'zielona karta'],
       query: 'Jak działa Karta Szybkiej Terapii Onkologicznej DiLO?',
@@ -123,7 +123,7 @@
       category: 'Dokumenty',
       catKey: 'dokumenty',
       desc: 'Cyfrowy dowód tożsamości – seria, numer, PESEL i termin ważności',
-      icon: '🪪',
+      icon: '<i class="ik ik-id" aria-hidden="true"></i>',
       badge: 'Tożsamość',
       keywords: ['mdowod', 'dowod', 'dowod osobisty', 'tozsamosc', 'seria dowodu', 'dane osobowe', 'pesel'],
       query: 'Pokaż mój dowód osobisty mDowód i termin ważności dokumentu',
@@ -139,7 +139,7 @@
       category: 'Dokumenty',
       catKey: 'dokumenty',
       desc: 'Blokada wyłudzeń kredytów i rejestr instytucji sprawdzających PESEL',
-      icon: '🔒',
+      icon: '<i class="ik ik-lock" aria-hidden="true"></i>',
       badge: 'Bezpieczeństwo',
       keywords: ['zastrzez pesel', 'pesel', 'bezpieczenstwo', 'blokada pesel', 'kredyt', 'wyludzenie', 'zlodziej', 'rejestr zastrzezen'],
       query: 'Zastrzeż mój numer PESEL w urzędowym rejestrze i sprawdź historię',
@@ -155,7 +155,7 @@
       category: 'Dokumenty',
       catKey: 'dokumenty',
       desc: 'Wniosek o paszport biometryczny, termin ważności i status gotowości',
-      icon: '📘',
+      icon: '<i class="ik ik-passport" aria-hidden="true"></i>',
       badge: 'Dokument RP',
       keywords: ['paszport', 'wniosek paszport', 'paszport dla dziecka', 'waznosc paszportu', 'wyjazd poza ue', 'granica'],
       query: 'Jak złożyć wniosek o paszport lub sprawdzić czy jest gotowy do odbioru?',
@@ -173,7 +173,7 @@
       category: 'Dokumenty',
       catKey: 'dokumenty',
       desc: 'Zniżki kolejowe, handlowe i komunalne dla rodzin z trójką lub więcej dzieci',
-      icon: '👨‍👩‍👧‍👦',
+      icon: '<i class="ik ik-family" aria-hidden="true"></i>',
       badge: 'Dla Rodzin',
       keywords: ['karta duzej rodziny', 'kdr', 'rodzina', 'ulgi', 'znizki', 'pkp', 'znizka na paliwo', 'troje dzieci'],
       query: 'Jakie zniżki daje Karta Dużej Rodziny i jak z niej korzystać?',
@@ -193,7 +193,7 @@
       category: 'Dokumenty',
       catKey: 'dokumenty',
       desc: 'Legitymacja szkolna lub studencka – ulga 51% na przejazdy PKP i MPK',
-      icon: '🎓',
+      icon: '<i class="ik ik-grad" aria-hidden="true"></i>',
       badge: 'Student / Uczeń',
       keywords: ['mlegitymacja', 'legitymacja', 'student', 'szkola', 'uczen', 'znizka pkp', 'politechnika', 'studia', 'nr albumu'],
       query: 'Pokaż moją mLegitymację i przysługujące zniżki studenckie/szkolne',
@@ -215,7 +215,7 @@
       category: 'Kierowca i pojazdy',
       catKey: 'kierowca',
       desc: 'Cyfrowe prawo jazdy, kategorie uprawnień (np. Kat. B) i data ważności',
-      icon: '🪪',
+      icon: '<i class="ik ik-id" aria-hidden="true"></i>',
       badge: 'Uprawnienia',
       keywords: ['mprawo jazdy', 'prawo jazdy', 'kierowca', 'kategoria b', 'uprawnienia', 'blankiet', 'kierowanie'],
       query: 'Pokaż moje mPrawo jazdy i termin ważności uprawnień',
@@ -231,7 +231,7 @@
       category: 'Kierowca i pojazdy',
       catKey: 'kierowca',
       desc: 'Aktualny stan punktów karnych z CEPiK, limit 24/20 pkt i historia naruszeń',
-      icon: '⚠️',
+      icon: '<i class="ik ik-warning" aria-hidden="true"></i>',
       badge: 'CEPiK',
       keywords: ['punkty karne', 'punkty', 'mandat', 'cepik', 'policja', 'limit punktow', 'ile mam punktow', 'drogowe'],
       query: 'Ile mam aktualnie punktów karnych na koncie kierowcy w CEPiK?',
@@ -247,7 +247,7 @@
       category: 'Kierowca i pojazdy',
       catKey: 'kierowca',
       desc: 'Wykaz mandatów karnych, historia wpłat i przedawnienie punktów (1 rok)',
-      icon: '📑',
+      icon: '<i class="ik ik-docs" aria-hidden="true"></i>',
       badge: 'Policja / CANARD',
       keywords: ['mandaty cepik', 'mandaty', 'mandat', 'zaplac mandat', 'kara', 'fotoradar', 'grzywna', 'oplata mandatu'],
       query: 'Sprawdź moje mandaty karne w CEPiK i status płatności',
@@ -265,7 +265,7 @@
       category: 'Kierowca i pojazdy',
       catKey: 'kierowca',
       desc: 'Weryfikacja badań technicznych, polisy OC i stanu autokaru w CEPiK',
-      icon: '🚌',
+      icon: '<i class="ik ik-bus" aria-hidden="true"></i>',
       badge: 'Bezpieczeństwo',
       keywords: ['bezpieczny autobus', 'autobus', 'autokar', 'wycieczka szkolna', 'rej autobus', 'kontrola skp', 'pojazd'],
       query: 'Sprawdź stan techniczny i polisę autobusu wycieczkowego w bazie CEPiK',
@@ -281,7 +281,7 @@
       category: 'Kierowca i pojazdy',
       catKey: 'kierowca',
       desc: 'Termin ubezpieczenia OC pojazdu i data badania technicznego w stacji SKP',
-      icon: '🚗',
+      icon: '<i class="ik ik-car" aria-hidden="true"></i>',
       badge: 'Pojazd',
       keywords: ['oc i badanie', 'oc', 'badanie techniczne', 'przeglad', 'auto', 'pojazd', 'dowod rejestracyjny', 'warta', 'pzu'],
       query: 'Kiedy kończy się polisa OC i badanie techniczne mojego auta?',
@@ -299,7 +299,7 @@
       category: 'Finanse i podatki',
       catKey: 'finanse',
       desc: 'Opłacanie podatków lokalnych, opłat za odpady i należności urzędowych',
-      icon: '💳',
+      icon: '<i class="ik ik-card" aria-hidden="true"></i>',
       badge: 'Samorząd',
       keywords: ['eplatnosci', 'platnosci', 'podatki', 'urzad skarbowy', 'oplata za smieci', 'gmina', 'podatek'],
       query: 'Jakie mam oczekujące ePłatności urzędowe i podatki lokalne?',
@@ -315,7 +315,7 @@
       category: 'Finanse i podatki',
       catKey: 'finanse',
       desc: 'Raty podatku lokalnego za mieszkanie, dom lub grunt z płatnością BLIK',
-      icon: '🏠',
+      icon: '<i class="ik ik-home" aria-hidden="true"></i>',
       badge: 'Podatek Gminny',
       keywords: ['podatek od nieruchomosci', 'nieruchomosc', 'mieszkanie', 'grunt', 'oplata lokalna', 'rata podatku', 'dom'],
       query: 'Kiedy mija termin płatności podatku od nieruchomości i jak zapłacić BLIK?',
@@ -331,7 +331,7 @@
       category: 'Finanse i podatki',
       catKey: 'finanse',
       desc: 'Rozliczenie zeznania rocznego PIT w usłudze Twój e-PIT Ministerstwa Finansów',
-      icon: '📊',
+      icon: '<i class="ik ik-chart" aria-hidden="true"></i>',
       badge: 'Twój e-PIT',
       keywords: ['epit', 'pit', 'twoj epit', 'zeznanie podatkowe', 'zwrot podatku', 'ulga prorodzinna', 'urzad skarbowy', 'rozliczenie roczne'],
       query: 'Kiedy otrzymam zwrot podatku z Twój e-PIT i jak zaakceptować zeznanie?',
@@ -349,7 +349,7 @@
       category: 'Finanse i podatki',
       catKey: 'finanse',
       desc: 'Szybkie i bezpieczne płatności urzędowe kodem BLIK z banku bez prowizji',
-      icon: '⚡',
+      icon: '<i class="ik ik-bolt" aria-hidden="true"></i>',
       badge: '0 zł prowizji',
       keywords: ['blik', 'platnosc blik', 'kod blik', 'oplata bez prowizji', 'przelew blik', 'platnosc w urzedzie'],
       query: 'Jak zapłacić kodem BLIK za sprawę urzędową w mObywatelu?',
@@ -367,7 +367,7 @@
       category: 'Firma i CEIDG',
       catKey: 'firma',
       desc: 'Certyfikat reprezentacji przedsiębiorcy i spółki w CEIDG z kodem QR',
-      icon: '🏢',
+      icon: '<i class="ik ik-building" aria-hidden="true"></i>',
       badge: 'CEIDG / KRS',
       keywords: ['poswiadcz za firme', 'firma', 'ceidg', 'nip', 'reprezentacja', 'regon', 'wlasna dzialalnosc', 'przedsiebiorca'],
       query: 'Jak poświadczyć tożsamość przedsiębiorcy i uprawnienia do reprezentacji firmy?',
@@ -385,7 +385,7 @@
       category: 'Firma i CEIDG',
       catKey: 'firma',
       desc: 'Wykaz zarejestrowanych podatników VAT Ministerstwa Finansów i rachunków firmowych',
-      icon: '📑',
+      icon: '<i class="ik ik-docs" aria-hidden="true"></i>',
       badge: 'Ministerstwo Finansów',
       keywords: ['biala lista vat', 'vat', 'biala lista', 'rachunek bankowy firmy', 'kontrahent', 'mf', 'czynny podatnik vat'],
       query: 'Jak sprawdzić numer konta kontrahenta na Białej Liście Podatników VAT?',
@@ -403,7 +403,7 @@
       category: 'Firma i CEIDG',
       catKey: 'firma',
       desc: 'Urzędowy wypis z rejestru przedsiębiorców CEIDG w PDF z cyfrową pieczęcią RP',
-      icon: '📜',
+      icon: '<i class="ik ik-cert" aria-hidden="true"></i>',
       badge: 'Odpis PDF',
       keywords: ['zaswiadczenie ceidg', 'ceidg pdf', 'wypis ceidg', 'odpis firmy', 'rejestr przedsiebiorcow', 'dokument urzedowy'],
       query: 'Pobierz urzędowe zaświadczenie o wpisie do rejestru CEIDG (PDF)',
@@ -421,7 +421,7 @@
       category: 'Firma i CEIDG',
       catKey: 'firma',
       desc: 'Złożenie kwalifikowanego podpisu elektronicznego certyfikatem e-dowodu',
-      icon: '✍️',
+      icon: '<i class="ik ik-sign" aria-hidden="true"></i>',
       badge: 'Podpis Cyfrowy',
       keywords: ['podpis e-dowodem', 'podpis elektroniczny', 'podpisz', 'e-dowod', 'certyfikat podpisu', 'face id', 'podpisanie umowy'],
       query: 'Jak podpisać dokument cyfrowy e-dowodem z certyfikatem tożsamości?',
@@ -439,7 +439,7 @@
       category: 'Sytuacje życiowe',
       catKey: 'sytuacje',
       desc: 'Natychmiastowe zastrzeżenie dowodu osobistego, PESEL-u i kart płatniczych',
-      icon: '👛',
+      icon: '<i class="ik ik-wallet" aria-hidden="true"></i>',
       badge: 'Procedura SOS',
       keywords: ['zgubiony portfel', 'zgubilam portfel', 'zgubilem portfel', 'kradziez', 'utrata dokumentow', 'uniewaznij dowod', 'kradziez tozsamosci'],
       query: 'Zgubiłem portfel i dowód osobisty – instrukcja co zrobić natychmiast',
@@ -457,7 +457,7 @@
       category: 'Sytuacje życiowe',
       catKey: 'sytuacje',
       desc: 'Wspólne oświadczenie o zdarzeniu drogowym, wymiana danych i polisa sprawcy',
-      icon: '💥',
+      icon: '<i class="ik ik-crash" aria-hidden="true"></i>',
       badge: 'Kolizja',
       keywords: ['stluczka drogowa', 'stluczka', 'kolizja', 'wypadek', 'oswiadczenie sprawcy', 'spisanie oswiadczenia', 'szkoda komunikacyjna'],
       query: 'Miałem stłuczkę drogową – jak bezpiecznie spisać oświadczenie kolizyjne?',
@@ -475,7 +475,7 @@
       category: 'Sytuacje życiowe',
       catKey: 'sytuacje',
       desc: 'Zgłoszenie narodzin dziecka w USC, nadanie PESEL oraz wniosek o 800+ i becikowe',
-      icon: '👶',
+      icon: '<i class="ik ik-baby" aria-hidden="true"></i>',
       badge: 'Narodziny',
       keywords: ['noworodek w rodzinie', 'noworodek', 'dziecko', 'narodziny', 'urodzenie', 'usc', '800+', 'becikowe', 'zus swiadczenie'],
       query: 'Urodziło się nam dziecko – jakie formalności załatwić w urzędzie i ZUS?',
@@ -493,7 +493,7 @@
       category: 'Sytuacje życiowe',
       catKey: 'sytuacje',
       desc: 'Karta EKUZ, paszport, ubezpieczenie turystyczne i zasady bezpiecznej podróży',
-      icon: '✈️',
+      icon: '<i class="ik ik-plane" aria-hidden="true"></i>',
       badge: 'Podróż',
       keywords: ['wyjazd za granice', 'wyjazd', 'wakacje', 'podroz', 'ekuz za granica', 'roaming', 'paszport podroz', 'odprawa'],
       query: 'Wyjeżdżam za granicę – jak przygotować dokumenty i ubezpieczenie EKUZ?',
@@ -511,7 +511,7 @@
       category: 'Dokumenty',
       catKey: 'dokumenty',
       desc: 'Twój obwód głosowania, lokal wyborczy, zmiana miejsca i zaświadczenie PKW',
-      icon: '🗳️',
+      icon: '<i class="ik ik-ballot" aria-hidden="true"></i>',
       badge: 'PKW / CRW',
       keywords: ['wybory', 'crw', 'komisja wyborcza', 'obwod', 'glosowanie', 'pkw', 'lokal wyborczy', 'zaswiadczenie o glosowaniu'],
       query: 'Gdzie jest mój lokal wyborczy i komisja w Centralnym Rejestrze Wyborców?',
@@ -527,7 +527,7 @@
       category: 'Sytuacje życiowe',
       catKey: 'sytuacje',
       desc: 'Pomiary PM2.5, PM10, indeks jakości powietrza, alerty smogowe i zalecenia',
-      icon: '🌿',
+      icon: '<i class="ik ik-leaf" aria-hidden="true"></i>',
       badge: 'GIOŚ Eko',
       keywords: ['jakosc powietrza', 'powietrze', 'smog', 'pm25', 'pm10', 'gios', 'alert smogowy', 'zanieczyszczenie'],
       query: 'Jaka jest jakość powietrza i stężenie smogu w mojej okolicy?',
@@ -543,7 +543,7 @@
       category: 'Dokumenty',
       catKey: 'dokumenty',
       desc: 'Nadanie pisma urzędowego przez e-Doręczenia z podpisem mDowodem i UPP',
-      icon: '✍️',
+      icon: '<i class="ik ik-sign" aria-hidden="true"></i>',
       badge: 'e-Doręczenia',
       keywords: ['nowe pismo', 'pismo do urzedu', 'e-doreczenia', 'purde', 'wyslij pismo', 'podpis mdowodem', 'wniosek urzedowy'],
       query: 'Jak wysłać oficjalne pismo do urzędu przez e-Doręczenia?',
@@ -558,13 +558,13 @@
   ];
 
   const CATEGORIES = [
-    { key: 'all', label: 'Wszystkie', icon: '✨' },
-    { key: 'zdrowie', label: 'Zdrowie', icon: '💊' },
-    { key: 'dokumenty', label: 'Dokumenty', icon: '🪪' },
-    { key: 'kierowca', label: 'Kierowca i pojazdy', icon: '🚗' },
-    { key: 'finanse', label: 'Finanse i podatki', icon: '💳' },
-    { key: 'firma', label: 'Firma i CEIDG', icon: '🏢' },
-    { key: 'sytuacje', label: 'Sytuacje życiowe', icon: '🧭' }
+    { key: 'all', label: 'Wszystkie', icon: '<i class="ik ik-sparkle" aria-hidden="true"></i>' },
+    { key: 'zdrowie', label: 'Zdrowie', icon: '<i class="ik ik-pill" aria-hidden="true"></i>' },
+    { key: 'dokumenty', label: 'Dokumenty', icon: '<i class="ik ik-id" aria-hidden="true"></i>' },
+    { key: 'kierowca', label: 'Kierowca i pojazdy', icon: '<i class="ik ik-car" aria-hidden="true"></i>' },
+    { key: 'finanse', label: 'Finanse i podatki', icon: '<i class="ik ik-card" aria-hidden="true"></i>' },
+    { key: 'firma', label: 'Firma i CEIDG', icon: '<i class="ik ik-building" aria-hidden="true"></i>' },
+    { key: 'sytuacje', label: 'Sytuacje życiowe', icon: '<i class="ik ik-compass" aria-hidden="true"></i>' }
   ];
 
   // 2. Normalizacja tekstu i inteligentny algorytm fuzzy match
@@ -964,7 +964,7 @@
       .sp-badge-cat {
         font-size: 10.5px;
         font-weight: 600;
-        color: var(--red, #dc143c);
+        color: var(--red-ink, #c20f2f);
         background: var(--red-wash, rgba(220,20,60,.08));
       }
       .sp-card-desc {
@@ -975,7 +975,7 @@
       }
       .sp-match {
         background: rgba(220,20,60,.18);
-        color: var(--red, #dc143c);
+        color: var(--red-ink, #c20f2f);
         padding: 0 2px;
         border-radius: 3px;
         font-weight: 700;
@@ -1317,11 +1317,11 @@
       const qEsc = escapeHtml(query);
       listEl.innerHTML = `
         <div class="sp-empty-box">
-          <span class="sp-empty-icon">🔍</span>
+          <span class="sp-empty-icon"><i class="ik ik-search" aria-hidden="true"></i></span>
           <div class="sp-empty-title">Nie znaleziono bezpośredniej sprawy</div>
           <p class="sp-empty-sub">Brak dopasowania w katalogu. Możesz zapytać o to asystenta AI.</p>
           <button type="button" class="sp-ask-ai-direct" id="spDirectAskBtn">
-            <span>💬</span> Zapytaj asystenta: „${qEsc}”
+            <span><i class="ik ik-chat" aria-hidden="true"></i></span> Zapytaj asystenta: „${qEsc}”
           </button>
         </div>
       `;
@@ -1364,10 +1364,10 @@
           </div>
           <div class="sp-card-actions">
             <button type="button" class="sp-act-btn sp-act-view" onclick="event.stopPropagation(); SPOTLIGHT.triggerAction('${item.id}', 'view')" aria-label="Otwórz widok: ${item.title}">
-              <span>🚀</span> Przejdź do widoku
+              <span><i class="ik ik-go" aria-hidden="true"></i></span> Przejdź do widoku
             </button>
             <button type="button" class="sp-act-btn sp-act-ai" onclick="event.stopPropagation(); SPOTLIGHT.triggerAction('${item.id}', 'ai')" aria-label="Zapytaj asystenta AI o: ${item.title}">
-              <span>💬</span> Zapytaj AI
+              <span><i class="ik ik-chat" aria-hidden="true"></i></span> Zapytaj AI
             </button>
           </div>
         </div>
@@ -1536,10 +1536,10 @@
             </div>
             <div class="ss-btn-group">
               <button type="button" class="ss-pill-btn ss-pill-view" onclick="event.stopPropagation(); SPOTLIGHT.triggerPromptSuggest(${idx}, 'view')">
-                🚀 Przejdź do widoku
+                <i class="ik ik-go" aria-hidden="true"></i> Przejdź do widoku
               </button>
               <button type="button" class="ss-pill-btn ss-pill-ai" onclick="event.stopPropagation(); SPOTLIGHT.triggerPromptSuggest(${idx}, 'ai')">
-                💬 Zapytaj AI
+                <i class="ik ik-chat" aria-hidden="true"></i> Zapytaj AI
               </button>
             </div>
           </div>

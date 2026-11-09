@@ -86,10 +86,10 @@ h1{margin:0 0 6px;font-size:28px;letter-spacing:-.02em}
 </style>
 </head>
 <body>
-<div class="nav"><div class="in"><div class="brand" data-t="0" translate="no">auto<span>plus</span></div><div class="steps" aria-label="Krok 2 z 3: kierowca"><span class="done"><i>✓</i><em>Wybór auta</em></span><span class="cur"><i>2</i><b>Kierowca</b></span><span><i>3</i><em>Płatność</em></span></div></div></div>
+<div class="nav"><div class="in"><div class="brand" data-t="0" translate="no">auto<span>plus</span></div><div class="steps" aria-label="Krok 2 z 3: kierowca"><span class="done"><i><i class="ik ik-check" aria-hidden="true"></i></i><em>Wybór auta</em></span><span class="cur"><i>2</i><b>Kierowca</b></span><span><i>3</i><em>Płatność</em></span></div></div></div>
 <div class="wrap">
  <div class="box">
-  <h1>Twoja rezerwacja</h1><p class="muted">Odbiór: Warszawa, Lotnisko Chopina · 24.10, 10:00 → 27.10, 10:00</p>
+  <h1>Twoja rezerwacja</h1><p class="muted">Odbiór: Warszawa, Lotnisko Chopina · 24.10, 10:00 <i class="ik ik-arrow" aria-hidden="true"></i> 27.10, 10:00</p>
   <div class="car"><div class="img" id="carimg"></div><div><b>Toyota Yaris Hybrid lub podobny</b><small>automat · 5 miejsc · klimatyzacja</small></div></div>
   <div class="row"><span>Wynajem (3 doby)</span><b>486,00 zł</b></div>
   <div class="row"><span>Ubezpieczenie pełne</span><b>117,00 zł</b></div>
@@ -103,11 +103,12 @@ h1{margin:0 0 6px;font-size:28px;letter-spacing:-.02em}
   <div class="state" id="state"><i></i><span>Czekam na zeskanowanie znaku telefonem…</span></div>
  </div>
  <div class="box id hidden" id="wynik">
-  <div class="okhead">✓ Tożsamość potwierdzona przez mObywatel<small id="godz"></small></div>
+  <div class="okhead"><i class="ik ik-check" aria-hidden="true"></i> Tożsamość potwierdzona przez mObywatel<small id="godz"></small></div>
   <div class="person"><div class="ph" id="foto"></div><div class="dl" id="dl"></div></div>
   <button class="btn">Przejdź do płatności</button><button class="link" id="reset">Zacznij od nowa</button>
  </div>
 </div>
+<script src="ikony.js?v=45"></script>
 <script src="znak-kod.js?v=13"></script>
 <script src="sylwetki.js?v=16"></script>
 <script>

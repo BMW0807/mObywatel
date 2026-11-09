@@ -5,12 +5,12 @@ const USLUGI = {
   peselData: {
     tempUnlockTimer: null,
     history: [
-      { who: 'PKO Bank Polski S.A.', reason: 'Wniosek o kredyt hipoteczny', date: '08.11.2026, 14:10', status: 'blocked', note: 'Zastrzeżenie aktywne – wniosek wstrzymany (art. 105a Prawa Bankowego)', icon: '🏛️' },
-      { who: 'mBank S.A.', reason: 'Wniosek o kartę kredytową', date: '04.11.2026, 11:24', status: 'blocked', note: 'Zastrzeżenie aktywne – odrzucono zapytanie BIK', icon: '🏦' },
-      { who: 'Kancelaria Notarialna, Kraków', reason: 'Akt notarialny – sprzedaż lokalu mieszkalnego', date: '18.10.2026, 09:15', status: 'ok', note: 'Weryfikacja tożsamości udana (czasowe odbezpieczenie)', icon: '📜' },
-      { who: 'P4 Sp. z o.o. (Play)', reason: 'Zawarcie nowej umowy abonamentowej (eSIM)', date: '02.09.2026, 16:40', status: 'ok', note: 'Zezwolono na weryfikację tożsamości klienta', icon: '📱' },
-      { who: 'Alior Bank S.A.', reason: 'Weryfikacja tożsamości przy otwarciu konta', date: '21.08.2026, 12:05', status: 'blocked', note: 'Zapytanie zablokowane z mocy ustawy', icon: '🏦' },
-      { who: 'ING Bank Śląski', reason: 'Cykliczny audyt antywyłudzeniowy klientów', date: '15.08.2026, 03:00', status: 'ok', note: 'Weryfikacja rutynowa zakończona pomyślnie', icon: '🛡️' }
+      { who: 'PKO Bank Polski S.A.', reason: 'Wniosek o kredyt hipoteczny', date: '08.11.2026, 14:10', status: 'blocked', note: 'Zastrzeżenie aktywne – wniosek wstrzymany (art. 105a Prawa Bankowego)', icon: '<i class="ik ik-institution" aria-hidden="true"></i>' },
+      { who: 'mBank S.A.', reason: 'Wniosek o kartę kredytową', date: '04.11.2026, 11:24', status: 'blocked', note: 'Zastrzeżenie aktywne – odrzucono zapytanie BIK', icon: '<i class="ik ik-bank" aria-hidden="true"></i>' },
+      { who: 'Kancelaria Notarialna, Kraków', reason: 'Akt notarialny – sprzedaż lokalu mieszkalnego', date: '18.10.2026, 09:15', status: 'ok', note: 'Weryfikacja tożsamości udana (czasowe odbezpieczenie)', icon: '<i class="ik ik-cert" aria-hidden="true"></i>' },
+      { who: 'P4 Sp. z o.o. (Play)', reason: 'Zawarcie nowej umowy abonamentowej (eSIM)', date: '02.09.2026, 16:40', status: 'ok', note: 'Zezwolono na weryfikację tożsamości klienta', icon: '<i class="ik ik-mobile" aria-hidden="true"></i>' },
+      { who: 'Alior Bank S.A.', reason: 'Weryfikacja tożsamości przy otwarciu konta', date: '21.08.2026, 12:05', status: 'blocked', note: 'Zapytanie zablokowane z mocy ustawy', icon: '<i class="ik ik-bank" aria-hidden="true"></i>' },
+      { who: 'ING Bank Śląski', reason: 'Cykliczny audyt antywyłudzeniowy klientów', date: '15.08.2026, 03:00', status: 'ok', note: 'Weryfikacja rutynowa zakończona pomyślnie', icon: '<i class="ik ik-shield" aria-hidden="true"></i>' }
     ]
   },
 
@@ -127,13 +127,13 @@ const USLUGI = {
 
   // 4. Jakość Powietrza (GIOŚ)
   air: {
-    krakow: { city: 'Kraków', station: 'Kraków, al. Krasińskiego', index: 'Umiarkowana', color: '#f59e0b', bg: '#fef3c7', pm25: 38, pm25Norm: 152, pm10: 52, pm10Norm: 104, no2: 24, o3: 32, so2: 8, co: 0.6, advice: 'Osoby wrażliwe, starsze i dzieci powinny ograniczyć intensywny wysiłek na zewnątrz.' },
-    warszawa: { city: 'Warszawa', station: 'Warszawa, ul. Marszałkowska', index: 'Dobra', color: '#10b981', bg: '#d1fae5', pm25: 18, pm25Norm: 72, pm10: 28, pm10Norm: 56, no2: 19, o3: 40, so2: 5, co: 0.4, advice: 'Jakość powietrza jest dobra. Możesz bez przeszkód spędzać czas na świeżym powietrzu.' },
-    lublin: { city: 'Lublin', station: 'Lublin, ul. Obywatelska', index: 'Dobra', color: '#10b981', bg: '#d1fae5', pm25: 21, pm25Norm: 84, pm10: 31, pm10Norm: 62, no2: 16, o3: 36, so2: 6, co: 0.4, advice: 'Powietrze nie stanowi zagrożenia dla zdrowia.' },
-    gdansk: { city: 'Gdańsk', station: 'Gdańsk, ul. Wyzwolenia', index: 'Bardzo dobra', color: '#059669', bg: '#a7f3d0', pm25: 9, pm25Norm: 36, pm10: 14, pm10Norm: 28, no2: 11, o3: 48, so2: 3, co: 0.3, advice: 'Świetna jakość powietrza. Idealne warunki do aktywności i spacerów nad morzem.' },
-    katowice: { city: 'Katowice', station: 'Katowice, ul. Plebiscytowa', index: 'Dostateczna', color: '#ea580c', bg: '#ffedd5', pm25: 46, pm25Norm: 184, pm10: 68, pm10Norm: 136, no2: 38, o3: 25, so2: 14, co: 0.9, advice: 'Zaleca się unikanie wietrzenia mieszkań oraz ograniczenie wysiłku fizycznego na powietrzu.' },
-    wroclaw: { city: 'Wrocław', station: 'Wrocław, ul. Wiśniowa', index: 'Dobra', color: '#10b981', bg: '#d1fae5', pm25: 22, pm25Norm: 88, pm10: 34, pm10Norm: 68, no2: 21, o3: 38, so2: 7, co: 0.5, advice: 'Jakość powietrza jest zadowalająca, zanieczyszczenia nie stwarzają zagrożenia.' },
-    zakopane: { city: 'Zakopane', station: 'Zakopane, ul. Sienkiewicza', index: 'Bardzo dobra', color: '#059669', bg: '#a7f3d0', pm25: 8, pm25Norm: 32, pm10: 12, pm10Norm: 24, no2: 7, o3: 54, so2: 2, co: 0.2, advice: 'Czyste górskie powietrze, sprzyjające rekreacji i wędrówkom.' }
+    krakow: { city: 'Kraków', station: 'Kraków, al. Krasińskiego', index: 'Umiarkowana', color: 'var(--warn-ink)', bg: 'var(--warn-wash)', pm25: 38, pm25Norm: 152, pm10: 52, pm10Norm: 104, no2: 24, o3: 32, so2: 8, co: 0.6, advice: 'Osoby wrażliwe, starsze i dzieci powinny ograniczyć intensywny wysiłek na zewnątrz.' },
+    warszawa: { city: 'Warszawa', station: 'Warszawa, ul. Marszałkowska', index: 'Dobra', color: 'var(--ok-ink)', bg: 'var(--ok-wash)', pm25: 18, pm25Norm: 72, pm10: 28, pm10Norm: 56, no2: 19, o3: 40, so2: 5, co: 0.4, advice: 'Jakość powietrza jest dobra. Możesz bez przeszkód spędzać czas na świeżym powietrzu.' },
+    lublin: { city: 'Lublin', station: 'Lublin, ul. Obywatelska', index: 'Dobra', color: 'var(--ok-ink)', bg: 'var(--ok-wash)', pm25: 21, pm25Norm: 84, pm10: 31, pm10Norm: 62, no2: 16, o3: 36, so2: 6, co: 0.4, advice: 'Powietrze nie stanowi zagrożenia dla zdrowia.' },
+    gdansk: { city: 'Gdańsk', station: 'Gdańsk, ul. Wyzwolenia', index: 'Bardzo dobra', color: 'var(--ok-ink)', bg: 'var(--ok-wash)', pm25: 9, pm25Norm: 36, pm10: 14, pm10Norm: 28, no2: 11, o3: 48, so2: 3, co: 0.3, advice: 'Świetna jakość powietrza. Idealne warunki do aktywności i spacerów nad morzem.' },
+    katowice: { city: 'Katowice', station: 'Katowice, ul. Plebiscytowa', index: 'Dostateczna', color: 'var(--red-ink)', bg: 'var(--red-wash)', pm25: 46, pm25Norm: 184, pm10: 68, pm10Norm: 136, no2: 38, o3: 25, so2: 14, co: 0.9, advice: 'Zaleca się unikanie wietrzenia mieszkań oraz ograniczenie wysiłku fizycznego na powietrzu.' },
+    wroclaw: { city: 'Wrocław', station: 'Wrocław, ul. Wiśniowa', index: 'Dobra', color: 'var(--ok-ink)', bg: 'var(--ok-wash)', pm25: 22, pm25Norm: 88, pm10: 34, pm10Norm: 68, no2: 21, o3: 38, so2: 7, co: 0.5, advice: 'Jakość powietrza jest zadowalająca, zanieczyszczenia nie stwarzają zagrożenia.' },
+    zakopane: { city: 'Zakopane', station: 'Zakopane, ul. Sienkiewicza', index: 'Bardzo dobra', color: 'var(--ok-ink)', bg: 'var(--ok-wash)', pm25: 8, pm25Norm: 32, pm10: 12, pm10Norm: 24, no2: 7, o3: 54, so2: 2, co: 0.2, advice: 'Czyste górskie powietrze, sprzyjające rekreacji i wędrówkom.' }
   },
 
   // 5. Centralny Rejestr Wyborców (CRW)
@@ -210,7 +210,7 @@ function openZastrzezPeselModal(filter) {
       ? 'Ochrona przed wyłudzeniem pożyczek i kredytów jest w pełni aktywna.' 
       : 'Możesz paść ofiarą zaciągnięcia zobowiązań na Twoje dane osobowe.';
     let badgeClass = isBlocked ? 'blocked' : 'active';
-    let icon = isBlocked ? '🔒' : '🔓';
+    let icon = isBlocked ? '<i class="ik ik-lock" aria-hidden="true"></i>' : '<i class="ik ik-unlock" aria-hidden="true"></i>';
 
     if (isTempUnlocked) {
       const remSec = Math.max(0, Math.floor((unlockUntil - Date.now()) / 1000));
@@ -219,7 +219,7 @@ function openZastrzezPeselModal(filter) {
       stateTitle = `CZASOWO ODBEZPIECZONY (${mStr}:${sStr})`;
       stateDesc = `Ochrona zostanie automatycznie wznowiona po upływie czasu.`;
       badgeClass = 'warn';
-      icon = '⏳';
+      icon = '<i class="ik ik-hourglass" aria-hidden="true"></i>';
     }
 
     hero.innerHTML = `
@@ -233,14 +233,14 @@ function openZastrzezPeselModal(filter) {
 
       <div class="pesel-action-toggle">
         <button type="button" class="btn ${isBlocked ? 'secondary' : 'primary'} pesel-btn-toggle" onclick="USLUGI.togglePeselState()">
-          ${isBlocked ? '🔓 Cofnij zastrzeżenie PESEL' : '🔒 Zastrzeż numer PESEL'}
+          ${isBlocked ? '<i class="ik ik-unlock" aria-hidden="true"></i> Cofnij zastrzeżenie PESEL' : '<i class="ik ik-lock" aria-hidden="true"></i> Zastrzeż numer PESEL'}
         </button>
       </div>
 
       ${isBlocked ? `
         <div class="pesel-temp-box">
           <div class="ptb-head">
-            <b>⏱️ Czasowe odbezpieczenie PESEL</b>
+            <b><i class="ik ik-timer" aria-hidden="true"></i> Czasowe odbezpieczenie PESEL</b>
             <small>Idziesz do banku lub notariusza? Zdejmij blokadę na określony czas – zastrzeżenie włączy się samo:</small>
           </div>
           <div class="ptb-actions">
@@ -252,7 +252,7 @@ function openZastrzezPeselModal(filter) {
       ` : (isTempUnlocked ? `
         <div class="pesel-temp-box active">
           <div class="ptb-head">
-            <b style="color:var(--warn)">⏳ Aktywne czasowe odbezpieczenie</b>
+            <b style="color:var(--warn-ink)"><i class="ik ik-hourglass" aria-hidden="true"></i> Aktywne czasowe odbezpieczenie</b>
             <small>PESEL pozostanie odbezpieczony jeszcze przez chwilę. Możesz zakończyć wizytę i zablokować go od razu:</small>
           </div>
           <div class="ptb-actions">
@@ -263,7 +263,7 @@ function openZastrzezPeselModal(filter) {
 
       <div class="pesel-info-grid">
         <div class="p-item"><span>Twój numer PESEL:</span><b>${peselMasked}</b></div>
-        <div class="p-item"><span>Status w Rejestrze:</span><b style="color:${isBlocked ? '#10b981' : (isTempUnlocked ? '#f59e0b' : '#dc143c')}">${isBlocked ? 'Chroniony (aktywny)' : (isTempUnlocked ? 'Odbezpieczony (czasowo)' : 'Niezabezpieczony')}</b></div>
+        <div class="p-item"><span>Status w Rejestrze:</span><b style="color:${isBlocked ? 'var(--ok-ink)' : (isTempUnlocked ? 'var(--warn-ink)' : 'var(--red-ink)')}">${isBlocked ? 'Chroniony (aktywny)' : (isTempUnlocked ? 'Odbezpieczony (czasowo)' : 'Niezabezpieczony')}</b></div>
         <div class="p-item"><span>Podstawa prawna:</span><b>Ustawa o zmianie ustaw w celu ograniczania skutków kradzieży tożsamości</b></div>
       </div>
     `;
@@ -287,8 +287,8 @@ function openZastrzezPeselModal(filter) {
         ${items.map(h => `
           <div class="pesel-hist-item">
             <div class="phi-head">
-              <b>${h.icon || '🏛️'} ${h.who}</b>
-              <span class="phi-badge ${h.status}">${h.status === 'blocked' ? '🚫 Zablokowano' : '✓ Zezwolono'}</span>
+              <b>${h.icon || '<i class="ik ik-institution" aria-hidden="true"></i>'} ${h.who}</b>
+              <span class="phi-badge ${h.status}">${h.status === 'blocked' ? '<i class="ik ik-ban" aria-hidden="true"></i> Zablokowano' : '<i class="ik ik-check" aria-hidden="true"></i> Zezwolono'}</span>
             </div>
             <div class="phi-reason">${h.reason}</div>
             <div class="phi-foot">
@@ -315,7 +315,7 @@ function openZastrzezPeselModal(filter) {
           MobStore.set('pesel_unlock_until', 0);
           MobStore.setPeselBlocked(true);
         }
-        if (typeof showToast === 'function') showToast('🔒 Czas minął – Twój PESEL został automatycznie ponownie zastrzeżony!');
+        if (typeof showToast === 'function') showToast('Czas minął – Twój PESEL został automatycznie ponownie zastrzeżony!');
         openZastrzezPeselModal();
       } else {
         openZastrzezPeselModal(currentFilter);
@@ -343,7 +343,7 @@ USLUGI.togglePeselState = function() {
   const next = !current;
   MobStore.setPeselBlocked(next);
   if (typeof showToast === 'function') {
-    showToast(next ? '🔒 Numer PESEL został pomyślnie zastrzeżony!' : '🔓 Zastrzeżenie numeru PESEL zostało cofnięte.');
+    showToast(next ? 'Numer PESEL został pomyślnie zastrzeżony!' : 'Zastrzeżenie numeru PESEL zostało cofnięte.');
   }
   openZastrzezPeselModal();
   if (typeof updateDashboard === 'function') updateDashboard();
@@ -355,7 +355,7 @@ USLUGI.startTempUnlock = function(minutes) {
   MobStore.set('pesel_unlock_until', until);
   MobStore.setPeselBlocked(false);
   if (typeof showToast === 'function') {
-    showToast(`⏱️ PESEL odbezpieczony na ${minutes} min. Ochrona włączy się automatycznie.`);
+    showToast(`PESEL odbezpieczony na ${minutes} min. Ochrona włączy się automatycznie.`);
   }
   openZastrzezPeselModal();
   if (typeof updateDashboard === 'function') updateDashboard();
@@ -416,13 +416,13 @@ function renderBusDetails(plate) {
             <span class="bh-plate">${data.plate}</span>
             <b class="bh-model">${data.brand}</b>
           </div>
-          <span class="bh-badge ${data.inspectionValid ? 'ok' : 'err'}">${data.inspectionValid ? '✓ SPRAWNY' : '⚠️ ZAGROŻENIE'}</span>
+          <span class="bh-badge ${data.inspectionValid ? 'ok' : 'err'}">${data.inspectionValid ? '<i class="ik ik-check" aria-hidden="true"></i> SPRAWNY' : '<i class="ik ik-warning" aria-hidden="true"></i> ZAGROŻENIE'}</span>
         </div>
 
-        ${data.alert ? `<div class="bh-alert">⚠️ ${data.alert}</div>` : ''}
+        ${data.alert ? `<div class="bh-alert"><i class="ik ik-warning" aria-hidden="true"></i> ${data.alert}</div>` : ''}
 
         <div class="bh-police-status">
-          <span class="bps-ic">🛡️</span>
+          <span class="bps-ic"><i class="ik ik-shield" aria-hidden="true"></i></span>
           <div>
             <b>Weryfikacja w bazie Policji:</b>
             <p>${data.stolenStatus}</p>
@@ -437,12 +437,12 @@ function renderBusDetails(plate) {
           <div class="bh-row"><span>Numer VIN:</span><b class="vin-mono">${data.vin}</b></div>
           <div class="bh-row"><span>Rok produkcji:</span><b>${data.year}</b></div>
           <div class="bh-row"><span>Przewoźnik:</span><b>${data.carrier || 'Krajowy przewóz osób'}</b></div>
-          <div class="bh-row"><span>Uprawnienia GITD:</span><b style="color:#059669">${data.license}</b></div>
+          <div class="bh-row"><span>Uprawnienia GITD:</span><b style="color:var(--ok-ink)">${data.license}</b></div>
         </div>
 
         ${data.timeline && data.timeline.length ? `
           <div class="bus-timeline-box">
-            <b class="bt-title">📈 Historia odczytów licznika i badań (CEPiK)</b>
+            <b class="bt-title"><i class="ik ik-trend" aria-hidden="true"></i> Historia odczytów licznika i badań (CEPiK)</b>
             <div class="bt-list">
               ${data.timeline.map(t => `
                 <div class="bt-item">
@@ -451,7 +451,7 @@ function renderBusDetails(plate) {
                     <span class="bt-date">${t.date}</span>
                     <b class="bt-odo">${t.odo}</b>
                   </div>
-                  <small class="bt-skp">${t.skp} — wynik: <span style="color:#059669">${t.result}</span></small>
+                  <small class="bt-skp">${t.skp} — wynik: <span style="color:var(--ok-ink)">${t.result}</span></small>
                 </div>
               `).join('')}
             </div>
@@ -460,7 +460,7 @@ function renderBusDetails(plate) {
       </div>
 
       <div class="bus-actions-row">
-        <button type="button" class="btn secondary" onclick="downloadBusCert('${data.plate}')">📜 Pobierz raport CEPiK (PDF)</button>
+        <button type="button" class="btn secondary" onclick="downloadBusCert('${data.plate}')"><i class="ik ik-cert" aria-hidden="true"></i> Pobierz raport CEPiK (PDF)</button>
         <button type="button" class="btn primary" onclick="closeBezpiecznyAutobusModal();if(typeof askAssistantWithPrompt==='function')askAssistantWithPrompt('Czy autobus ${data.plate} ma ważne badania i polisę OC?')">Zapytaj asystenta AI</button>
       </div>
     `;
@@ -492,7 +492,7 @@ function openEPlatnosciModal() {
             <div class="ep-price">${p.amount.toFixed(2)} zł</div>
           </div>
           <div class="ep-foot">
-            <span class="ep-status ${actuallyPaid ? 'ok' : 'wait'}">${actuallyPaid ? '✓ Opłacono przez mObywatel' : `Termin: ${p.due}`}</span>
+            <span class="ep-status ${actuallyPaid ? 'ok' : 'wait'}">${actuallyPaid ? '<i class="ik ik-check" aria-hidden="true"></i> Opłacono przez mObywatel' : `Termin: ${p.due}`}</span>
             ${actuallyPaid ? 
               `<button type="button" class="btn-xs ghost" onclick="openPaymentReceipt('${p.id}')">Pobierz UPO</button>` : 
               `<button type="button" class="btn-xs primary" onclick="openBlikSheet('${p.id}', ${p.amount}, '${p.title}', '${p.recipient}')">Zapłać BLIK</button>`}
@@ -559,7 +559,7 @@ function openBlikSheet(payId, amount, title, recipient) {
         ${[1,2,3,4,5,6,7,8,9].map(n => `<button type="button" class="bk-key" onclick="USLUGI.pressBlikKey('${n}')">${n}</button>`).join('')}
         <button type="button" class="bk-key action" onclick="USLUGI.fillSampleBlik()">Demo 777</button>
         <button type="button" class="bk-key" onclick="USLUGI.pressBlikKey('0')">0</button>
-        <button type="button" class="bk-key action" onclick="USLUGI.backspaceBlik()">⌫</button>
+        <button type="button" class="bk-key action" onclick="USLUGI.backspaceBlik()"><i class="ik ik-backspace" aria-hidden="true"></i></button>
       </div>
 
       <div class="blik-actions-box">
@@ -587,7 +587,7 @@ function openBlikSheet(payId, amount, title, recipient) {
     }
     if (blikRemainingSeconds <= 0) {
       clearInterval(blikTimerInterval);
-      if (typeof showToast === 'function') showToast('⚠️ Kod BLIK wygasł. Wygeneruj nowy kod w banku.');
+      if (typeof showToast === 'function') showToast('Kod BLIK wygasł. Wygeneruj nowy kod w banku.');
       closeBlikModal();
     }
   }, 1000);
@@ -669,7 +669,7 @@ USLUGI.confirmBlik = function(payId, amount, title) {
       
       <div class="bank-push-sim">
         <div class="bps-head">
-          <span>🏛️ PKO Bank Polski • IKO</span>
+          <span><i class="ik ik-institution" aria-hidden="true"></i> PKO Bank Polski • IKO</span>
           <small>teraz</small>
         </div>
         <b>Prośba o płatność BLIK: ${amount.toFixed(2)} zł</b>
@@ -677,7 +677,7 @@ USLUGI.confirmBlik = function(payId, amount, title) {
       </div>
 
       <button type="button" class="btn primary" onclick="USLUGI.finishBlikSuccess('${payId}', ${amount}, '${title}')">
-        ✓ Symuluj potwierdzenie w banku
+        <i class="ik ik-check" aria-hidden="true"></i> Symuluj potwierdzenie w banku
       </button>
     </div>
   `;
@@ -704,12 +704,12 @@ USLUGI.finishBlikSuccess = function(payId, amount, title) {
   if (box) {
     box.innerHTML = `
       <div class="blik-success-wrap">
-        <div class="bsw-icon">✓</div>
+        <div class="bsw-icon"><i class="ik ik-check" aria-hidden="true"></i></div>
         <b class="bsw-title">Płatność zrealizowana pomyślnie!</b>
         <p class="bsw-sub">Kwota <b>${amount.toFixed(2)} zł</b> została przekazana na rachunek urzędu. Wygenerowano oficjalne Urzędowe Poświadczenie Odbioru (UPO).</p>
         
         <div class="bsw-details">
-          <div><span>Status KIR:</span><b style="color:#059669">Zaakceptowana (Rozliczona)</b></div>
+          <div><span>Status KIR:</span><b style="color:var(--ok-ink)">Zaakceptowana (Rozliczona)</b></div>
           <div><span>Prowizja mObywatel:</span><b>0,00 zł (bez prowizji)</b></div>
         </div>
 
@@ -759,14 +759,14 @@ function openWyboryModal() {
   if (box) {
     box.innerHTML = `
       <div class="crw-hero-card">
-        <div class="ch-badge">🏛️ Oficjalny Rejestr Państwowej Komisji Wyborczej (PKW)</div>
+        <div class="ch-badge"><i class="ik ik-institution" aria-hidden="true"></i> Oficjalny Rejestr Państwowej Komisji Wyborczej (PKW)</div>
         <b class="ch-title">${w.obwod}</b>
         <div class="ch-okreg">${w.okreg}</div>
       </div>
 
       <div class="crw-station-box">
         <div class="csb-head">
-          <span class="csb-ic">📍</span>
+          <span class="csb-ic"><i class="ik ik-pin" aria-hidden="true"></i></span>
           <div>
             <b>Adres Twojego Lokalu Wyborczego:</b>
             <p class="csb-school">${w.komisja}</p>
@@ -777,7 +777,7 @@ function openWyboryModal() {
         <div class="csb-features">
           <b>Udogodnienia dla wyborców:</b>
           <ul>
-            ${w.cechy.map(c => `<li>✓ ${c}</li>`).join('')}
+            ${w.cechy.map(c => `<li><i class="ik ik-check" aria-hidden="true"></i> ${c}</li>`).join('')}
           </ul>
         </div>
       </div>
@@ -795,17 +795,17 @@ function openWyboryModal() {
 
       <div class="crw-actions-grid">
         <button type="button" class="btn secondary" onclick="USLUGI.downloadVotingCert()">
-          📜 Pobierz zaświadczenie o prawie do głosowania (PDF)
+          <i class="ik ik-cert" aria-hidden="true"></i> Pobierz zaświadczenie o prawie do głosowania (PDF)
         </button>
         <button type="button" class="btn primary" onclick="USLUGI.openChangePrecinctForm()">
-          ✏️ Zmień miejsce głosowania (złóż wniosek)
+          <i class="ik ik-edit" aria-hidden="true"></i> Zmień miejsce głosowania (złóż wniosek)
         </button>
       </div>
 
       <div class="crw-data-verify">
         <b>Twoje dane w Centralnym Rejestrze Wyborców:</b>
         <div class="cdv-row"><span>Wyborca:</span><b>${typeof OS !== 'undefined' ? OS.nazwisko : w.persona}</b></div>
-        <div class="cdv-row"><span>Prawo wybierania:</span><b style="color:#059669">Czynne prawo wyborcze (potwierdzone)</b></div>
+        <div class="cdv-row"><span>Prawo wybierania:</span><b style="color:var(--ok-ink)">Czynne prawo wyborcze (potwierdzone)</b></div>
         <div class="cdv-row"><span>Status spisu:</span><b>${w.spis}</b></div>
       </div>
     `;
@@ -919,7 +919,7 @@ USLUGI.submitChangePrecinct = function() {
     MobStore.set('crw_custom_precinct', choice);
   }
   if (typeof showToast === 'function') {
-    showToast('✓ Wniosek zaakceptowany! Zaktualizowano obwód w CRW.');
+    showToast('Wniosek zaakceptowany! Zaktualizowano obwód w CRW.');
   }
   openWyboryModal();
 };
@@ -958,8 +958,8 @@ function openJakoscPowietrzaModal(cityKey) {
       </div>
 
       <div class="air-meta-box">
-        <div class="amb-station">📍 Stacja pomiarowa: <b>${a.station}</b></div>
-        <p class="amb-advice">💡 ${a.advice}</p>
+        <div class="amb-station"><i class="ik ik-pin" aria-hidden="true"></i> Stacja pomiarowa: <b>${a.station}</b></div>
+        <p class="amb-advice"><i class="ik ik-bulb" aria-hidden="true"></i> ${a.advice}</p>
 
         <div class="amb-grid">
           <div class="amb-item">
@@ -991,15 +991,15 @@ function openJakoscPowietrzaModal(cityKey) {
         <div class="air-advisory-groups">
           <b>Zalecenia dla grup wrażliwych:</b>
           <div class="aag-row">
-            <span>👶 Dzieci i kobiety w ciąży:</span>
+            <span><i class="ik ik-baby" aria-hidden="true"></i> Dzieci i kobiety w ciąży:</span>
             <b>${a.pm25 > 25 ? 'Zalecane ograniczenie dłuższego pobytu na zewnątrz' : 'Brak przeciwwskazań do spacerów'}</b>
           </div>
           <div class="aag-row">
-            <span>🫁 Osoby z astmą i alergią:</span>
+            <span><i class="ik ik-lungs" aria-hidden="true"></i> Osoby z astmą i alergią:</span>
             <b>${a.pm25 > 25 ? 'Miej przy sobie leki wziewne, unikaj wietrzenia' : 'Warunki w pełni bezpieczne'}</b>
           </div>
           <div class="aag-row">
-            <span>🏃 Aktywność sportowa:</span>
+            <span><i class="ik ik-run" aria-hidden="true"></i> Aktywność sportowa:</span>
             <b>${a.pm10 > 50 ? 'Przenieś trening do pomieszczenia' : 'Świetne warunki do biegania'}</b>
           </div>
         </div>
@@ -1010,7 +1010,7 @@ function openJakoscPowietrzaModal(cityKey) {
             <small>Otrzymuj push przy przekroczeniu poziomu informowania PM10 (100 µg/m³)</small>
           </div>
           <button type="button" class="btn-xs ${isSmogAlertOn ? 'primary' : 'ghost'}" onclick="USLUGI.toggleSmogAlert()">
-            ${isSmogAlertOn ? '✓ Włączone' : 'Wyłączone'}
+            ${isSmogAlertOn ? '<i class="ik ik-check" aria-hidden="true"></i> Włączone' : 'Wyłączone'}
           </button>
         </div>
       </div>
@@ -1033,7 +1033,7 @@ USLUGI.toggleSmogAlert = function() {
   const cur = MobStore.get('gio_smog_alert', true);
   MobStore.set('gio_smog_alert', !cur);
   if (typeof showToast === 'function') {
-    showToast(!cur ? '🚨 Powiadomienia smogowe zostały aktywowane!' : 'Powiadomienia smogowe wyłączone.');
+    showToast(!cur ? 'Powiadomienia smogowe zostały aktywowane!' : 'Powiadomienia smogowe wyłączone.');
   }
   openJakoscPowietrzaModal();
 };
@@ -1053,66 +1053,66 @@ function renderUslugiTab() {
 
     <div class="services-grid">
       <button type="button" class="service-card highlight" onclick="openIkpModal('recepty')">
-        <div class="sc-icon" style="background:rgba(16,185,129,.12);color:#059669">🏥</div>
+        <div class="sc-icon" style="background:var(--ok-wash);color:var(--ok-ink)"><i class="ik ik-hospital" aria-hidden="true"></i></div>
         <div class="sc-content">
           <b>Zdrowie i e-Recepty (IKP)</b>
           <small>Recepty z kodem kreskowym, skierowania, eWUŚ, EKUZ i leki stałe</small>
         </div>
-        <span class="sc-arrow">→</span>
+        <span class="sc-arrow"><i class="ik ik-arrow" aria-hidden="true"></i></span>
       </button>
 
       <button type="button" class="service-card highlight" onclick="openZastrzezPeselModal()">
-        <div class="sc-icon" style="background:rgba(220,20,60,.1);color:var(--red)">🔒</div>
+        <div class="sc-icon" style="background:var(--red-wash);color:var(--red-ink)"><i class="ik ik-lock" aria-hidden="true"></i></div>
         <div class="sc-content">
           <b>Zastrzeż PESEL</b>
-          <small>Status: <span style="color:${isPeselBlocked ? '#10b981' : '#dc143c'};font-weight:700">${isPeselBlocked ? 'Zastrzeżony (Bezpieczny)' : 'Niezastrzeżony'}</span></small>
+          <small>Status: <span style="color:${isPeselBlocked ? 'var(--ok-ink)' : 'var(--red-ink)'};font-weight:700">${isPeselBlocked ? 'Zastrzeżony (Bezpieczny)' : 'Niezastrzeżony'}</span></small>
         </div>
-        <span class="sc-arrow">→</span>
+        <span class="sc-arrow"><i class="ik ik-arrow" aria-hidden="true"></i></span>
       </button>
 
       <button type="button" class="service-card" onclick="openEPlatnosciModal()">
-        <div class="sc-icon" style="background:rgba(16,185,129,.1);color:#10b981">💳</div>
+        <div class="sc-icon" style="background:var(--ok-wash);color:var(--ok-ink)"><i class="ik ik-card" aria-hidden="true"></i></div>
         <div class="sc-content">
           <b>ePłatności (BLIK)</b>
           <small>Podatki od nieruchomości i opłaty lokalne z kodem BLIK</small>
         </div>
-        <span class="sc-arrow">→</span>
+        <span class="sc-arrow"><i class="ik ik-arrow" aria-hidden="true"></i></span>
       </button>
 
       <button type="button" class="service-card" onclick="openBezpiecznyAutobusModal('KR 12345')">
-        <div class="sc-icon" style="background:rgba(245,158,11,.1);color:#f59e0b">🚌</div>
+        <div class="sc-icon" style="background:rgba(245,158,11,.1);color:#f59e0b"><i class="ik ik-bus" aria-hidden="true"></i></div>
         <div class="sc-content">
           <b>Bezpieczny autobus & CEPiK</b>
           <small>Badania techniczne, licznik, baza kradzieżowa Policji</small>
         </div>
-        <span class="sc-arrow">→</span>
+        <span class="sc-arrow"><i class="ik ik-arrow" aria-hidden="true"></i></span>
       </button>
 
       <button type="button" class="service-card" onclick="openJakoscPowietrzaModal()">
-        <div class="sc-icon" style="background:rgba(59,130,246,.1);color:#3b82f6">🌿</div>
+        <div class="sc-icon" style="background:rgba(59,130,246,.1);color:#3b82f6"><i class="ik ik-leaf" aria-hidden="true"></i></div>
         <div class="sc-content">
           <b>Jakość powietrza (GIOŚ)</b>
           <small>${air.city}: <b style="color:${air.color}">${air.index}</b> (${air.pm25} µg/m³)</small>
         </div>
-        <span class="sc-arrow">→</span>
+        <span class="sc-arrow"><i class="ik ik-arrow" aria-hidden="true"></i></span>
       </button>
 
       <button type="button" class="service-card" onclick="openPointsDetail()">
-        <div class="sc-icon" style="background:rgba(139,92,246,.1);color:#8b5cf6">🚗</div>
+        <div class="sc-icon" style="background:rgba(139,92,246,.1);color:#8b5cf6"><i class="ik ik-car" aria-hidden="true"></i></div>
         <div class="sc-content">
           <b>Punkty karne CEPiK</b>
           <small>Licznik punktów, mandaty i zaświadczenie PDF</small>
         </div>
-        <span class="sc-arrow">→</span>
+        <span class="sc-arrow"><i class="ik ik-arrow" aria-hidden="true"></i></span>
       </button>
 
       <button type="button" class="service-card" onclick="openWyboryModal()">
-        <div class="sc-icon" style="background:rgba(236,72,153,.1);color:#ec4899">🗳️</div>
+        <div class="sc-icon" style="background:rgba(236,72,153,.1);color:#ec4899"><i class="ik ik-ballot" aria-hidden="true"></i></div>
         <div class="sc-content">
           <b>Wybory i Rejestr Wyborców (CRW)</b>
           <small>Sprawdź obwód, zmień miejsce głosowania, zaświadczenie</small>
         </div>
-        <span class="sc-arrow">→</span>
+        <span class="sc-arrow"><i class="ik ik-arrow" aria-hidden="true"></i></span>
       </button>
     </div>
   `;

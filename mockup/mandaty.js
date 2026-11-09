@@ -220,7 +220,7 @@
         padding: 2px 7px;
         border-radius: 6px;
         background: rgba(220,20,60,.08);
-        color: var(--red);
+        color: var(--red-ink);
         font-size: 10px;
         font-weight: 700;
         text-transform: uppercase;
@@ -261,17 +261,17 @@
       }
       .driver-status-tag.ok {
         background: var(--ok-wash);
-        color: var(--ok);
+        color: var(--ok-ink);
         border: 1px solid rgba(46,125,50,.2);
       }
       .driver-status-tag.warn {
         background: var(--warn-wash);
-        color: var(--warn);
+        color: var(--warn-ink);
         border: 1px solid rgba(154,90,0,.2);
       }
       .driver-status-tag.alert {
         background: var(--red-wash);
-        color: var(--red);
+        color: var(--red-ink);
         border: 1px solid rgba(220,20,60,.2);
       }
 
@@ -572,7 +572,7 @@
         height: 52px;
         border-radius: 50%;
         background: var(--ok-wash);
-        color: var(--ok);
+        color: var(--ok-ink);
         display: grid;
         place-items: center;
         font-size: 26px;
@@ -608,7 +608,7 @@
         display: inline-flex;
         align-items: center;
         gap: 4px;
-        color: var(--red);
+        color: var(--red-ink);
         font-weight: 700;
       }
       .pj-pts-badge-link::after {
@@ -674,20 +674,20 @@
     const pct = Math.min(100, Math.round((totalPts / maxPts) * 100));
 
     // Kolory dynamiczne wskaźnika
-    let gaugeColor = '#10b981'; // Zielony (0 pkt)
+    let gaugeColor = 'var(--ok-ink)'; // Zielony (0 pkt)
     let statusLabel = 'Czyste konto';
     let statusClass = 'ok';
 
     if (totalPts > 0 && totalPts <= 6) {
-      gaugeColor = '#0284c7'; // Niebieski (niski stan)
+      gaugeColor = 'var(--info-ink)'; // Niebieski (niski stan)
       statusLabel = `${totalPts} / ${maxPts} pkt • Bezpieczny stan`;
       statusClass = 'ok';
     } else if (totalPts > 6 && totalPts <= 15) {
-      gaugeColor = '#f59e0b'; // Bursztynowy
+      gaugeColor = 'var(--warn-ink)'; // Bursztynowy
       statusLabel = `Uwaga: ${totalPts} z ${maxPts} pkt`;
       statusClass = 'warn';
     } else if (totalPts > 15) {
-      gaugeColor = '#dc143c'; // Czerwony (blisko limitu)
+      gaugeColor = 'var(--red-ink)'; // Czerwony (blisko limitu)
       statusLabel = `Krytyczny: ${totalPts} z ${maxPts} pkt!`;
       statusClass = 'alert';
     }
@@ -708,7 +708,7 @@
     if (activeViolations.length === 0) {
       violationsHtml = `
         <div class="clean-record-box">
-          <div class="clean-icon">🛡️</div>
+          <div class="clean-icon"><i class="ik ik-shield" aria-hidden="true"></i></div>
           <h3 class="clean-title">Brak punktów karnych</h3>
           <p class="clean-desc">
             W Centralnej Ewidencji Pojazdów i Kierowców (CEPiK 2.0) nie ma żadnych aktywnych naruszeń drogowych ani zaległych mandatów.
@@ -736,30 +736,30 @@
             <div class="nar-grid">
               <div class="nar-cell">
                 <span>Data i godzina:</span>
-                <b>📅 ${v.date}</b>
+                <b><i class="ik ik-calendar" aria-hidden="true"></i> ${v.date}</b>
               </div>
               <div class="nar-cell">
                 <span>Pojazd:</span>
-                <b>🚗 ${v.vehicle}</b>
+                <b><i class="ik ik-car" aria-hidden="true"></i> ${v.vehicle}</b>
               </div>
               <div class="nar-cell full">
                 <span>Miejsce wykroczenia:</span>
-                <b>📍 ${v.location}</b>
+                <b><i class="ik ik-pin" aria-hidden="true"></i> ${v.location}</b>
               </div>
               <div class="nar-cell">
                 <span>Organ nakładający:</span>
-                <b>👮 ${v.authority}</b>
+                <b><i class="ik ik-police" aria-hidden="true"></i> ${v.authority}</b>
               </div>
               <div class="nar-cell">
                 <span>Kwota grzywny:</span>
-                <b>💰 ${v.fineAmount} zł</b>
+                <b><i class="ik ik-money" aria-hidden="true"></i> ${v.fineAmount} zł</b>
               </div>
               <div class="nar-cell full" style="border-top:1px dashed var(--hair);padding-top:6px;margin-top:4px">
                 <span>Status opłacenia mandatu:</span>
                 ${v.paid
-                  ? `<b style="color:var(--ok)">✓ Opłacony (${v.paymentDate}) – ${v.paymentMethod || 'Płatność bezgotówkowa'}</b>`
+                  ? `<b style="color:var(--ok-ink)"><i class="ik ik-check" aria-hidden="true"></i> Opłacony (${v.paymentDate}) – ${v.paymentMethod || 'Płatność bezgotówkowa'}</b>`
                   : `<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:2px">
-                       <b style="color:var(--red)">⏳ Oczekuje na wpłatę (termin: ${v.paymentDeadline || '7 dni'})</b>
+                       <b style="color:var(--red-ink)"><i class="ik ik-hourglass" aria-hidden="true"></i> Oczekuje na wpłatę (termin: ${v.paymentDeadline || '7 dni'})</b>
                        <button type="button" class="btn primary btn-xs" onclick="MANDATY.payFine('${v.id}')">Opłać BLIK-iem (${v.fineAmount} zł)</button>
                      </div>`
                 }
@@ -769,22 +769,22 @@
             <!-- Kalkulator przedawnienia punktów -->
             <div class="exp-calc-box ${v.paid ? 'paid' : 'unpaid'}">
               <div class="exp-calc-head">
-                <span>⏱️</span>
+                <span><i class="ik ik-timer" aria-hidden="true"></i></span>
                 <b>KALKULATOR PRZEDAWNIENIA CEPiK 2.0</b>
               </div>
               ${v.paid ? `
                 <div class="exp-date-highlight">
-                  Wykasowanie z ewidencji: <span style="color:#0284c7">${v.expirationDate}</span>
+                  Wykasowanie z ewidencji: <span style="color:var(--info-ink)">${v.expirationDate}</span>
                 </div>
                 <p class="exp-legal-rule">
                   Zasada prawna: punkty kasują się automatycznie po <b>12 miesiącach od dnia uiszczenia grzywny</b> (art. 98 ust. 4 ustawy o kierujących pojazdami).
                 </p>
               ` : `
-                <div class="exp-date-highlight" style="color:#b45309">
+                <div class="exp-date-highlight" style="color:var(--warn-ink)">
                   Bieg przedawnienia: WSTRZYMANY do momentu zapłaty!
                 </div>
                 <p class="exp-legal-rule">
-                  ⚠️ <b>Ważne:</b> Okres 12 miesięcy liczony jest <b>wyłącznie od daty opłacenia mandatu</b>. Do chwili uiszczenia kwoty ${v.fineAmount} zł punkty pozostaną w ewidencji bezterminowo!
+                  <i class="ik ik-warning" aria-hidden="true"></i> <b>Ważne:</b> Okres 12 miesięcy liczony jest <b>wyłącznie od daty opłacenia mandatu</b>. Do chwili uiszczenia kwoty ${v.fineAmount} zł punkty pozostaną w ewidencji bezterminowo!
                 </p>
               `}
             </div>
@@ -797,7 +797,7 @@
       <div class="mandaty-header">
         <div class="mandaty-title-wrap">
           <h2>
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--red)"><circle cx="12" cy="12" r="10"/><path d="m4.93 4.93 4.24 4.24M14.83 14.83l4.24 4.24M14.83 9.17l4.24-4.24M4.93 19.07l4.24-4.24"/></svg>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--red-ink)"><circle cx="12" cy="12" r="10"/><path d="m4.93 4.93 4.24 4.24M14.83 14.83l4.24 4.24M14.83 9.17l4.24-4.24M4.93 19.07l4.24-4.24"/></svg>
             Ewidencja Punktów Karnych
           </h2>
           <small>Centralna Ewidencja Pojazdów i Kierowców (CEPiK 2.0) • MSWiA / MC</small>
@@ -820,13 +820,13 @@
           <svg class="gauge-svg" viewBox="0 0 120 120">
             <circle class="gauge-bg" cx="60" cy="60" r="${radius}"></circle>
             <circle class="gauge-fill" cx="60" cy="60" r="${radius}"
-              stroke="${gaugeColor}"
+              style="stroke:${gaugeColor}"
               stroke-dasharray="${circumference}"
               stroke-dashoffset="${strokeOffset}">
             </circle>
           </svg>
           <div class="gauge-inner-text">
-            <span class="gauge-pts-val" style="color:${totalPts === 0 ? '#10b981' : gaugeColor}">${totalPts}</span>
+            <span class="gauge-pts-val" style="color:${totalPts === 0 ? 'var(--ok-ink)' : gaugeColor}">${totalPts}</span>
             <small class="gauge-pts-max">/ ${maxPts} pkt</small>
           </div>
         </div>
@@ -870,7 +870,7 @@
       <!-- Sekcja szkolenia redukującego punkty (WORD) -->
       <div class="word-sec-box">
         <h3 class="word-h">
-          <span>🎓</span>
+          <span><i class="ik ik-grad" aria-hidden="true"></i></span>
           Szkolenie redukujące punkty w WORD
         </h3>
         <ul class="word-rules-list">
@@ -883,7 +883,7 @@
 
         <div class="word-btn-wrap">
           <button type="button" class="btn secondary" style="flex:1" id="wordSimulateBtn" onclick="MANDATY.simulateWordCourse()">
-            🎓 Zarejestruj ukończenie kursu w WORD (-6 pkt)
+            <i class="ik ik-grad" aria-hidden="true"></i> Zarejestruj ukończenie kursu w WORD (-6 pkt)
           </button>
         </div>
       </div>
@@ -891,7 +891,7 @@
       <!-- Przyciski dolne -->
       <div style="display:flex;gap:8px;margin-top:16px">
         <button type="button" class="btn secondary" style="flex:1" onclick="closeMandatyModal();if(typeof openOfficialCertificate==='function')openOfficialCertificate('punkty');">
-          📜 Zaświadczenie PDF
+          <i class="ik ik-cert" aria-hidden="true"></i> Zaświadczenie PDF
         </button>
         <button type="button" class="btn primary" style="flex:1.3" onclick="closeMandatyModal();if(typeof startTopic==='function')startTopic('Ile mam punktów karnych i kiedy wygasną?');">
           Zapytaj asystenta AI
@@ -1025,7 +1025,7 @@
       syncPjPointsWithOS(curOS() && curOS().id, newTotal);
 
       // Powiadomienie użytkownika
-      const msg = `🎓 Zarejestrowano zaświadczenie z WORD! Odliczono ${actuallyReduced} pkt. Aktualny stan: ${newTotal} pkt.`;
+      const msg = `Zarejestrowano zaświadczenie z WORD! Odliczono ${actuallyReduced} pkt. Aktualny stan: ${newTotal} pkt.`;
       if (typeof showToast === 'function') {
         showToast(msg);
       } else {
@@ -1076,7 +1076,7 @@
         });
       }
 
-      const msg = `✓ Opłacono mandat ${v.fineAmount} zł BLIK-iem! Uruchomiono 12-miesięczny bieg przedawnienia punktów (do ${v.expirationDate}).`;
+      const msg = `Opłacono mandat ${v.fineAmount} zł BLIK-iem! Uruchomiono 12-miesięczny bieg przedawnienia punktów (do ${v.expirationDate}).`;
       if (typeof showToast === 'function') showToast(msg);
       if (typeof haptic === 'function') haptic('success');
 

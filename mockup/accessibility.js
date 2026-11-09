@@ -205,7 +205,7 @@ const A11Y = {
     this.darkMode = !this.darkMode;
     try { localStorage.setItem('mob_dark_mode', this.darkMode ? '1' : '0'); } catch (e) {}
     this.apply();
-    showToast(this.darkMode ? '🌙 Włączono elegancki tryb ciemny (Dark Mode)' : '☀️ Włączono standardowy tryb jasny');
+    showToast(this.darkMode ? 'Włączono elegancki tryb ciemny (Dark Mode)' : 'Włączono standardowy tryb jasny');
   },
 
   toggleLargeText() {
@@ -501,8 +501,8 @@ function openUPO(entry) {
     <div class="upo-scrim" onclick="closeUPO()"></div>
     <div class="upo-sheet" role="dialog" aria-modal="true" aria-labelledby="upoTitle">
       <div class="upo-header-bar">
-        <button class="upo-close-btn" type="button" onclick="closeUPO()">✕ Zamknij</button>
-        <button class="upo-print-btn" type="button" onclick="window.print()">🖨️ Drukuj / Zapisz PDF</button>
+        <button class="upo-close-btn" type="button" onclick="closeUPO()"><i class="ik ik-close" aria-hidden="true"></i> Zamknij</button>
+        <button class="upo-print-btn" type="button" onclick="window.print()"><i class="ik ik-printer" aria-hidden="true"></i> Drukuj / Zapisz PDF</button>
       </div>
       <div class="upo-document" id="printableUPO">
         <div class="upo-doc-head">
@@ -713,7 +713,7 @@ function closePointsDetail() {
 const TOPIC_CATEGORIES = [
   {
     id: 'kierowca',
-    icon: '🚗',
+    icon: '<i class="ik ik-car" aria-hidden="true"></i>',
     name: 'Kierowca',
     questions: [
       ['Miałam stłuczkę', 'wspólne oświadczenie bez policji'],
@@ -724,7 +724,7 @@ const TOPIC_CATEGORIES = [
   },
   {
     id: 'bezpieczenstwo',
-    icon: '🛡️',
+    icon: '<i class="ik ik-shield" aria-hidden="true"></i>',
     name: 'Bezpieczeństwo',
     questions: [
       ['Zgubiłam portfel', 'blokada dowodu i banków'],
@@ -735,7 +735,7 @@ const TOPIC_CATEGORIES = [
   },
   {
     id: 'rodzina',
-    icon: '👶',
+    icon: '<i class="ik ik-baby" aria-hidden="true"></i>',
     name: 'Rodzina',
     questions: [
       ['Urodziło nam się dziecko', 'zgłoszenie narodzin do USC'],
@@ -745,7 +745,7 @@ const TOPIC_CATEGORIES = [
   },
   {
     id: 'platnosci',
-    icon: '💰',
+    icon: '<i class="ik ik-money" aria-hidden="true"></i>',
     name: 'Płatności',
     questions: [
       ['Chcę zapłacić podatek', 'ePłatności BLIK'],
@@ -755,7 +755,7 @@ const TOPIC_CATEGORIES = [
   },
   {
     id: 'dokumenty',
-    icon: '🆔',
+    icon: '<i class="ik ik-id" aria-hidden="true"></i>',
     name: 'Dokumenty',
     questions: [
       ['Kiedy mój dowód traci ważność?', 'termin ważności mDowodu'],
@@ -765,7 +765,7 @@ const TOPIC_CATEGORIES = [
   },
   {
     id: 'zdrowie',
-    icon: '🏥',
+    icon: '<i class="ik ik-hospital" aria-hidden="true"></i>',
     name: 'Zdrowie (IKP)',
     questions: [
       ['Moje e-Recepty w IKP', 'kody PIN i kody kreskowe leków'],
@@ -776,7 +776,7 @@ const TOPIC_CATEGORIES = [
   },
   {
     id: 'firma',
-    icon: '🏢',
+    icon: '<i class="ik ik-building" aria-hidden="true"></i>',
     name: 'Moja Firma',
     questions: [
       ['Poświadcz za firmę (CEIDG)', 'certyfikat reprezentacji z kodem QR'],
@@ -1018,8 +1018,8 @@ function openOfficialCertificate(type = 'pesel') {
     <div class="upo-scrim" onclick="closeCertModal()"></div>
     <div class="upo-sheet" role="dialog" aria-modal="true" aria-labelledby="certDocTitle">
       <div class="upo-header-bar">
-        <button class="upo-close-btn" type="button" onclick="closeCertModal()">✕ Zamknij</button>
-        <button class="upo-print-btn" type="button" onclick="window.print()">🖨️ Drukuj / Zapisz PDF</button>
+        <button class="upo-close-btn" type="button" onclick="closeCertModal()"><i class="ik ik-close" aria-hidden="true"></i> Zamknij</button>
+        <button class="upo-print-btn" type="button" onclick="window.print()"><i class="ik ik-printer" aria-hidden="true"></i> Drukuj / Zapisz PDF</button>
       </div>
       <div class="upo-document" id="printableCert">
         <div class="upo-doc-head">
@@ -1210,11 +1210,11 @@ function openIkpModal(defaultTab = 'recepty') {
           </div>
           <div class="ikp-action-grid">
             <button type="button" class="ikp-grid-btn" onclick="closeIkpModal();openOfficialCertificate('nfz')">
-              <span class="ikp-gb-ic">📜</span>
+              <span class="ikp-gb-ic"><i class="ik ik-cert" aria-hidden="true"></i></span>
               <span class="ikp-gb-tx"><b>Zaświadczenie NFZ (PDF)</b><small>Urzędowy odpis uprawnień z pieczęcią RP</small></span>
             </button>
             <button type="button" class="ikp-grid-btn" onclick="closeIkpModal();openDiloModal()">
-              <span class="ikp-gb-ic">🛡️</span>
+              <span class="ikp-gb-ic"><i class="ik ik-shield" aria-hidden="true"></i></span>
               <span class="ikp-gb-tx"><b>Karta DiLO (Onkologia)</b><small>Szybka ścieżka terapii onkologicznej</small></span>
             </button>
           </div>
@@ -1227,7 +1227,7 @@ function openIkpModal(defaultTab = 'recepty') {
       <div class="modal-box">
         <div class="modal-head">
           <div style="display:flex;align-items:center;gap:10px">
-            <span style="font-size:22px">🏥</span>
+            <span style="font-size:22px"><i class="ik ik-hospital" aria-hidden="true"></i></span>
             <div>
               <h2 id="ikpTitle">Internetowe Konto Pacjenta</h2>
               <small style="color:var(--ink2)">Konto zdrowotne NFZ • ${OS.imie} ${OS.nazwisko}</small>
@@ -1297,7 +1297,7 @@ function openERejestracjaModal() {
             <button class="tx-close" onclick="closeERejestracjaModal()" aria-label="Zamknij"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></svg></button>
           </div>
           <div class="erej-success-hero">
-            <div class="erej-ok-icon">✓</div>
+            <div class="erej-ok-icon"><i class="ik ik-check" aria-hidden="true"></i></div>
             <b>Potwierdzenie rezerwacji w systemie NFZ</b>
             <span class="erej-code">Numer zgłoszenia: NFZ-REZ-2026-${Math.floor(10000 + Math.random() * 90000)}</span>
           </div>
@@ -1332,7 +1332,7 @@ function openERejestracjaModal() {
       <div class="modal-box">
         <div class="modal-head">
           <div style="display:flex;align-items:center;gap:10px">
-            <span style="font-size:22px">🗓️</span>
+            <span style="font-size:22px"><i class="ik ik-calendar" aria-hidden="true"></i></span>
             <div>
               <h2 id="erejTitle">e-Rejestracja NFZ</h2>
               <small style="color:var(--ink2)">Bezpośredni zapis na wizytę lekarską</small>
@@ -1411,7 +1411,7 @@ function openDiloModal() {
     <div class="modal-box">
       <div class="modal-head">
         <div style="display:flex;align-items:center;gap:10px">
-          <span style="font-size:22px">🎗️</span>
+          <span style="font-size:22px"><i class="ik ik-ribbon" aria-hidden="true"></i></span>
           <div>
             <h2 id="diloTitle">Karta DiLO</h2>
             <small style="color:var(--ink2)">Szybka terapia onkologiczna NFZ</small>
@@ -1428,13 +1428,13 @@ function openDiloModal() {
 
       <div class="dilo-coord-card">
         <div class="dilo-coord-head">
-          <span>👩‍⚕️ Twój Wyznaczony Koordynator DiLO:</span>
+          <span><i class="ik ik-doctor" aria-hidden="true"></i> Twój Wyznaczony Koordynator DiLO:</span>
           <b>mgr Anna Wójcik</b>
         </div>
         <div class="dilo-coord-body">
           <p>Narodowy Instytut Onkologii im. Marii Skłodowskiej-Curie w Warszawie</p>
           <div class="dilo-coord-contacts">
-            <a href="tel:+48225462000" class="btn ghost btn-sm">📞 +48 22 546 20 00</a>
+            <a href="tel:+48225462000" class="btn ghost btn-sm"><i class="ik ik-phone" aria-hidden="true"></i> +48 22 546 20 00</a>
             <button type="button" class="btn ghost btn-sm" onclick="showToast('Koordynator dostępny pon-pt 8:00 - 15:00')">Godziny dyżuru</button>
           </div>
         </div>
@@ -1443,14 +1443,14 @@ function openDiloModal() {
       <div class="dilo-stages-wrap">
         <b>Etapy ścieżki onkologicznej:</b>
         <div class="dilo-stage-item done">
-          <span class="dilo-st-dot">✓</span>
+          <span class="dilo-st-dot"><i class="ik ik-check" aria-hidden="true"></i></span>
           <div class="dilo-st-info">
             <b>Etap 1: Wystawienie karty DiLO</b>
             <small>Lekarz POZ • 04.10.2026</small>
           </div>
         </div>
         <div class="dilo-stage-item done">
-          <span class="dilo-st-dot">✓</span>
+          <span class="dilo-st-dot"><i class="ik ik-check" aria-hidden="true"></i></span>
           <div class="dilo-st-info">
             <b>Etap 2: Diagnostyka wstępna</b>
             <small>Badania obrazowe i laboratoryjne zakończone • 18.10.2026</small>
@@ -1512,7 +1512,7 @@ function openFirmaPoswiadczModal() {
     <div class="modal-box">
       <div class="modal-head">
         <div style="display:flex;align-items:center;gap:10px">
-          <span style="font-size:22px">🏢</span>
+          <span style="font-size:22px"><i class="ik ik-building" aria-hidden="true"></i></span>
           <div>
             <h2 id="fPosTitle">Poświadcz za firmę</h2>
             <small style="color:var(--ink2)">Cyfrowe umocowanie przedsiębiorcy CEIDG</small>
@@ -1550,7 +1550,7 @@ function openFirmaPoswiadczModal() {
       </div>
 
       <div class="firma-rows-box">
-        <div class="firma-row"><span>Status CEIDG:</span> <b style="color:var(--ok)">Aktywny przedsiębiorca</b></div>
+        <div class="firma-row"><span>Status CEIDG:</span> <b style="color:var(--ok-ink)">Aktywny przedsiębiorca</b></div>
         <div class="firma-row"><span>Biała Lista VAT:</span> <b>Czynny podatnik VAT (Konto OK)</b></div>
         <div class="firma-row"><span>Uprawnienie:</span> <b>Właściciel / Reprezentacja jednoosobowa</b></div>
         <div class="firma-row"><span>Adres doręczeń:</span> <b>ul. Floriańska 12/4, 31-021 Kraków</b></div>
@@ -1608,7 +1608,7 @@ function openFirmaPodpisModal() {
             <button class="tx-close" onclick="closeFirmaPodpisModal()" aria-label="Zamknij"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></svg></button>
           </div>
           <div class="erej-success-hero">
-            <div class="erej-ok-icon">✍️</div>
+            <div class="erej-ok-icon"><i class="ik ik-sign" aria-hidden="true"></i></div>
             <b>Podpis osobisty certyfikatem z dowodu osobistego</b>
             <span class="erej-code">Sygnatura: XADES-BES/RP-${Math.floor(100000 + Math.random() * 900000)}</span>
           </div>
@@ -1633,7 +1633,7 @@ function openFirmaPodpisModal() {
       <div class="modal-box">
         <div class="modal-head">
           <div style="display:flex;align-items:center;gap:10px">
-            <span style="font-size:22px">✍️</span>
+            <span style="font-size:22px"><i class="ik ik-sign" aria-hidden="true"></i></span>
             <div>
               <h2 id="fPodTitle">Podpisz dokument e-dowodem</h2>
               <small style="color:var(--ink2)">Certyfikat podpisu osobistego z mDowodu</small>
