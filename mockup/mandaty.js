@@ -95,6 +95,9 @@
     }
   };
 
+  // OS to stała z osoby.js (const nie trafia do window, więc window.OS zawsze było undefined i moduł pokazywał dane Marty)
+  const curOS = () => (typeof OS !== 'undefined' ? OS : null);
+
   // Pamięć stanu modułu w bieżącej sesji
   let cepikState = null;
 
@@ -121,12 +124,12 @@
 
   function getDriverData(id) {
     const st = loadCepikState();
-    const key = id || (window.OS && window.OS.id) || 'marta';
+    const key = id || (curOS() && curOS().id) || 'marta';
     if (!st[key]) {
       // Domyślny profil w razie nieznanej osoby
       st[key] = {
-        driverName: (window.OS && window.OS.imie && window.OS.nazwisko) ? `${window.OS.imie} ${window.OS.nazwisko}` : 'Kierowca',
-        pesel: (window.OS && window.OS.moje && window.OS.moje.pesel) || '91071427765',
+        driverName: (curOS() && curOS().imie && curOS().nazwisko) ? `${curOS().imie} ${curOS().nazwisko}` : 'Kierowca',
+        pesel: (curOS() && curOS().moje && curOS().moje.pesel) || '91071427765',
         licenseNumber: '01234/20/1465',
         licenseIssueDate: '01.06.2020',
         categories: 'B',
@@ -149,14 +152,15 @@
   // Synchronizacja z kartą w portfelu i szczegółami mPrawa jazdy w runtime
   function syncPjPointsWithOS(driverId, newPkt) {
     try {
-      if (window.OS && window.OS.docs) {
-        const pjDoc = window.OS.docs.find(d => d.id === 'pj');
+      if (curOS() && curOS().docs) {
+        const pjDoc = curOS().docs.find(d => d.id === 'pj');
         if (pjDoc) {
           const fPkt = pjDoc.f && pjDoc.f.find(x => x[0].includes('Punkt'));
           if (fPkt) fPkt[1] = String(newPkt);
           const rPkt = pjDoc.rows && pjDoc.rows.find(x => x[0].includes('Punkt'));
           if (rPkt) rPkt[1] = String(newPkt);
-          pjDoc.sub = newPkt === 0 ? 'Kat. B, bez punktów karnych' : `Kat. B, ${newPkt} pkt karnych`;
+          const kat = (getDriverData(driverId) || {}).categories || 'B';
+          pjDoc.sub = newPkt === 0 ? `Kat. ${kat}, bez punktów karnych` : `Kat. ${kat}, ${newPkt} pkt karnych`;
         }
       }
 
@@ -901,6 +905,7 @@
           <button type="button" class="chip-sm ${driver.driverName.includes('Marta') ? 'active' : ''}" onclick="MANDATY.switchDriverDemo('marta')">Marta (5 pkt)</button>
           <button type="button" class="chip-sm ${driver.driverName.includes('Kacper') ? 'active' : ''}" onclick="MANDATY.switchDriverDemo('kacper')">Kacper (3 pkt - Młody)</button>
           <button type="button" class="chip-sm ${driver.driverName.includes('Jan') ? 'active' : ''}" onclick="MANDATY.switchDriverDemo('jan')">Jan (0 pkt)</button>
+          <button type="button" class="chip-sm ${driver.driverName.includes('Ewa') ? 'active' : ''}" onclick="MANDATY.switchDriverDemo('ewa')">Ewa (0 pkt)</button>
         </div>
       </div>
     `;
@@ -1017,7 +1022,7 @@
       }
 
       // Synchronizacja z kartą prawa jazdy w portfelu
-      syncPjPointsWithOS(window.OS && window.OS.id, newTotal);
+      syncPjPointsWithOS(curOS() && curOS().id, newTotal);
 
       // Powiadomienie użytkownika
       const msg = `🎓 Zarejestrowano zaświadczenie z WORD! Odliczono ${actuallyReduced} pkt. Aktualny stan: ${newTotal} pkt.`;

@@ -21,7 +21,7 @@ function docActions(d){
   auto:['car','OC i badanie',()=>startTopic(OS.ask.auto)]}[d.id];
  if(d.id==='dowod')base[0]=['scan','Potwierdź dane',()=>openDocQR(d.id)];
  const ask=['dots','Zapytaj',()=>startTopic(OS.ask[d.id]||'Opowiedz mi o tym dokumencie')];
- return [...base,ctx,ask];
+ return [...base,ctx,ask].filter(Boolean);   // IKP i Moja Firma nie mają akcji kontekstowej: bez filtra renderActs wywraca się na undefined
 }
 const statusH=d=>d.alert?`<span class="bad">${svg('alert')}${d.alert}</span>`:`<span class="good">${svg('check')}${d.sub}</span>`;
 

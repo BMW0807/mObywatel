@@ -1,7 +1,7 @@
 {
   "name": "mObywatel 2.0",
   "short_name": "mObywatel",
-  "description": "Oficjalny asystent obywatelski i dokumenty w telefonie",
+  "description": "Prototyp asystenta obywatelskiego z fikcyjnymi danymi (nie jest oficjalną aplikacją mObywatel)",
   "start_url": "/?pwa=1",
   "scope": "/",
   "display": "standalone",

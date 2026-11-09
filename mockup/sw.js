@@ -1,19 +1,28 @@
 // Service Worker dla aplikacji mObywatel PWA
-const CACHE_NAME = 'mobywatel-pwa-v13';
+const CACHE_NAME = 'mobywatel-pwa-v14';
+// wszystkie skrypty z index.html (wcześniej brakowało m.in. znak.js, mandaty.js, spotlight.js, więc offline aplikacja się wywracała)
 const PRECACHE = [
   '/',
   '/index.html',
+  '/i18n.js?v=6',
   '/style.css?v=43',
-  '/core.js?v=43',
-  '/accessibility.js?v=43',
-  '/osoby.js?v=43',
-  '/variants.js?v=43',
-  '/scenarios.js?v=43',
-  '/agent.js?v=43',
-  '/uslugi.js?v=43',
-  '/weryfikacja.js?v=43',
-  '/poczta.js?v=43',
-  '/ikp-integracja.js?v=43',
+  '/osoby.js?v=44',
+  '/sylwetki.js?v=44',
+  '/core.js?v=44',
+  '/accessibility.js?v=44',
+  '/variants.js?v=44',
+  '/scenarios.js?v=44',
+  '/agent.js?v=44',
+  '/znak-kod.js?v=44',
+  '/znak.js?v=44',
+  '/uslugi.js?v=44',
+  '/weryfikacja.js?v=44',
+  '/poczta.js?v=44',
+  '/ikp-integracja.js?v=44',
+  '/mandaty.js?v=44',
+  '/powiadomienia-eksport.js?v=44',
+  '/katalog-kart.js?v=44',
+  '/spotlight.js?v=44',
   '/manifest.json',
   '/assets/icon-mobywatel.svg',
   '/assets/card-ikp-v2.svg',
@@ -46,6 +55,9 @@ self.addEventListener('activate', event => {
 
 self.addEventListener('fetch', event => {
   if (event.request.method !== 'GET') return;
+  // API (stan asystenta, znak mObywatela, słowniki) zawsze z sieci: odpowiedzi z pamięci podręcznej byłyby nieaktualne
+  const url = new URL(event.request.url);
+  if (url.origin === self.location.origin && url.pathname.startsWith('/api/')) return;
   event.respondWith(
     fetch(event.request).then(response => {
       if (response && response.status === 200) {

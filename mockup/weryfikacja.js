@@ -88,10 +88,38 @@ function generateBarcodeSVG(codeStr) {
 }
 
 // ----------------- MODAL APTECZNY DLA E-RECEPTY -----------------
+// Recepta z IKP bieżącej osoby (ikp-integracja.js); stała lista wyżej dodaje tylko substancję i dawkowanie.
+// Wcześniej każdy identyfikator spoza tej listy (np. leki Ewy czy recepta Zofii Kowalskiej) pokazywał Amoksiklav innej osoby.
+function aptekaRecepta(rxId) {
+  const extra = WERYFIKACJA.receptyData[rxId] || null;
+  const ikp = (typeof getIkpData === 'function') ? getIkpData() : null;
+  const r = ikp && (ikp.recepty || []).find(x => x.id === rxId);
+  if (!r) return extra;
+  const prof = (ikp.profiles || []).find(p => p.id === r.forProfile);
+  const tenLek = extra && extra.drug.split(' ')[0] === r.drug.split(' ')[0];
+  return {
+    id: r.id,
+    drug: r.drug,
+    substance: (tenLek && extra.substance) || '',
+    pack: r.pack,
+    dosage: (tenLek && extra.dosage) || '',
+    pin: r.pin,
+    barcode: r.barcode,
+    patient: prof ? prof.name.toUpperCase() : '',
+    doctor: r.doctor,
+    clinic: (ikp.poz && ikp.poz.clinic) || '',
+    issued: r.date,
+    validUntil: r.exp,
+    refund: r.refund,
+    status: r.status
+  };
+}
+
 function openAptekaModal(rxId) {
   const m = document.getElementById('aptekaModal');
   if (!m) return;
-  const rx = WERYFIKACJA.receptyData[rxId] || WERYFIKACJA.receptyData.rx_amoks;
+  const rx = aptekaRecepta(rxId);
+  if (!rx) return;
   const barcodeSvg = generateBarcodeSVG(rx.barcode);
 
   const box = m.querySelector('.apteka-box');
@@ -118,11 +146,11 @@ function openAptekaModal(rxId) {
 
       <div class="rx-drug-details">
         <h3 class="rx-drug-name">${rx.drug}</h3>
-        <div class="rx-substance">${rx.substance} (${rx.pack})</div>
-        <div class="rx-dosage-box">
+        <div class="rx-substance">${rx.substance ? rx.substance + ' (' + rx.pack + ')' : rx.pack}</div>
+        ${rx.dosage ? `<div class="rx-dosage-box">
           <b>Zalecone dawkowanie:</b>
           <p>${rx.dosage}</p>
-        </div>
+        </div>` : ''}
 
         <div class="rx-meta-grid">
           <div class="rxm-item"><span>Pacjent:</span><b>${rx.patient}</b></div>

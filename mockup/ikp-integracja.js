@@ -10,15 +10,15 @@ const IKP = {
   db: {
     jan: {
       profiles: [
-        { id: 'self', name: 'Jan Wiśniewski', role: 'Właściciel konta', pesel: '83021409214' },
-        { id: 'c1', name: 'Zofia Wiśniewska', role: 'Dziecko (11 lat)', pesel: '15271904128' },
-        { id: 'c2', name: 'Stanisław Wiśniewski', role: 'Dziecko (7 lat)', pesel: '19231408119' },
-        { id: 'c3', name: 'Franciszek Wiśniewski', role: 'Dziecko (3 lata)', pesel: '23281005234' }
+        { id: 'self', name: 'Jan Wiśniewski', role: 'Właściciel konta', pesel: '83051203455' },
+        { id: 'c1', name: 'Hanna Wiśniewska', role: 'Dziecko (11 lat)', pesel: '15270931826' },
+        { id: 'c2', name: 'Igor Wiśniewski', role: 'Dziecko (7 lat)', pesel: '19211640170' },
+        { id: 'c3', name: 'Michał Wiśniewski', role: 'Dziecko (15 lat)', pesel: '11030422135' }
       ],
       recepty: [
-        { id: 'rx_ventolin', forProfile: 'self', drug: 'Ventolin aerozol (100 µg/dawkę)', pack: '200 dawek', pin: '1904', barcode: '830214092141904', doctor: 'lek. med. Tomasz Lis (POZ)', date: '01.11.2026', exp: '01.12.2026', refund: 'Odpłatność 100% (19,80 zł)', status: 'Aktywna' },
-        { id: 'rx_amoks', forProfile: 'c1', drug: 'Amoksiklav (875 mg + 125 mg)', pack: '14 tabletek', pin: '4821', barcode: '152719041284821', doctor: 'lek. med. Anna Jabłońska', date: '06.11.2026', exp: '06.12.2026', refund: 'Odpłatność 30% (11,40 zł)', status: 'Aktywna' },
-        { id: 'rx_d3', forProfile: 'c2', drug: 'Vigantol krople (20 000 IU/ml)', pack: '10 ml', pin: '2209', barcode: '192314081192209', doctor: 'lek. med. Tomasz Lis', date: '15.10.2026', exp: '15.01.2027', refund: 'Odpłatność 100% (24,50 zł)', status: 'Aktywna' }
+        { id: 'rx_ventolin', forProfile: 'self', drug: 'Ventolin aerozol (100 µg/dawkę)', pack: '200 dawek', pin: '1904', barcode: '830512034551904', doctor: 'lek. med. Tomasz Lis (POZ)', date: '01.11.2026', exp: '01.12.2026', refund: 'Odpłatność 100% (19,80 zł)', status: 'Aktywna' },
+        { id: 'rx_amoks', forProfile: 'c1', drug: 'Amoksiklav (875 mg + 125 mg)', pack: '14 tabletek', pin: '4821', barcode: '152709318264821', doctor: 'lek. med. Anna Jabłońska', date: '06.11.2026', exp: '06.12.2026', refund: 'Odpłatność 30% (11,40 zł)', status: 'Aktywna' },
+        { id: 'rx_d3', forProfile: 'c2', drug: 'Vigantol krople (20 000 IU/ml)', pack: '10 ml', pin: '2209', barcode: '192116401702209', doctor: 'lek. med. Tomasz Lis', date: '15.10.2026', exp: '15.01.2027', refund: 'Odpłatność 100% (24,50 zł)', status: 'Aktywna' }
       ],
       skierowania: [
         { id: 'sk_pulmo', forProfile: 'self', name: 'Poradnia Pulmonologiczna (diagnostyka kaszlu)', code: '3819', doctor: 'lek. med. Tomasz Lis', date: '28.10.2026', status: 'Aktywne do rejestracji' },
@@ -53,12 +53,13 @@ const IKP = {
     marta: {
       profiles: [
         { id: 'self', name: 'Marta Kowalska', role: 'Właściciel konta', pesel: '91071427765' },
-        { id: 'c1', name: 'Zofia Kowalska', role: 'Dziecko (9 lat)', pesel: '17281409124' },
-        { id: 'c2', name: 'Antoni Kowalski', role: 'Dziecko (5 lat)', pesel: '21241008291' }
+        { id: 'c1', name: 'Zofia Kowalska', role: 'Dziecko (6 lat)', pesel: '20221104567' },
+        { id: 'c2', name: 'Antoni Kowalski', role: 'Dziecko (12 lat)', pesel: '14250312345' },
+        { id: 'c3', name: 'Jan Kowalski', role: 'Dziecko (3 lata)', pesel: '23282009871' }
       ],
       recepty: [
         { id: 'rx_letrox', forProfile: 'self', drug: 'Letrox 75 µg (50 tabl.)', pack: '1 op.', pin: '7730', barcode: '910714277657730', doctor: 'dr n. med. Marek Szymański, endokrynolog', date: '20.10.2026', exp: '20.10.2027', refund: 'Ryczałt 3,20 zł', status: 'Aktywna (stały lek)' },
-        { id: 'rx_amoks_m', forProfile: 'c1', drug: 'Amoksiklav zawiesina 457 mg/5ml', pack: '70 ml', pin: '4821', barcode: '172814091244821', doctor: 'lek. med. Anna Jabłońska', date: '06.11.2026', exp: '06.12.2026', refund: 'Odpłatność 30% (9,80 zł)', status: 'Aktywna' }
+        { id: 'rx_amoks_m', forProfile: 'c1', drug: 'Amoksiklav zawiesina 457 mg/5ml', pack: '70 ml', pin: '4821', barcode: '202211045674821', doctor: 'lek. med. Anna Jabłońska', date: '06.11.2026', exp: '06.12.2026', refund: 'Odpłatność 30% (9,80 zł)', status: 'Aktywna' }
       ],
       skierowania: [
         { id: 'sk_usg', forProfile: 'self', name: 'Badanie USG jamy brzusznej', code: '7712', doctor: 'lek. med. Anna Jabłońska (POZ)', date: '28.10.2026', status: 'Aktywne do rejestracji' },
@@ -123,25 +124,27 @@ const IKP = {
 
     ewa: {
       profiles: [
-        { id: 'self', name: 'Ewa Nowak', role: 'Emerytka (Senior 65+)', pesel: '55081402941' }
+        { id: 'self', name: 'Ewa Nowak', role: 'Właścicielka konta', pesel: '69020312845' },
+        { id: 'm1', name: 'Halina Kamińska', role: 'Mama (84 lata), upoważnienie w IKP', pesel: '42011907703' }
       ],
       recepty: [
-        { id: 'rx_amlopin', forProfile: 'self', drug: 'Amlopin 5 mg (30 tabl.)', pack: '2 op.', pin: '5521', barcode: '550814029415521', doctor: 'lek. med. Janusz Kruk', date: '02.11.2026', exp: '02.11.2027', refund: 'Bezpłatny 65+ (0,00 zł z NFZ)', status: 'Aktywna (stały lek)' },
-        { id: 'rx_polpril', forProfile: 'self', drug: 'Polpril 5 mg (28 kaps.)', pack: '3 op.', pin: '5521', barcode: '550814029415521', doctor: 'lek. med. Janusz Kruk', date: '02.11.2026', exp: '02.11.2027', refund: 'Bezpłatny 65+ (0,00 zł z NFZ)', status: 'Aktywna (stały lek)' }
+        { id: 'rx_bisocard', forProfile: 'self', drug: 'Bisocard 5 mg (30 tabl.)', pack: '1 op.', pin: '3304', barcode: '690203128453304', doctor: 'lek. med. Janusz Kruk', date: '14.10.2026', exp: '14.01.2027', refund: 'Ryczałt 3,20 zł', status: 'Aktywna (stały lek)' },
+        { id: 'rx_polpril', forProfile: 'm1', drug: 'Polpril 5 mg (28 kaps.)', pack: '3 op.', pin: '9182', barcode: '420119077039182', doctor: 'lek. med. Janusz Kruk', date: '02.08.2026', exp: '02.11.2026', refund: 'Bezpłatny 65+ (0,00 zł z NFZ)', status: 'Aktywna (stały lek)' },
+        { id: 'rx_atoris', forProfile: 'm1', drug: 'Atoris 20 mg (30 tabl.)', pack: '3 op.', pin: '9182', barcode: '420119077039182', doctor: 'lek. med. Janusz Kruk', date: '02.08.2026', exp: '02.11.2026', refund: 'Bezpłatny 65+ (0,00 zł z NFZ)', status: 'Aktywna (stały lek)' }
       ],
       skierowania: [
-        { id: 'sk_reum', forProfile: 'self', name: 'Poradnia Reumatologiczna', code: '9102', doctor: 'Przychodnia Wiejska w Niemcach', date: '12.09.2026', status: 'Aktywne do rejestracji' },
+        { id: 'sk_reum', forProfile: 'self', name: 'Poradnia Reumatologiczna', code: '9102', doctor: 'Przychodnia Rodzinna Śródmieście, Lublin', date: '12.09.2026', status: 'Aktywne do rejestracji' },
         { id: 'sk_sanatorium', forProfile: 'self', name: 'Leczenie Uzdrowiskowe (Sanatorium NFZ)', code: 'SAN/2026/8129', doctor: 'Lubelski OW NFZ', date: '10.05.2026', status: 'W kolejce oczekujących (nr 412)' }
       ],
       ewus: {
-        status: 'Zielony (Ubezpieczenie emerytalne)',
-        insurance: 'Zgłoszenie do NFZ przez Zakład Ubezpieczeń Społecznych (emerytura)',
+        status: 'Zielony (Uprawniona do bezpłatnych świadczeń)',
+        insurance: 'Zgłoszenie do ZUS – umowa o pracę (Szkoła Podstawowa nr 24 w Lublinie)',
         branch: 'Lubelski Oddział Wojewódzki NFZ w Lublinie',
-        validUntil: 'Świadczenie emerytalne stałe'
+        validUntil: 'Bieżące zatrudnienie'
       },
       poz: {
-        clinic: 'Gminny Ośrodek Zdrowia w Niemcach',
-        address: 'ul. Różana 4, 21-025 Niemce k. Lublina',
+        clinic: 'Przychodnia Rodzinna Śródmieście',
+        address: 'ul. Narutowicza 40, 20-016 Lublin',
         phone: '81 756 12 12',
         doctor: 'lek. med. Janusz Kruk (lekarz rodzinny)',
         nurse: 'Bożena Mazur',
@@ -153,7 +156,7 @@ const IKP = {
         coverage: 'Kraje UE i EFTA'
       },
       zdarzenia: [
-        { date: '02.11.2026', name: 'Wizyta domowa i odnowienie recept stałych 65+', where: 'Ośrodek Zdrowia w Niemcach', cost: '120,00 zł ze środków NFZ' },
+        { date: '14.10.2026', name: 'Wizyta w POZ i odnowienie recepty na lek stały', where: 'Przychodnia Rodzinna Śródmieście', cost: '90,00 zł ze środków NFZ' },
         { date: '14.07.2026', name: 'Rehabilitacja narządu ruchu (10 zabiegów)', where: 'Centrum Rehabilitacji Lublin', cost: '480,00 zł ze środków NFZ' }
       ]
     }
@@ -168,8 +171,17 @@ function getIkpData() {
 // ----------------- GŁÓWNY MODAL INTERNETOWEGO KONTA PACJENTA -----------------
 function openIkpModal(tab = 'recepty') {
   if (typeof haptic === 'function') haptic('card');
-  const modal = document.getElementById('ikpModal');
-  if (!modal) return;
+  let modal = document.getElementById('ikpModal');
+  if (!modal) {   // w index.html nie ma tego elementu: bez tworzenia okno IKP nigdy się nie otwierało
+    modal = document.createElement('div');
+    modal.id = 'ikpModal';
+    modal.className = 'sheet-modal';
+    modal.setAttribute('role', 'dialog');
+    modal.setAttribute('aria-modal', 'true');
+    modal.setAttribute('aria-labelledby', 'ikpTitle');
+    (document.getElementById('app') || document.body).appendChild(modal);
+  }
+  const wasOpen = modal.classList.contains('open');
   const pData = getIkpData();
   const profiles = pData.profiles;
   const curProf = profiles.find(p => p.id === IKP.activeProfile) || profiles[0];
@@ -381,7 +393,7 @@ function openIkpModal(tab = 'recepty') {
           <div class="ifb-chips">
             ${profiles.map(pr => `
               <button type="button" class="chip-sm ${pr.id === curProf.id ? 'active' : ''}" onclick="IKP.switchProfile('${pr.id}', '${tab}')">
-                ${pr.id === 'self' ? '👤 ' : '👶 '}${pr.name}
+                ${/^c\d/.test(pr.id) ? '👶 ' : '👤 '}${pr.name}
               </button>
             `).join('')}
           </div>
@@ -404,7 +416,8 @@ function openIkpModal(tab = 'recepty') {
   `;
 
   modal.classList.add('open');
-  if (typeof openDialogFocus === 'function') openDialogFocus('ikpModal', modal);
+  // przełączenie zakładki lub pacjenta przerysowuje otwarte okno: nie nadpisujemy wtedy elementu, do którego wraca fokus
+  if (!wasOpen && typeof openDialogFocus === 'function') openDialogFocus('ikpModal', modal.querySelector('.modal-box') || modal, '.tx-close');
 }
 
 function closeIkpModal() {
@@ -470,7 +483,7 @@ function openEkuzModal() {
     m = document.createElement('div');
     m.id = 'ekuzModal';
     m.className = 'sheet-modal';
-    document.body.appendChild(m);
+    (document.getElementById('app') || document.body).appendChild(m);
   }
 
   const pData = getIkpData();

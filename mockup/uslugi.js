@@ -141,42 +141,42 @@ const USLUGI = {
     jan: {
       persona: 'Jan Wiśniewski',
       okreg: 'Okręg wyborczy nr 13 (Kraków)',
-      obwod: 'Obwód głosowania nr 42',
-      komisja: 'Szkoła Podstawowa nr 26 im. Andrzeja Struga',
-      adres: 'ul. Krasickiego 34, 30-501 Kraków (Dzielnica XIII Podgórze)',
+      obwod: 'Obwód głosowania nr 312',
+      komisja: 'Szkoła Podstawowa nr 34',
+      adres: 'ul. Wielicka 40, Kraków (Dzielnica XIII Podgórze)',
       dostepna: true,
       cechy: ['Lokal przystosowany dla osób z niepełnosprawnościami', 'Podjazd i winda na parter', 'Karty do głosowania z nakładką w alfabecie Braille’a', 'Pętla indukcyjna dla osób słabosłyszących'],
       spis: 'Ujęty z urzędu w stałym obwodzie głosowania'
     },
     marta: {
-      persona: 'Marta Kowalczyk',
+      persona: 'Marta Kowalska',
       okreg: 'Okręg wyborczy nr 19 (Warszawa)',
-      obwod: 'Obwód głosowania nr 105',
-      komisja: 'LXXV Liceum Ogólnokształcące im. Jana III Sobieskiego',
-      adres: 'ul. Czerniakowska 128, 00-453 Warszawa (Mokotów)',
+      obwod: 'Obwód głosowania nr 145',
+      komisja: 'Szkoła Podstawowa nr 98',
+      adres: 'ul. Kwiatowa 30, Warszawa (Mokotów)',
       dostepna: true,
       cechy: ['Lokal parterowy, brak barier architektonicznych', 'Wydzielone stanowisko z dobrym oświetleniem', 'Dostępny tłumacz PJM (Polski Język Migowy)'],
       spis: 'Ujęta z urzędu w stałym obwodzie głosowania'
     },
     ewa: {
-      persona: 'Ewa Dąbrowska',
+      persona: 'Ewa Nowak',
       okreg: 'Okręg wyborczy nr 6 (Lublin)',
-      obwod: 'Obwód głosowania nr 18',
-      komisja: 'Zespół Szkół Ogólnokształcących nr 4',
-      adres: 'ul. Tumidajskiego 6a, 20-247 Lublin (Kalinowszczyzna)',
+      obwod: 'Obwód głosowania nr 41',
+      komisja: 'Szkoła Podstawowa nr 24',
+      adres: 'ul. Lipowa 10, Lublin (Śródmieście)',
       dostepna: true,
       cechy: ['Podjazd dla wózków inwalidzkich', 'Nakładki Braille’a na karty'],
       spis: 'Ujęta z urzędu w stałym obwodzie głosowania'
     },
     kacper: {
-      persona: 'Kacper Lewandowski',
-      okreg: 'Okręg wyborczy nr 25 (Gdańsk)',
-      obwod: 'Obwód głosowania nr 31',
-      komisja: 'Szkoła Podstawowa nr 52 im. Kombatantów Polskich',
-      adres: 'ul. Kościuszki 111, 80-442 Gdańsk (Wrzeszcz Dolny)',
+      persona: 'Kacper Zieliński',
+      okreg: 'Okręg wyborczy nr 35 (Olsztyn)',
+      obwod: 'Obwód głosowania nr 7 w Elblągu',
+      komisja: 'Szkoła Podstawowa nr 11',
+      adres: 'ul. Ogólna 20, Elbląg',
       dostepna: true,
       cechy: ['Lokal dostępny z poziomu chodnika', 'Miejsca parkingowe dla osób uprawnionych'],
-      spis: 'Ujęty z urzędu w stałym obwodzie głosowania'
+      spis: 'Ujęty z urzędu w stałym obwodzie głosowania (zameldowanie na pobyt stały w Elblągu)'
     }
   }
 };

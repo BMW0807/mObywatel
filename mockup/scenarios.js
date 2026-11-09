@@ -1,10 +1,16 @@
 /* tryb skryptowy (bez serwera): zastrzec = w bankach (SDZ), zablokować = zawieszenie e-dowodu na 14 dni, unieważnić = na stałe */
 const OFF={zastrz:false,zab:false,uniew:false};
 const dPlus=n=>{const d=new Date();d.setDate(d.getDate()+n);return d.toLocaleDateString('pl-PL',{day:'2-digit',month:'2-digit',year:'numeric'})};
+/* dane bieżącej osoby (osoby.js): scenariusze były pisane dla Marty i pokazywały jej dowód, PESEL, auto i urząd każdej osobie */
+const SK=OS.skrypt||{},KTO=OS.imie+' '+OS.nazwisko,NR_DOW=OS.moje.nr_dowodu,PESEL_M=OS.moje.pesel.slice(0,6)+'•••'+OS.moje.pesel.slice(-2);
+const DOC=id=>DOCS.find(d=>d.id===id),KAFEL=k=>OS.tiles.find(t=>t.k===k),MARTA=OS.id==='marta';
+const AUTO_NR=(DOC('auto')||{}).plate||'',AUTO_TY=(OS.moje.pojazd||'')+(OS.moje.oc?', OC '+OS.moje.oc.split(',')[0]:'');
+/* nazwisko dziecka w formie żeńskiej albo męskiej (Kowalska/Kowalski, Nowak/Nowak) */
+const nazwiskoDziecka=fem=>{const n=OS.nazwisko;if(/(sk|ck|dzk)a$/.test(n))return fem?n:n.replace(/a$/,'i');if(/(sk|ck|dzk)i$/.test(n))return fem?n.replace(/i$/,'a'):n;return n};
 const S={
  async portfel(){
   await say('Przykro mi. Najpierw zadbajmy, żeby nikt nie użył Twoich dokumentów. Co było w portfelu?');
-  multi(['Dowód osobisty','Prawo jazdy','Karty płatnicze','Karta Dużej Rodziny'],async sel=>{
+  multi(['Dowód osobisty','Prawo jazdy','Karty płatnicze'].concat(DOC('kdr')?['Karta Dużej Rodziny']:[]),async sel=>{
    const dowod=sel.includes('Dowód osobisty'),pj=sel.includes('Prawo jazdy'),kdr=sel.includes('Karta Dużej Rodziny'),cards=sel.includes('Karty płatnicze');
    S.reszta={pj,kdr,cards};
    if(!dowod){await S.reszty();await S.koniec();return}
@@ -12,8 +18,19 @@ const S={
   });
  },
  async zastrzez(){
+  if(SK.e_dowod===0){   // dowód bez warstwy elektronicznej (sprzed 03.2019) można tylko zastrzec w bankach, nie zablokować
+   await say('Twój dowód nie ma warstwy elektronicznej, więc nie da się go zablokować. Zastrzegę go w bankach, a jeśli portfel się znajdzie, cofniesz to tutaj.');
+   await confirmCard({icon:'shield',title:'Zastrzeżenie dowodu',source:'System Dokumenty Zastrzeżone (ZBP)',rows:[['Dowód osobisty',NR_DOW],['Zastrzeżenie','w bankach']],note:'Banki i operatorzy od razu zobaczą, że dowód jest zastrzeżony. Jeśli go znajdziesz, cofniesz to tutaj.',label:'Zastrzeż',then:async()=>{
+    OFF.zastrz=true;
+    await result({title:'Dowód zastrzeżony',source:'godz. '+now(),rows:[['Zastrzeżenie','w bankach']]});
+    await S.reszty();
+    await say('Jeśli portfel się nie znajdzie, unieważnij dowód. Wtedy PESEL zastrzeże się sam.');
+    chips([{label:'Unieważnij dowód na stałe',go:S.uniewaznij},{label:'Na razie wystarczy',go:S.koniec2}]);
+   }});
+   return;
+  }
   await say('Zastrzegę dowód w bankach i zablokuję go na 14 dni. Jeśli portfel się znajdzie, odblokujesz go tutaj.');
-  await confirmCard({icon:'shield',title:'Zastrzeżenie i blokada dowodu',source:'System Dokumenty Zastrzeżone (ZBP), Rejestr Dowodów Osobistych',rows:[['Dowód osobisty','ABC 123456'],['Zastrzeżenie','w bankach'],['Blokada','do '+dPlus(14)]],note:'Banki i operatorzy od razu zobaczą, że dowód jest zastrzeżony. Zastrzeżenie i blokadę cofniesz tutaj. Jeśli w ciągu 14 dni nie odblokujesz dowodu, zostanie unieważniony.',label:'Zastrzeż i zablokuj',then:async()=>{
+  await confirmCard({icon:'shield',title:'Zastrzeżenie i blokada dowodu',source:'System Dokumenty Zastrzeżone (ZBP), Rejestr Dowodów Osobistych',rows:[['Dowód osobisty',NR_DOW],['Zastrzeżenie','w bankach'],['Blokada','do '+dPlus(14)]],note:'Banki i operatorzy od razu zobaczą, że dowód jest zastrzeżony. Zastrzeżenie i blokadę cofniesz tutaj. Jeśli w ciągu 14 dni nie odblokujesz dowodu, zostanie unieważniony.',label:'Zastrzeż i zablokuj',then:async()=>{
    OFF.zastrz=true;OFF.zab=true;
    await result({title:'Dowód zastrzeżony i zablokowany',source:'godz. '+now(),rows:[['Zastrzeżenie','w bankach'],['Blokada','do '+dPlus(14)]]});
    await S.reszty();
@@ -36,10 +53,10 @@ const S={
   await say('Blokada nie zastrzega PESEL. Chcesz zastrzec go osobno?');
   chips([{label:'Zastrzeż PESEL',go:()=>S.pesel(S.koniec2)},{label:'Unieważnij dowód na stałe',go:S.uniewaznij},{label:'Na razie wystarczy',go:S.koniec2}]);
  },
- async koniec2(){await say('Gotowe. Jeśli portfel się nie znajdzie, unieważnię dowód i złożysz wniosek o nowy. Jeśli się znajdzie, napisz „znalazłam portfel”.')},
+ async koniec2(){await say('Gotowe. Jeśli portfel się nie znajdzie, unieważnię dowód i złożysz wniosek o nowy. Jeśli się znajdzie, napisz „'+rodz('znalazłam','znalazłem')+' portfel”.')},
  async uniewaznij(){
   await say('Unieważnię dowód na stałe. Tego nie da się cofnąć, a PESEL zastrzeże się wtedy sam.');
-  await confirmCard({icon:'shield',title:'Unieważnienie dowodu',source:'Rejestr Dowodów Osobistych',rows:[['Dowód osobisty','ABC 123456'],['Unieważnienie','na stałe']],note:'Unieważnienia nie da się cofnąć, nawet gdy dokument się znajdzie. Twój PESEL zostanie zastrzeżony automatycznie. Zaświadczenie o utracie przyjdzie do skrzynki e-Doręczeń, ważne do 2 miesięcy, ale nie jest dokumentem tożsamości.',label:'Unieważnij',then:async()=>{
+  await confirmCard({icon:'shield',title:'Unieważnienie dowodu',source:'Rejestr Dowodów Osobistych',rows:[['Dowód osobisty',NR_DOW],['Unieważnienie','na stałe']],note:'Unieważnienia nie da się cofnąć, nawet gdy dokument się znajdzie. Twój PESEL zostanie zastrzeżony automatycznie. Zaświadczenie o utracie przyjdzie do skrzynki e-Doręczeń, ważne do 2 miesięcy, ale nie jest dokumentem tożsamości.',label:'Unieważnij',then:async()=>{
    OFF.uniew=true;OFF.zab=false;
    await result({title:'Dowód unieważniony',source:'Rejestr Dowodów Osobistych, godz. '+now(),rows:[['Dowód osobisty','unieważniony'],['PESEL','zastrzeżony z urzędu']]});
    await say('Jeśli ktoś go ukradł, zgłoś kradzież na policji.');
@@ -49,7 +66,7 @@ const S={
  async znaleziony(){
   if(OFF.uniew){await say('Ten dowód jest już unieważniony i nie da się go przywrócić. Oddaj go w dowolnym urzędzie gminy. Nowy wniosek złożysz tutaj.');chips([{label:'Wniosek o nowy dowód',go:()=>S.renew('utrata')}]);return}
   if(!OFF.zastrz&&!OFF.zab){await say('Świetnie. Dowód nie był zastrzeżony ani zablokowany, więc nic nie trzeba cofać.');return}
-  await confirmCard({icon:'shield',title:'Odblokowanie dowodu',source:'System Dokumenty Zastrzeżone, Rejestr Dowodów Osobistych',rows:[['Dowód osobisty','ABC 123456']].concat(OFF.zastrz?[['Zastrzeżenie w bankach','cofnę']]:[]).concat(OFF.zab?[['Blokada','cofnę']]:[]),note:'Cofniesz tylko zastrzeżenie zrobione w aplikacji. Zastrzeżenie z banku cofniesz w banku.',label:'Odblokuj dowód',then:async()=>{
+  await confirmCard({icon:'shield',title:'Odblokowanie dowodu',source:'System Dokumenty Zastrzeżone, Rejestr Dowodów Osobistych',rows:[['Dowód osobisty',NR_DOW]].concat(OFF.zastrz?[['Zastrzeżenie w bankach','cofnę']]:[]).concat(OFF.zab?[['Blokada','cofnę']]:[]),note:'Cofniesz tylko zastrzeżenie zrobione w aplikacji. Zastrzeżenie z banku cofniesz w banku.',label:'Odblokuj dowód',then:async()=>{
    OFF.zastrz=false;OFF.zab=false;
    await result({title:'Dowód odblokowany',source:'godz. '+now(),rows:[['Dowód osobisty','ważny, możesz go używać']]});
   }});
@@ -57,12 +74,13 @@ const S={
  async cards(after){await say((after?'Zostały karty płatnicze. ':'')+'Kart nie zastrzegę za Ciebie, zrobi to bank. Najszybciej w aplikacji banku albo pod numerem <b>+48 828 828 828</b>, jeśli Twój bank jest w systemie Zastrzegam.pl. Zastrzeżonej karty nie da się odblokować, bank wyda nową.')},
  async pesel(next){
   if(OFF.uniew){await say('Twój PESEL jest już zastrzeżony z urzędu, bo dowód został unieważniony.');return}
-  await confirmCard({icon:'shield',title:'Zastrzeżenie numeru PESEL',source:'Rejestr Zastrzeżeń PESEL',rows:[['PESEL','910714•••65'],['Od','teraz'],['Do','do odwołania']],note:'Bank czy firma pożyczkowa muszą sprawdzić zastrzeżenie przed udzieleniem kredytu. Do lekarza, apteki czy urzędu pójdziesz jak dotąd. Czasowe odblokowanie zrobisz tutaj w kilka sekund.',label:'Zastrzeż PESEL',then:async()=>{if(typeof MobStore!=='undefined')MobStore.setPeselBlocked(true);await result({title:'PESEL zastrzeżony',source:'Rejestr Zastrzeżeń PESEL',rows:[['Status','zastrzeżony od '+now()],['Historia sprawdzeń','zobaczysz tutaj, kto i kiedy sprawdzał']]});if(typeof next==='function')await next()}});
+  if(typeof MobStore!=='undefined'&&MobStore.isPeselBlocked()){await say('Twój PESEL jest już zastrzeżony. Czasowe odblokowanie zrobisz w usłudze Zastrzeż PESEL.');if(typeof next==='function')await next();return}
+  await confirmCard({icon:'shield',title:'Zastrzeżenie numeru PESEL',source:'Rejestr Zastrzeżeń PESEL',rows:[['PESEL',PESEL_M],['Od','teraz'],['Do','do odwołania']],note:'Bank czy firma pożyczkowa muszą sprawdzić zastrzeżenie przed udzieleniem kredytu. Do lekarza, apteki czy urzędu pójdziesz jak dotąd. Czasowe odblokowanie zrobisz tutaj w kilka sekund.',label:'Zastrzeż PESEL',then:async()=>{if(typeof MobStore!=='undefined')MobStore.setPeselBlocked(true);await result({title:'PESEL zastrzeżony',source:'Rejestr Zastrzeżeń PESEL',rows:[['Status','zastrzeżony od '+now()],['Historia sprawdzeń','zobaczysz tutaj, kto i kiedy sprawdzał']]});if(typeof next==='function')await next()}});
  },
  async renew(powod){
   const pw=powod==='utrata'?'utrata dowodu':'kończy się ważność';
   await say('Wniosek wyślę stąd, ale w ciągu 30 dni musisz pójść do urzędu na odciski palców. Dowód odbierzesz tam osobiście.');
-  await confirmCard({icon:'id',title:'Wniosek o dowód osobisty',source:'Rejestr PESEL, Rejestr Dowodów Osobistych',rows:[['Wnioskodawczyni','Marta Kowalska'],['Powód',pw],['Zdjęcie','z aparatu, urząd może poprosić o inne'],['Urząd','Urząd Dzielnicy Mokotów'],['Wizyta w urzędzie','do '+dPlus(30)+', odciski palców i podpis'],['Opłata','bezpłatnie']],label:'Podpisz i wyślij',then:async()=>{
+  await confirmCard({icon:'id',title:'Wniosek o dowód osobisty',source:'Rejestr PESEL, Rejestr Dowodów Osobistych',rows:[[rodz('Wnioskodawczyni','Wnioskodawca'),KTO],['Powód',pw],['Zdjęcie','z aparatu, urząd może poprosić o inne'],['Urząd',SK.urzad||'urząd gminy'],['Wizyta w urzędzie','do '+dPlus(30)+', odciski palców i podpis'],['Opłata','bezpłatnie']],label:'Podpisz i wyślij',then:async()=>{
    await result({title:'Wniosek złożony',source:'Twoje sprawy',rows:[['Numer wniosku','DO/2026/104 552'],['Teraz','idź do urzędu do '+dPlus(30).slice(0,5)+', odciski palców i podpis'],['Gotowy','do 30 dni od wizyty'],['Odbiór','osobiście w tym samym urzędzie']]});
    await say('Przypomnieć Ci o wizycie w urzędzie?');
    chips([{label:'Przypomnij o wizycie',go:()=>result({title:'Przypomnienie ustawione',rows:[['Kiedy',dPlus(23)+', 9:00']]})},{label:'Na razie nie'}]);
@@ -77,16 +95,16 @@ const S={
   await say('Dobrze. mStłuczka zadziała, jeśli oboje macie mObywatela, oba auta mają polską rejestrację i zgadzacie się, kto zawinił. Pokażę Twój znak, a drugi kierowca zeskanuje go w swoim mObywatelu i przekaże Ci swoje dane.');
   await sleep(500);przyjmijFlow({cel:'mstluczka'}).then(async()=>{
    await say('Mam dane obu stron z CEPiK i rejestru PESEL.');
-   await info({icon:'car',title:'Uczestnicy zdarzenia',source:'CEPiK, rejestr PESEL, lokalizacja: ul. Puławska 145, Warszawa',rows:[['Ty','Toyota Corolla, WX 4521K, OC Warta'],['Drugi kierowca','Piotr Nowak, Skoda Octavia, WPI 22R31, OC PZU']]});
+   await info({icon:'car',title:'Uczestnicy zdarzenia',source:'CEPiK, rejestr PESEL, lokalizacja z GPS',rows:[['Ty',AUTO_TY],['Drugi kierowca','Piotr Nowak, Skoda Octavia, WPI 22R31, OC PZU']]});
    await say('Kto spowodował zdarzenie?');
-   chips([{label:'Drugi kierowca',go:()=>S.stl3('Piotr Nowak, WPI 22R31',true)},{label:'Ja',go:()=>S.stl3('Marta Kowalska, WX 4521K',false)},{label:'Nie jesteśmy zgodni',go:()=>say('Wtedy mStłuczka nie zadziała. Wezwij policję pod numer <b>112</b>. Dane obu pojazdów mam zapisane, przekażę je funkcjonariuszom.')}]);
+   chips([{label:'Drugi kierowca',go:()=>S.stl3('Piotr Nowak, WPI 22R31',true)},{label:'Ja',go:()=>S.stl3(KTO+(AUTO_NR?', '+AUTO_NR:''),false)},{label:'Nie jesteśmy zgodni',go:()=>say('Wtedy mStłuczka nie zadziała. Wezwij policję pod numer <b>112</b>. Dane obu pojazdów mam zapisane, przekażę je funkcjonariuszom.')}]);
   });
  },
  async stl3(sprawca,poszkodowana){
   await say('Co się stało? Wybierz albo opisz własnymi słowami.');
   const fin=async opis=>{await say('Dodaj zdjęcia uszkodzeń, dołączę je do oświadczenia.');
    chips([{label:'Dodaj 3 zdjęcia',say:'📷 3 zdjęcia',go:async()=>{
-    await confirmCard({icon:'doc',title:'Oświadczenie o zdarzeniu drogowym',source:'mStłuczka, CEPiK, rejestr PESEL',rows:[['Data',today()+', '+now()],['Miejsce','ul. Puławska 145, Warszawa'],['Sprawca',sprawca],['Okoliczności',opis],['Zdjęcia','3'],['Potwierdzenie','obie strony w mObywatelu']],note:'Dostaniecie oboje PDF z pieczęcią elektroniczną ministra cyfryzacji.',label:'Potwierdź oświadczenie',then:async()=>{
+    await confirmCard({icon:'doc',title:'Oświadczenie o zdarzeniu drogowym',source:'mStłuczka, CEPiK, rejestr PESEL',rows:[['Data',today()+', '+now()],['Miejsce','parking, lokalizacja z GPS'],['Sprawca',sprawca],['Okoliczności',opis],['Zdjęcia','3'],['Potwierdzenie','obie strony w mObywatelu']],note:'Dostaniecie oboje PDF z pieczęcią elektroniczną ministra cyfryzacji.',label:'Potwierdź oświadczenie',then:async()=>{
      await result({title:'Oświadczenie potwierdzone',source:'Zapisane w mStłuczce',rows:[['Numer','mS/2026/88 410'],['PDF','u obu kierowców']]});
      if(!poszkodowana){await say('Szkodę zgłosi drugi kierowca do Twojego ubezpieczyciela. Oświadczenie już ma.');return}
      await say('Zgłosić szkodę do ubezpieczyciela sprawcy? Przekażę oświadczenie i zdjęcia.');
@@ -112,32 +130,33 @@ const S={
   await say('Zapytaj sprzedającego o różnicę w przebiegu. Coś jeszcze?');
   chips([{label:'Ile zapłacę PCC?',go:()=>say('Podatek PCC to 2% wartości rynkowej auta. Przy wartości 62 000 zł wyjdzie <b>1 240 zł</b>, płatne w 14 dni od umowy. Nie płacisz go, gdy kupujesz od firmy na fakturę. PCC-3 złożę tutaj, w e-Urzędzie Skarbowym.')},
    {label:'Przygotuj umowę kupna-sprzedaży',go:async()=>{await say('Przygotuję umowę. Podpiszecie ją oboje w mObywatelu, podpisem zaufanym albo osobistym. Potem złożysz tutaj PCC-3, a auto zarejestrujesz w wydziale komunikacji w ciągu 30 dni. Tablice i dowód rejestracyjny odbierzesz w urzędzie.');
-    await confirmCard({icon:'doc',title:'Umowa kupna-sprzedaży pojazdu',source:'CEPiK, rejestr PESEL',rows:[['Pojazd','VW Golf, WE 4K221'],['Sprzedający','Marek Zieliński'],['Kupująca','Marta Kowalska'],['Cena','62 000 zł'],['Podpis','podpis zaufany lub osobisty, Twój i sprzedającego']],label:'Wyślij do podpisu',then:()=>result({title:'Umowa wysłana do sprzedającego',source:'Czeka na podpis sprzedającego',rows:[['Dalej','PCC-3 w 14 dni, tutaj'],['Rejestracja','w wydziale komunikacji w 30 dni']]})})}}]);
+    await confirmCard({icon:'doc',title:'Umowa kupna-sprzedaży pojazdu',source:'CEPiK, rejestr PESEL',rows:[['Pojazd','VW Golf, WE 4K221'],['Sprzedający','Marek Zieliński'],[rodz('Kupująca','Kupujący'),KTO],['Cena','62 000 zł'],['Podpis','podpis zaufany lub osobisty, Twój i sprzedającego']],label:'Wyślij do podpisu',then:()=>result({title:'Umowa wysłana do sprzedającego',source:'Czeka na podpis sprzedającego',rows:[['Dalej','PCC-3 w 14 dni, tutaj'],['Rejestracja','w wydziale komunikacji w 30 dni']]})})}}]);
  },
  async dziecko(){
+  if(OS.plec==='M'&&!SK.drugi_rodzic){await say('Gratulacje! Ojciec, który nie jest mężem mamy dziecka, zgłosi urodzenie online dopiero po uznaniu ojcostwa w USC. Zgłoszenie może też wysłać mama w swoim mObywatelu.');return}
   await say('Gratulacje! Na zgłoszenie urodzenia masz 21 dni od wystawienia karty urodzenia. Zrobimy to teraz. Jak dziecko będzie miało na imię?');
-  chips([{label:'Helena',go:()=>S.dz2('Helena')},{label:'Ignacy',go:()=>S.dz2('Ignacy')},{label:'Wpiszę sama',go:async()=>{await say('Napisz imię poniżej. Najwyżej dwa imiona, w pełnej formie, nie zdrobnienie.');pending=t=>S.dz2(t.trim());input.focus()}}]);
+  chips([{label:'Helena',go:()=>S.dz2('Helena')},{label:'Ignacy',go:()=>S.dz2('Ignacy')},{label:rodz('Wpiszę sama','Wpiszę sam'),go:async()=>{await say('Napisz imię poniżej. Najwyżej dwa imiona, w pełnej formie, nie zdrobnienie.');pending=t=>S.dz2(t.trim());input.focus()}}]);
   pending=t=>S.dz2(t.trim());
  },
  async dz2(name){
   const nm=name.charAt(0).toUpperCase()+name.slice(1),fem=/a$/i.test(nm);
   await say('Sprawdź dane. Szpital przekazuje kartę urodzenia prosto do USC.');
-  await confirmCard({icon:'baby',title:'Zgłoszenie urodzenia dziecka',source:'Rejestr PESEL, USC',rows:[['Dziecko',nm+' '+(fem?'Kowalska':'Kowalski')],['Data urodzenia','16.10.2026'],['Miejsce','Szpital Bielański, Warszawa'],['Drugi rodzic','Tomasz Kowalski'],['Zameldowanie','ul. Kwiatowa 12, Warszawa'],['Odpis aktu','elektronicznie, do skrzynki'],['Termin','21 dni od wystawienia karty urodzenia'],['Opłata','bezpłatnie']],label:'Podpisz i wyślij',then:async()=>{
-   await result({title:'Zgłoszenie wysłane do USC',source:'Twoje sprawy',rows:[['Status','zgłoszenie wysłane do USC'],['PESEL i akt','zwykle następnego dnia roboczego'],['Odpis skrócony aktu','bezpłatnie, do Twojej skrzynki'],['Ubezpieczenie zdrowotne','zgłosi pracodawca (ZUS ZCNA), przekaż mu PESEL dziecka w ciągu 7 dni']]});
+  await confirmCard({icon:'baby',title:'Zgłoszenie urodzenia dziecka',source:'Rejestr PESEL, USC',rows:[['Dziecko',nm+' '+nazwiskoDziecka(fem)],['Data urodzenia','16.10.2026'],['Miejsce',SK.szpital||'szpital'],['Drugi rodzic',SK.drugi_rodzic||'brak'],['Zameldowanie',OS.moje.adres],['Odpis aktu','elektronicznie, do skrzynki'],['Termin','21 dni od wystawienia karty urodzenia'],['Opłata','bezpłatnie']],label:'Podpisz i wyślij',then:async()=>{
+   await result({title:'Zgłoszenie wysłane do USC',source:'Twoje sprawy',rows:[['Status','zgłoszenie wysłane do USC'],['PESEL i akt','zwykle następnego dnia roboczego'],['Odpis skrócony aktu','bezpłatnie, do Twojej skrzynki'],['Ubezpieczenie zdrowotne',DOC('firma')?'zgłosisz w eZUS (ZUS ZCNA) w ciągu 7 dni':'zgłosi pracodawca (ZUS ZCNA), przekaż mu PESEL dziecka w ciągu 7 dni']]});
    await say('Mogę też złożyć wniosek o 800+ i o Kartę Dużej Rodziny dla '+(fem?'córki':'syna')+'.');
-   chips([{label:'Złóż wniosek o 800+',go:()=>confirmCard({icon:'coin',title:'Wniosek o świadczenie 800+',source:'ZUS, rejestr PESEL',rows:[['Dziecko',nm],['Kwota','800 zł miesięcznie'],['Od kiedy','od dnia urodzenia, jeśli wyślesz w ciągu 3 miesięcy'],['Okres','do 31.05.2027, potem nowy wniosek od 1 lutego'],['Konto do wypłaty','PL •• 4412']],label:'Wyślij do ZUS',then:()=>result({title:'Wniosek wysłany do ZUS',rows:[['Odpowiedź','na Twoje konto w eZUS, zwykle w ciągu miesiąca'],['Wypłata','z wyrównaniem od dnia urodzenia']]})})},
-    {label:'Karta Dużej Rodziny',go:()=>confirmCard({icon:'doc',title:'Wniosek o Kartę Dużej Rodziny',source:'Emp@tia, Urząd m.st. Warszawy',rows:[['Dla',nm],['Rodzaj','karta w mObywatelu'],['Karty dzieci w Twoim mObywatelu','tak'],['Opłata','bezpłatnie']],label:'Podpisz i wyślij',then:()=>result({title:'Wniosek wysłany do gminy',source:'Emp@tia',rows:[['Karta dziecka','w portfelu po przyznaniu przez gminę'],['Karta plastikowa','odbiór w urzędzie, dostaniesz SMS']]})})}]);
+   chips([{label:'Złóż wniosek o 800+',go:()=>confirmCard({icon:'coin',title:'Wniosek o świadczenie 800+',source:'ZUS, rejestr PESEL',rows:[['Dziecko',nm],['Kwota','800 zł miesięcznie'],['Od kiedy','od dnia urodzenia, jeśli wyślesz w ciągu 3 miesięcy'],['Okres','do 31.05.2027, potem nowy wniosek od 1 lutego'],['Konto do wypłaty',SK.konto||'']],label:'Wyślij do ZUS',then:()=>result({title:'Wniosek wysłany do ZUS',rows:[['Odpowiedź','na Twoje konto w eZUS, zwykle w ciągu miesiąca'],['Wypłata','z wyrównaniem od dnia urodzenia']]})})},
+    {label:'Karta Dużej Rodziny',go:()=>confirmCard({icon:'doc',title:'Wniosek o Kartę Dużej Rodziny',source:'Emp@tia, '+(SK.gmina||'urząd gminy'),rows:[['Dla',nm],['Rodzaj','karta w mObywatelu'],['Karty dzieci w Twoim mObywatelu','tak'],['Opłata','bezpłatnie']],label:'Podpisz i wyślij',then:()=>result({title:'Wniosek wysłany do gminy',source:'Emp@tia',rows:[['Karta dziecka','w portfelu po przyznaniu przez gminę'],['Karta plastikowa','odbiór w urzędzie, dostaniesz SMS']]})})}]);
   }});
  },
  async todo(){
   await say('Oto, co czeka na Ciebie:');
+  // sprawy z kafelków tej osoby (wcześniej trzy sprawy Marty u każdego)
   const c=await card(`<div class="ui list">${hd('bell','Do załatwienia')}
-   <button class="it" data-k="letter"><span class="pip"></span><span class="x"><b>Pismo z Urzędu Skarbowego</b><small>Odpowiedź do 26.10</small></span><span class="go">Otwórz</span></button>
-   <button class="it" data-k="oc"><span class="pip"></span><span class="x"><b>Koniec okresu OC Toyoty 29.10</b><small>Za 11 dni</small></span><span class="go">Sprawdź</span></button>
-   <button class="it" data-k="pay"><span class="pip"></span><span class="x"><b>Podatek od nieruchomości</b><small>210 zł do 16.11</small></span><span class="go">Zapłać</span></button>${srcH('Skrzynka, ePłatności, CEPiK')}</div>`);
-  c.querySelectorAll('.it').forEach(b=>b.onclick=()=>act(()=>{addUser(b.querySelector('b').textContent);S[b.dataset.k]()}));
+   ${OS.tiles.map((t,i)=>`<button class="it" data-i="${i}"><span class="pip"></span><span class="x"><b>${t.h}</b><small>${t.d}</small></span><span class="go">${t.k==='pay'?'Zapłać':t.k==='letter'?'Otwórz':'Sprawdź'}</span></button>`).join('')}${srcH('Skrzynka, ePłatności, CEPiK')}</div>`);
+  c.querySelectorAll('.it').forEach(b=>b.onclick=()=>act(()=>{const t=OS.tiles[+b.dataset.i];addUser(t.h);(S[t.k]&&t.k!=='todo'?S[t.k]:S.kafel)(t)}));
  },
- async letter(){
+ async letter(t){
+  if(!MARTA||(t&&t!==KAFEL('letter')))return S.kafel(t||KAFEL('letter'));
   await info({icon:'mail',title:'Wezwanie do złożenia wyjaśnień',source:'e-Doręczenia, Urząd Skarbowy Warszawa-Mokotów, odebrane 17.10',body:'Urząd prosi o udokumentowanie ulgi termomodernizacyjnej z zeznania PIT-37 za 2025 r. za dom jednorodzinny przy ul. Kwiatowej 12. Wymagane są faktury za materiały i usługi. Termin: <b>7 dni</b> od odebrania. 24.10 to sobota, więc masz czas do poniedziałku 26.10.'});
   await say('W Twoich plikach są 3 faktury za docieplenie z 2025 r. Przygotować odpowiedź z załącznikami?');
   chips([{label:'Przygotuj odpowiedź',go:async()=>{
@@ -145,12 +164,14 @@ const S={
    await confirmCard({icon:'mail',title:'Wysyłka przez e-Doręczenia',source:'Do: US Warszawa-Mokotów',rows:[['Załączniki','3 faktury (PDF)'],['Podpis','podpis zaufany']],label:'Podpisz i wyślij',then:()=>result({title:'Pismo doręczone',source:'e-Doręczenia, dowód otrzymania',rows:[['Dowód otrzymania','godz. '+now()],['Sprawa','w Twoich sprawach']]})});
   }},{label:'Później'}]);
  },
- async oc(){
+ async oc(t){
+  if(!MARTA||(t&&t!==KAFEL('oc')))return S.kafel(t||KAFEL('oc'));
   await info({icon:'car',title:'OC: Toyota Corolla, WX 4521K',source:'UFG, CEPiK',rows:[['Ubezpieczyciel','Warta'],['Koniec okresu','29.10.2026']],note:'Umowa OC zwykle przedłuża się sama na kolejny rok, jeśli jej nie wypowiesz. Sprawdź to u ubezpieczyciela.'});
   await say('Przypomnieć Ci kilka dni przed terminem?');
   chips([{label:'Przypomnij 25.10',go:()=>result({title:'Przypomnienie ustawione',rows:[['Kiedy','25.10.2026, 9:00']]})},{label:'Nie trzeba'}]);
  },
- async pay(){
+ async pay(t){
+  if(!MARTA||(t&&t!==KAFEL('pay')))return S.kafel(t||KAFEL('pay'));
   const afterPayment=()=>{if(typeof MobStore!=='undefined')MobStore.setTaxPaid(true);return result({title:'Zapłacono',source:'ePłatności',rows:[['Kwota','210,00 zł'],['Potwierdzenie','EP/2026/7 214 088'],['Prowizja','brak']]})};
   await confirmCard({icon:'coin',title:'Podatek od nieruchomości',source:'ePłatności, Urząd m.st. Warszawy',rows:[['Rata','IV, 2026'],['Kwota','210,00 zł'],['Termin','16.11.2026'],['Płatność','Apple Pay']],label:'Zapłać 210 zł',then:afterPayment});
  },
@@ -161,39 +182,49 @@ const S={
  },
  async sms2(){
   await info({icon:'alert',tone:'warn',title:'To oszustwo (phishing)',source:'Lista Ostrzeżeń CERT Polska',rows:[['Domena','poczta-dostawa24.top'],['Zarejestrowana','3 dni temu'],['Na Liście Ostrzeżeń','tak, od wczoraj'],['Wzorzec','fałszywa dopłata do przesyłki']]});
-  await say('Nie otwieraj linku. Czy podałaś na tej stronie dane karty albo logowania do banku?');
-  chips([{label:'Nie, tylko przeczytałam',go:S.cert},{label:'Tak, podałam dane karty',go:async()=>{await S.cards();await S.cert()}}]);
+  await say('Nie otwieraj linku. Czy '+rodz('podałaś','podałeś')+' na tej stronie dane karty albo logowania do banku?');
+  chips([{label:rodz('Nie, tylko przeczytałam','Nie, tylko przeczytałem'),go:S.cert},{label:rodz('Tak, podałam dane karty','Tak, podałem dane karty'),go:async()=>{await S.cards();await S.cert()}}]);
  },
  async cert(){
   await confirmCard({icon:'shield',title:'Zgłoszenie do CERT Polska',source:'Bezpiecznie w sieci',rows:[['Kategoria','Złośliwa strona internetowa'],['Adres','poczta-dostawa24.top'],['Skąd','link z SMS-a']],label:'Wyślij zgłoszenie',then:async()=>{await result({title:'Zgłoszenie wysłane',source:'Bezpiecznie w sieci',rows:[['Status','przekazane do CERT Polska'],['SMS','prześlij go jeszcze na bezpłatny numer 8080']]});await say('Zgłosiłem stronę do CERT Polska. Prześlij jeszcze tego SMS-a na bezpłatny numer <b>8080</b>, wtedy operatorzy szybciej zablokują nadawcę.')}});
  },
  async punkty(){
-  await info({icon:'clock',title:'Punkty karne: 5',source:'CEPiK',rows:[['Wykroczenie','prędkość +21–25 km/h, 12.05.2026'],['Wygasają','12.05.2027'],['Limit','24 pkt']],note:'Punkty wygasają po roku od opłacenia mandatu.'});
+  if(MARTA){await info({icon:'clock',title:'Punkty karne: 5',source:'CEPiK',rows:[['Wykroczenie','prędkość +21–25 km/h, 12.05.2026'],['Wygasają','12.05.2027'],['Limit','24 pkt']],note:'Punkty wygasają po roku od opłacenia mandatu.'});return}
+  const pj=DOC('pj');
+  if(!pj){await say('Nie masz prawa jazdy w portfelu, więc nie ma tu punktów karnych.');return}
+  const n=+((pj.f.find(x=>/Punkt/.test(x[0]))||[])[1]||0);
+  const rows=(n?[]:[['Wykroczenia','brak']]).concat([['Punkty karne',String(n)],['Limit',((pj.rows.find(r=>/Limit/.test(r[0]))||[])[1])||'24 pkt']],pj.rows.filter(r=>/Okres próbny/.test(r[0])));
+  await info({icon:'clock',title:'Punkty karne: '+n,source:'CEPiK',rows,note:'Punkty wygasają po roku od opłacenia mandatu.'});
  },
  async docShow(id){
   const d=DOCS.find(x=>x.id===id)||DOCS[0];
   const c=await card(`<div class="ui"><div style="padding:12px 12px 0"><div class="bigcard" style="background-image:url(${d.img});box-shadow:none">${faceHTML(d)}</div></div><div class="rows" style="padding-top:6px">${rowsH(d.rows)}</div><div class="actions"><button class="btn primary">Potwierdź swoje dane</button></div></div>`);
   c.querySelector('.btn').onclick=()=>qrFlow({doc:id});
  },
- async dowodWaz(){await say('Twój dowód jest ważny do <b>20.05.2031</b>. To e-dowód z warstwą elektroniczną. Na nowy wniosek masz jeszcze czas, przypomnę Ci o nim wcześniej.');chips([{label:'Przypomnij w marcu 2031',go:()=>result({title:'Przypomnienie ustawione',rows:[['Kiedy','20.03.2031, 9:00']]})},{label:'Nie trzeba'}])},
- async kdr(){await say('Z Kartą Dużej Rodziny masz ulgę 37% na pociągi (49% na bilet miesięczny), bezpłatny wstęp do parków narodowych i zniżki u partnerów. Pokazać partnerów w Twojej okolicy?');chips([{label:'Pokaż w okolicy',go:()=>info({icon:'doc',title:'Partnerzy KDR w pobliżu',source:'Wyszukiwarka partnerów KDR (empatia.gov.pl)',rows:[['Muzeum w okolicy','zniżka na bilet rodzinny'],['Basen miejski','zniżka na wejście'],['Orlen','8 gr/l, paliwa premium 10 gr/l']]})}])},
+ async dowodWaz(){
+  // data ważności dowodu tej osoby (wcześniej 20.05.2031 u wszystkich, także u Ewy, której dowód traci ważność 05.12.2026)
+  const m=(OS.moje.dowod||'').match(/(\d{2})\.(\d{2})\.(\d{4})/);
+  if(!m){await say('Nie widzę daty ważności Twojego dowodu.');return}
+  const dni=Math.round((new Date(+m[3],+m[2]-1,+m[1])-new Date())/864e5);
+  if(dni<120){await say('Twój dowód traci ważność <b>'+m[0]+'</b>. Złóż wniosek o nowy już teraz: wyślesz go stąd, a w ciągu 30 dni pójdziesz do urzędu na odciski palców.');chips([{label:'Złóż wniosek o nowy dowód',go:()=>S.renew('uplyw')},{label:'Później'}]);return}
+  const MIES=['styczniu','lutym','marcu','kwietniu','maju','czerwcu','lipcu','sierpniu','wrześniu','październiku','listopadzie','grudniu'];
+  const p=new Date(+m[3],+m[2]-3,+m[1]),pd=String(p.getDate()).padStart(2,'0')+'.'+String(p.getMonth()+1).padStart(2,'0')+'.'+p.getFullYear();
+  await say('Twój dowód jest ważny do <b>'+m[0]+'</b>. '+(SK.e_dowod===0?'To dowód bez warstwy elektronicznej.':'To e-dowód z warstwą elektroniczną.')+' Na nowy wniosek masz jeszcze czas, przypomnę Ci o nim wcześniej.');
+  chips([{label:'Przypomnij w '+MIES[p.getMonth()]+' '+p.getFullYear(),go:()=>result({title:'Przypomnienie ustawione',rows:[['Kiedy',pd+', 9:00']]})},{label:'Nie trzeba'}]);
+ },
+ async kdr(){if(!DOC('kdr')){await say('Nie masz Karty Dużej Rodziny. Przysługuje rodzicom co najmniej trojga dzieci, wniosek złożysz na empatia.gov.pl albo w urzędzie gminy.');return}await say('Z Kartą Dużej Rodziny masz ulgę 37% na pociągi (49% na bilet miesięczny), bezpłatny wstęp do parków narodowych i zniżki u partnerów. Pokazać partnerów w Twojej okolicy?');chips([{label:'Pokaż w okolicy',go:()=>info({icon:'doc',title:'Partnerzy KDR w pobliżu',source:'Wyszukiwarka partnerów KDR (empatia.gov.pl)',rows:[['Muzeum w okolicy','zniżka na bilet rodzinny'],['Basen miejski','zniżka na wejście'],['Orlen','8 gr/l, paliwa premium 10 gr/l']]})}])},
  async ikp(){
   await info({
    icon: 'doc',
    title: 'Internetowe Konto Pacjenta (IKP)',
    source: 'Ministerstwo Zdrowia / NFZ',
-   rows: [
-    ['e-Recepty', '2 aktywne do wykupienia (Amoksiklav, Paracetamol)'],
-    ['e-Skierowania', '1 ważne (Badanie USG jamy brzusznej, kod 7712)'],
-    ['Status eWUŚ', 'Zielony – prawo do bezpłatnych świadczeń NFZ aktywne'],
-    ['Karta DiLO', 'Szybka terapia onkologiczna NFZ aktywna']
-   ]
+   rows: (DOC('ikp') || {}).rows || []   // dane z karty IKP tej osoby (wcześniej recepty i DiLO Marty u wszystkich)
   });
   await say('Możesz od razu otworzyć e-Recepty z kodem PIN i kodem kreskowym do apteki lub umówić wizytę przez e-Rejestrację NFZ.');
   chips([
    { label: 'Otwórz e-Recepty (PIN)', go: () => { if (typeof openIkpModal === 'function') openIkpModal('recepty'); } },
    { label: 'e-Rejestracja NFZ', go: () => { if (typeof openERejestracjaModal === 'function') openERejestracjaModal(); } },
-   { label: 'Karta DiLO (Onkologia)', go: () => { if (typeof openDiloModal === 'function') openDiloModal(); } },
+   ...(maDilo() ? [{ label: 'Karta DiLO (Onkologia)', go: () => { if (typeof openDiloModal === 'function') openDiloModal(); } }] : []),
    { label: 'Zaświadczenie NFZ (PDF)', go: () => { if (typeof openOfficialCertificate === 'function') openOfficialCertificate('nfz'); } }
   ]);
  },
@@ -202,6 +233,7 @@ const S={
   if (typeof openERejestracjaModal === 'function') openERejestracjaModal();
  },
  async dilo(){
+  if(!maDilo()){await say('Nie masz aktywnej Karty DiLO. Wystawia ją lekarz, gdy podejrzewa nowotwór, a zobaczysz ją wtedy w IKP.');return}
   await info({
    icon: 'shield',
    title: 'Karta DiLO – Szybka Terapia Onkologiczna',
@@ -219,6 +251,7 @@ const S={
   ]);
  },
  async firma(){
+  if(!DOC('firma'))return S.bezFirmy();
   await info({
    icon: 'shield',
    title: 'Moja Firma – Wiśniewski Instalacje',
@@ -239,14 +272,33 @@ const S={
   ]);
  },
  async poswiadczFirme(){
+  if(!DOC('firma'))return S.bezFirmy();
   if (typeof openFirmaPoswiadczModal === 'function') openFirmaPoswiadczModal();
  },
  async podpiszFirme(){
+  if(!DOC('firma'))return S.bezFirmy();
   if (typeof openFirmaPodpisModal === 'function') openFirmaPodpisModal();
  },
- async fallback(){await say('Tego w tej wersji jeszcze nie załatwię. Najbliżej pasuje:');chips([{label:'Co mam do załatwienia?',go:S.todo},{label:'Zgubiłam portfel',go:S.portfel},{label:'Kupuję używane auto',go:S.auto}])}
+ async bezFirmy(){await say('Nie prowadzisz działalności gospodarczej, więc nie ma tu danych z CEIDG. Firmę założysz wnioskiem CEIDG-1 na biznes.gov.pl.')},
+ /* sprawa z kafelka „Do załatwienia”, dla której nie ma osobnego scenariusza (dane z osoby.js) */
+ async kafel(t){
+  if(!t)return S.fallback();
+  await info({icon:t.i||'doc',title:t.h,source:'Do załatwienia, mObywatel',body:'<b>'+t.d+'</b>'+(t.s?'<br>'+t.s+'.':'')});
+  const kwota=((t.d||'').match(/^[\d\s ,]+zł/)||[''])[0];
+  const blik=t.k==='pay'&&/BLIK/.test(t.s||'')&&kwota;
+  if(t.k==='pay'&&!blik){
+   const jak=/ZUS|[Ss]kładk/.test(t.h+t.s)?'składki opłacisz w mZUS dla Płatnika albo przelewem na swój rachunek składkowy':/[Mm]andat/.test(t.h)?'mandat opłacisz przelewem według instrukcji z mandatu':'zapłacisz przelewem na rachunek z decyzji, ta gmina nie jest w ePłatnościach';
+   await say('Tego nie zapłacisz w aplikacji: '+jak+'. Przypomnieć Ci o terminie?');
+  }else await say(blik?'Zapłacić teraz BLIK-iem?':'Przypomnieć Ci o tym?');
+  const opcje=[];
+  if(blik)opcje.push({label:'Zapłać '+kwota,go:()=>confirmCard({icon:'coin',title:t.h,source:'ePłatności',rows:[['Kwota',kwota],['Termin',(t.d.match(/do (.+)$/)||['',''])[1]],['Płatność','BLIK']],label:'Zapłać '+kwota,then:()=>{if(typeof MobStore!=='undefined')MobStore.setTaxPaid(true);return result({title:'Zapłacono',source:'ePłatności',rows:[['Kwota',kwota],['Prowizja','brak']]})}})});
+  opcje.push({label:'Przypomnij mi',go:()=>result({title:'Przypomnienie ustawione',rows:[['O czym',t.h],['Kiedy',dPlus(3)+', 9:00']]})},{label:'Nie trzeba'});
+  chips(opcje);
+ },
+ async fallback(){await say('Tego w tej wersji jeszcze nie załatwię. Najbliżej pasuje:');chips([{label:'Co mam do załatwienia?',go:S.todo},{label:rodz('Zgubiłam portfel','Zgubiłem portfel'),go:S.portfel},{label:'Kupuję używane auto',go:S.auto}])}
 };
 
+function maDilo(){return /DiLO/.test(JSON.stringify(((DOC('ikp')||{}).rows)||[]))}
 const norm=t=>t.toLowerCase().replace(/ł/g,'l').normalize('NFD').replace(/[\u0300-\u036f]/g,'');
 function route(t){
  if(pending){const p=pending;pending=null;return p(t)}

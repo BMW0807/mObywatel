@@ -1,9 +1,70 @@
 /* ---------- mObywatel 2.0 - Centrum Powiadomień i e-Doręczenia (poczta.js) ---------- */
 
+// Pisma w skrzynce zależą od osoby: wcześniej wszyscy widzieli listy do Jana („Szanowny Panie Janie…”, US w Krakowie).
+// Dla Marty, Ewy i Kacpra te same pisma, które asystent zna z rejestru (serwer/persony.py, pole skrzynka).
+const POCZTA_LISTY_OSOB = {
+  marta: [
+    {
+      id: 'let_marta_us',
+      sender: 'Urząd Skarbowy Warszawa-Mokotów',
+      subject: 'Wezwanie do złożenia wyjaśnień',
+      date: '17.10.2026, 09:12',
+      badge: 'Urząd Skarbowy',
+      read: false,
+      upo: 'UPO/2026/10/17/418230',
+      content: `Urząd prosi o udokumentowanie ulgi termomodernizacyjnej z zeznania PIT-37 za 2025 r. (odliczono 32 520 zł) za dom jednorodzinny przy ul. Kwiatowej 12. Wymagane faktury za materiały i usługi.\n\nTermin odpowiedzi: 26.10.2026.`
+    },
+    {
+      id: 'let_marta_zus',
+      sender: 'Zakład Ubezpieczeń Społecznych (ZUS)',
+      subject: 'Informacja o stanie konta ubezpieczonego',
+      date: '30.09.2026, 08:30',
+      badge: 'ZUS',
+      read: true,
+      upo: 'UPO/2026/09/30/207714',
+      content: `Roczna informacja o zgromadzonych składkach.`
+    }
+  ],
+  ewa: [
+    {
+      id: 'let_ewa_zus',
+      sender: 'Zakład Ubezpieczeń Społecznych (ZUS)',
+      subject: 'Informacja o stanie konta ubezpieczonego',
+      date: '15.10.2026, 08:30',
+      badge: 'ZUS',
+      read: false,
+      upo: 'UPO/2026/10/15/530981',
+      content: `Wiek emerytalny osiągniesz 03.02.2029. Wniosek o emeryturę (EMP) złożysz najwcześniej 30 dni przed tą datą, czyli od 04.01.2029. Kapitał początkowy: 98 700 zł.`
+    },
+    {
+      id: 'let_ewa_um',
+      sender: 'Urząd Miasta Lublin',
+      subject: 'Decyzja w sprawie podatku od nieruchomości na 2026 r.',
+      date: '10.02.2026, 11:05',
+      badge: 'Urząd Miasta',
+      read: true,
+      upo: 'UPO/2026/02/10/118402',
+      content: `Podatek na 2026 r.: 656 zł w 4 ratach.`
+    }
+  ],
+  kacper: [
+    {
+      id: 'let_kacper_pg',
+      sender: 'Politechnika Gdańska',
+      subject: 'Decyzja o przyznaniu stypendium rektora',
+      date: '14.10.2026, 12:40',
+      badge: 'Uczelnia',
+      read: false,
+      upo: 'UPO/2026/10/14/662105',
+      content: `Stypendium rektora na rok akademicki 2026/2027: 1 100 zł miesięcznie, od października 2026.`
+    }
+  ]
+};
+
 const POCZTA = {
   currentTab: 'inbox',
 
-  letters: [
+  letters: (typeof OS !== 'undefined' && POCZTA_LISTY_OSOB[OS.id]) || [
     {
       id: 'let_us_01',
       sender: 'Pierwszy Urząd Skarbowy w Krakowie',
@@ -50,10 +111,11 @@ const POCZTA = {
   ],
 
   getSent() {
+    const dflt = (typeof OS === 'undefined' || OS.id === 'jan') ? this.defaultSent : [];   // pismo do UM Krakowa wysłał Jan
     if (typeof MobStore !== 'undefined') {
-      return MobStore.get('poczta_sent', this.defaultSent);
+      return MobStore.get('poczta_sent', dflt);
     }
-    return this.defaultSent;
+    return dflt;
   },
 
   addSent(pismo) {
@@ -350,13 +412,33 @@ function finalizePismoSubmission(recipient, subject, type, content) {
 }
 
 // ----------------- MODAL: CENTRUM POWIADOMIEŃ -----------------
+function powiadomieniaOsoby() {
+  if (POCZTA._osoby) return POCZTA._osoby;
+  const lista = [];
+  POCZTA.notifications.forEach(n => {
+    if (n.id === 'notif_auto') {
+      const t = (typeof OS !== 'undefined' && OS.tiles || []).find(x => x.i === 'car');
+      if (t) lista.push(Object.assign({}, n, { title: t.h, desc: `${t.s}. ${t.d}.` }));
+    } else if (n.id === 'notif_rx') {
+      const ikp = (typeof getIkpData === 'function') ? getIkpData() : null;
+      const r = ikp && (ikp.recepty || [])[0];
+      const prof = r && (ikp.profiles || []).find(p => p.id === r.forProfile);
+      if (r) lista.push(Object.assign({}, n, { desc: `Recepta na ${r.drug.split(' (')[0]} dla: ${prof ? prof.name : 'Ciebie'} czeka na realizację w aptece. Kod PIN: ${r.pin}.` }));
+    } else {
+      lista.push(n);
+    }
+  });
+  POCZTA._osoby = lista;
+  return lista;
+}
+
 function openPowiadomieniaModal() {
   const m = document.getElementById('notifModal');
   if (!m) return;
 
   const listEl = m.querySelector('.notif-list');
   if (listEl) {
-    listEl.innerHTML = POCZTA.notifications.map(n => `
+    listEl.innerHTML = powiadomieniaOsoby().map(n => `
       <div class="notif-item ${n.type} ${n.unread ? 'unread' : ''}">
         <div class="ni-icon">${n.type === 'rcb' ? '🚨' : (n.type === 'car' ? '🚗' : (n.type === 'health' ? '💊' : '🔒'))}</div>
         <div class="ni-body">
@@ -384,6 +466,7 @@ function closePowiadomieniaModal() {
 
 function markAllNotificationsRead() {
   POCZTA.notifications.forEach(n => n.unread = false);
+  powiadomieniaOsoby().forEach(n => n.unread = false);
   POCZTA.letters.forEach(l => l.read = true);
   updateBadges();
   openPowiadomieniaModal();
@@ -394,6 +477,9 @@ function updateBadges() {
   const mailDot = document.querySelector('#mailBtn .dot');
   const unreadLetters = POCZTA.letters.filter(x => !x.read).length;
   if (mailDot) mailDot.style.display = unreadLetters > 0 ? 'block' : 'none';
+  const mailBtn = document.getElementById('mailBtn');
+  if (mailBtn) mailBtn.setAttribute('aria-label', unreadLetters === 0 ? 'Skrzynka, brak nowych wiadomości'
+    : `Skrzynka, ${unreadLetters} ${unreadLetters === 1 ? 'nowa wiadomość' : (unreadLetters < 5 ? 'nowe wiadomości' : 'nowych wiadomości')}`);
 
   const bnavMailBadge = document.getElementById('bnavMailBadge');
   if (bnavMailBadge) {

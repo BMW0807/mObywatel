@@ -366,6 +366,17 @@ class ApiTestCase(unittest.TestCase):
             server.KEYS.clear(); server.KEYS.update(orig_keys)
             server.EL_STOP.clear()
 
+    def test_znak_polling_has_own_rate_limit_bucket(self):
+        server.RATE_LIMIT_API = 2
+        for _ in range(5):
+            st, _, _ = self.request('/api/znak/beat', method='POST', data={'dev': 'abc', 'token': 7})
+            self.assertEqual(st, 200)
+        # zwykłe API dalej ma swój limit
+        self.request('/api/glos', method='POST', data={})
+        self.request('/api/glos', method='POST', data={})
+        st3, _, _ = self.request('/api/glos', method='POST', data={})
+        self.assertEqual(st3, 429)
+
     def test_bad_requests_return_4xx(self):
         st_nul, _, _ = self.request('/a%00b.js')
         self.assertEqual(st_nul, 400)

@@ -72,11 +72,14 @@ def log(x):
 RATE_WINDOW = int(os.environ.get('RATE_LIMIT_WINDOW') or 60)
 RATE_LIMIT_AI = int(os.environ.get('RATE_LIMIT_AI') or 25)
 RATE_LIMIT_API = int(os.environ.get('RATE_LIMIT_API') or 120)
+# znak mObywatela odpytuje serwer co ok. 1 s z każdej karty (telefon i ekran komputera w jednej sieci to już ~110/min),
+# a nie korzysta z kluczy API, więc ma osobny, wyższy limit zamiast zjadać wspólny
+RATE_LIMIT_ZNAK = int(os.environ.get('RATE_LIMIT_ZNAK') or 600)
 _rate_lock = threading.Lock()
 RATE_BUCKETS = {}
 
 def sprawdz_limit(ip, koszyk='api'):
-    limit = RATE_LIMIT_AI if koszyk == 'ai' else RATE_LIMIT_API
+    limit = {'ai': RATE_LIMIT_AI, 'znak': RATE_LIMIT_ZNAK}.get(koszyk, RATE_LIMIT_API)
     if limit <= 0: return True, 0
     now = time.time()
     klucz_ip = '%s:%s' % (koszyk, ip or 'local')
@@ -373,7 +376,7 @@ class H(SimpleHTTPRequestHandler):
     def do_POST(self):
         p = urlparse(self.path).path
         try:
-            koszyk = 'ai' if p in ('/api/agent', '/api/stt', '/api/tts') else 'api'
+            koszyk = 'ai' if p in ('/api/agent', '/api/stt', '/api/tts') else ('znak' if p.startswith('/api/znak/') else 'api')
             ok_lim, retry = sprawdz_limit(self.klient_ip(), koszyk)
             if not ok_lim:
                 log(dict(t='rate_limit', path=p, koszyk=koszyk, retry=retry))

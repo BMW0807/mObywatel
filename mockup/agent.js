@@ -220,13 +220,16 @@ function glosDiag(d){try{fetch('/api/glos',{method:'POST',headers:{'Content-Type
 window.addEventListener('unhandledrejection',e=>glosDiag({wynik:'blad_js',err:String(e.reason&&(e.reason.stack||e.reason.message)||e.reason).slice(0,400)}));
 window.addEventListener('error',e=>glosDiag({wynik:'blad_js',err:String(e.message)+' @'+e.filename+':'+e.lineno}));
 function pickMime(){const c=['audio/webm;codecs=opus','audio/mp4','audio/webm','audio/ogg'];return window.MediaRecorder?c.find(m=>MediaRecorder.isTypeSupported&&MediaRecorder.isTypeSupported(m))||'':''}
+let REC_START=false;   // prośba o mikrofon w toku: drugie dotknięcie w tym czasie uruchamiało drugie, równoległe nagrywanie
 async function startRec(){
- if(REC)return;
+ if(REC||REC_START)return;
  const bar=$('.bar');stopSpeaking();fillerStop();session('play-and-record');const ctx=audioCtx();
  let stream;
+ REC_START=true;
  try{stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}})}
- catch(e){glosDiag({wynik:'brak_mikrofonu',err:String(e&&e.name||e)});session('playback');if(VOICE){vstate('idle');$('#vheard').textContent='Brak dostępu do mikrofonu. Zezwól na mikrofon w ustawieniach przeglądarki.'}else await say('Nie mam dostępu do mikrofonu. Zezwól na mikrofon w ustawieniach przeglądarki.');return}
+ catch(e){REC_START=false;glosDiag({wynik:'brak_mikrofonu',err:String(e&&e.name||e)});session('playback');if(VOICE){vstate('idle');$('#vheard').textContent='Brak dostępu do mikrofonu. Zezwól na mikrofon w ustawieniach przeglądarki.'}else await say('Nie mam dostępu do mikrofonu. Zezwól na mikrofon w ustawieniach przeglądarki.');return}
  glosDiag({wynik:'mikrofon_ok',ctx:ctx&&ctx.state,mime:pickMime(),as:navigator.audioSession&&navigator.audioSession.type});   // TYMCZASOWO: diagnostyka
+ REC_START=false;
  const mime=pickMime(),mr=new MediaRecorder(stream,mime?{mimeType:mime}:undefined),chunks=[];
  const an=ctx?ctx.createAnalyser():null;let src=null;if(an){an.fftSize=1024;src=ctx.createMediaStreamSource(stream);src.connect(an)}
  const data=new Float32Array(1024);let floor=0.01,spoke=false,lastVoice=Date.now(),voiced=0,maxRms=0,ctxStan=ctx&&ctx.state;const t0=Date.now();

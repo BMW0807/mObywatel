@@ -380,7 +380,7 @@
       </div>
     `;
 
-    document.body.appendChild(m);
+    (document.getElementById('app') || document.body).appendChild(m);   // jak pozostałe arkusze: w ramce telefonu, nie na całe okno
 
     // Obsługa wpisywania w wyszukiwarkę
     const input = m.querySelector('#katalogSearchInput');

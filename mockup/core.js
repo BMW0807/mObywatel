@@ -181,11 +181,16 @@ function openDoc(id){
   if(a==='firma_vat'){closeDoc();startTopic('Sprawdź status firmy na Białej Liście VAT');return}
   if(a==='cert'){openOfficialCertificate(id==='dowod'?'dowod':(id==='auto'?'pojazd':(id==='pj'?'punkty':'dowod')));return}
   if(a==='cal'){
+    // daty z karty tej osoby (wcześniej na sztywno 20.07.2026 i 14.05.2031 dla wszystkich)
+    const dataZ=re=>{const x=[...(d.f||[]),...(d.rows||[])].find(r=>re.test(r[0])&&/\d{2}\.\d{2}\.\d{4}/.test(r[1]));return x?x[1].match(/\d{2}\.\d{2}\.\d{4}/)[0]:null};
     if(id==='auto'){
-      exportToCalendar({ title: 'Koniec polisy OC ('+(d.model||'Pojazd')+')', desc: 'Ważność OC i badanie techniczne', date: '20.07.2026', daysBefore: 7 });
+      const oc=dataZ(/^OC/);
+      if(oc){exportToCalendar({ title: 'Koniec polisy OC ('+(d.model||'Pojazd')+')', desc: 'Ważność OC i badanie techniczne', date: oc, daysBefore: 7 });return}
     } else {
-      exportToCalendar({ title: 'Ważność dokumentu '+d.name, desc: 'Ważność dokumentu w mObywatelu', date: '14.05.2031', daysBefore: 30 });
+      const wazny=dataZ(/[Ww]ażn/)||((d.sub||'').match(/\d{2}\.\d{2}\.\d{4}/)||[])[0];
+      if(wazny){exportToCalendar({ title: 'Ważność dokumentu '+d.name, desc: 'Ważność dokumentu w mObywatelu', date: wazny, daysBefore: 30 });return}
     }
+    if(typeof showToast==='function')showToast('Ten dokument nie ma daty ważności do zapisania w kalendarzu');
     return;
   }
   if(a==='pesel'||a==='lost'){closeDoc();startTopic(a==='pesel'?'Zastrzeż mój PESEL':rodz('Zgubiłam portfel','Zgubiłem portfel'))}
@@ -254,12 +259,25 @@ function emptyState(box=VIS.el){
   .forEach(([a,b])=>{const x=el(`<button><span>${a}<small>${b}</small></span>${svg('chev')}</button>`);x.onclick=()=>send(a);e.querySelector('.sugg').append(x)});
  box.append(e);
 }
+/* aktywna zakładka dolnej nawigacji (klasa i aria-current zawsze razem) */
+function setNavActive(view){
+  document.querySelectorAll('.bnav-btn').forEach(b => {
+    const on = b.dataset.view === view;
+    b.classList.toggle('active', on);
+    if (on) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
+  });
+}
+/* widok dokumentów: chowa katalog usług i przywraca stos kart, przypomnienia i pole rozmowy */
+function showDocsView(){
+  ['#stackwrap', '#alt', '#reminders', '#composer'].forEach(s => { const e = $(s); if (e) e.style.display = ''; });
+  const vs = $('#viewServices');
+  if (vs) { vs.hidden = true; vs.style.display = 'none'; }
+}
 function enterChat(){
   if(!app.classList.contains('chatting')){
+    showDocsView();   // z zakładki Usługi: inaczej katalog usług zasłania rozmowę, a po wyjściu z niej zostaje pod zakładką Dokumenty
     app.classList.add('chatting');
-    document.querySelectorAll('.bnav-btn').forEach(b => {
-      b.classList.toggle('active', b.dataset.view === 'chat');
-    });
+    setNavActive('chat');
     emptyState();
     layout();
   }
@@ -268,9 +286,7 @@ function exitChat(){
   closeHist();
   app.classList.remove('chatting');
   input.blur();
-  document.querySelectorAll('.bnav-btn').forEach(b => {
-    b.classList.toggle('active', b.dataset.view === 'docs');
-  });
+  setNavActive('docs');
   layout();
 }
 function send(t){if(!t)return;if(typeof haptic==='function')haptic('tap');enterChat();act(()=>{addUser(t);route(t)})}
@@ -323,7 +339,7 @@ app.addEventListener('scroll',()=>{if(app.scrollTop||app.scrollLeft){app.scrollT
 function openTodo(){
  const t=$('#todo');
  t.querySelector('.tl').innerHTML=TILES.map((x,i)=>`<button data-i="${i}" class="${x.u?'urgent':''}"><span class="ti">${svg(x.i)}</span><span class="tx"><b>${x.h}</b><small>${x.d}</small><em>${x.s||''}</em></span>${svg('chev')}</button>`).join('');
- t.querySelectorAll('.tl button').forEach(b=>b.onclick=()=>{const x=TILES[+b.dataset.i];closeTodo();setTimeout(()=>startTopic(x.q||x.h,()=>S[x.k]()),180)});
+ t.querySelectorAll('.tl button').forEach(b=>b.onclick=()=>{const x=TILES[+b.dataset.i];closeTodo();setTimeout(()=>startTopic(x.q||x.h,()=>(S[x.k]||S.kafel)(x)),180)});
  if(typeof openDialogFocus==='function')openDialogFocus('todo',t.querySelector('.tpanel'),'#todoClose');
  app.classList.add('todo');t.setAttribute('aria-hidden','false');
  if(typeof announceSR==='function')announceSR('Otwarto listę spraw do załatwienia');
@@ -340,12 +356,7 @@ function switchNavTab(tab) {
     return;
   }
 
-  document.querySelectorAll('.bnav-btn').forEach(b => {
-    const on = b.dataset.view === tab;
-    b.classList.toggle('active', on);
-    if(on) b.setAttribute('aria-current', 'page');
-    else b.removeAttribute('aria-current');
-  });
+  setNavActive(tab);
 
   const sw = $('#stackwrap');
   const alt = $('#alt');
@@ -364,11 +375,7 @@ function switchNavTab(tab) {
     if (typeof announceSR === 'function') announceSR('Przełączono na widok: Usługi publiczne');
   } else if (tab === 'docs') {
     if (app.classList.contains('chatting')) exitChat();
-    if (sw) sw.style.display = '';
-    if (alt) alt.style.display = '';
-    if (rem) rem.style.display = '';
-    if (vs) { vs.hidden = true; vs.style.display = 'none'; }
-    if (comp) comp.style.display = '';
+    showDocsView();
     if (typeof announceSR === 'function') announceSR('Przełączono na widok: Dokumenty');
     layout();
   }

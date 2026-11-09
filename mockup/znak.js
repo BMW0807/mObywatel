@@ -93,7 +93,7 @@ function pConsent(j){
   try{await API('/api/znak/przekaz',{to:j.dev,from:DEV,ok:true,dane:{od:OS.imie+' '+OS.nazwisko,foto:OS.id,cel:j.cel,rows,pojazd:j.cel==='mstluczka'?{model:MOJE.pojazd_model,kolor:MOJE.pojazd_kolor}:null}})}catch(e){}
   const t=hhmm();
   const o2=pScreen(`${pTop('Gotowe')}<div class="qbody qdone"><div class="bigok">${svg('check')}</div><h2>Dane przekazane</h2><p>${E(j.kto)}<br>godz. ${t}</p>
-   <div class="dlist small">${rows.map(([k])=>`<div class="drow"><span>${k}</span><b>${svg('check')}</b></div>`).join('')}</div><button class="qbtn primary wide">Gotowe</button></div>`,'light');
+   <div class="dlist small">${rows.map(([k])=>`<div class="drow"><span>${E(k)}</span><b>${svg('check')}</b></div>`).join('')}</div><button class="qbtn primary wide">Gotowe</button></div>`,'light');
   o2.querySelector('.qbtn').onclick=()=>pFinish({ok:true,wynik:{przekazano:true,odbiorca:j.kto,zakres:rows.map(x=>x[0]),godzina:t}});
  };
 }

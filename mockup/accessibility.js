@@ -27,9 +27,9 @@ const MobStore = {
     } catch (e) {}
   },
 
-  // Stan PESEL: domyślnie niezastrzeżony (false)
+  // Stan PESEL: domyślnie jak w rejestrze tej osoby (Jan ma PESEL zastrzeżony od 02.2025, pozostali nie)
   isPeselBlocked() {
-    return this.get('pesel_blocked', false);
+    return this.get('pesel_blocked', !!(typeof OS !== 'undefined' && OS.pesel_zastrz));
   },
   setPeselBlocked(val) {
     this.set('pesel_blocked', !!val);
@@ -152,6 +152,8 @@ function getActiveTrapContainer() {
   if (ptM && ptM.classList.contains('open')) return ptM.querySelector('.modal-box');
   const qrx = document.querySelector('.qrx.on');
   if (qrx) return qrx;
+  const sheet = topOpenSheetModal();
+  if (sheet) return sheet.querySelector('.modal-box') || sheet;
   const det = document.getElementById('detail');
   if (det && det.classList.contains('on')) return det;
   if (app.classList.contains('todo')) return document.querySelector('#todo .tpanel');
@@ -159,6 +161,30 @@ function getActiveTrapContainer() {
   if (app.classList.contains('hist')) return document.querySelector('#hmenu .panel');
   return null;
 }
+
+// Najwyższy otwarty arkusz .sheet-modal (e-usługi, poczta, BLIK, mandaty…): przy równym z-index wygrywa późniejszy w DOM
+function topOpenSheetModal() {
+  let top = null, topZ = -Infinity;
+  document.querySelectorAll('.sheet-modal.open').forEach(m => {
+    const z = parseInt(getComputedStyle(m).zIndex, 10) || 0;
+    if (z >= topZ) { top = m; topZ = z; }
+  });
+  return top;
+}
+
+// Arkusz otwarty z innego arkusza (np. ekran apteczny z IKP, EKUZ z eWUŚ) ma być na wierzchu: arkusze mają ten sam z-index,
+// więc decyduje kolejność w DOM. Otwierany arkusz przenosimy na koniec rodzica (Face ID ma wyższy z-index i zostaje nad nim).
+(function () {
+  const root = document.getElementById('app') || document.body;
+  if (!root || typeof MutationObserver === 'undefined') return;
+  new MutationObserver(ms => ms.forEach(m => {
+    const el = m.target;
+    if (!el.classList || !el.classList.contains('sheet-modal') || !el.classList.contains('open')) return;
+    if ((m.oldValue || '').split(/\s+/).includes('open')) return;
+    const par = el.parentNode;
+    if (par && el !== par.lastElementChild) par.appendChild(el);
+  })).observe(root, { subtree: true, attributes: true, attributeFilter: ['class'], attributeOldValue: true });
+})();
 
 // --- 2. Dostępność (WCAG, Duży Tekst, Wysoki Kontrast) ---
 const A11Y = {
@@ -265,27 +291,21 @@ document.addEventListener('keydown', e => {
     }
     return;
   }
-  if (e.key !== 'Escape') return;
+  if (e.key !== 'Escape' || e.defaultPrevented) return;   // defaultPrevented: Escape obsłużył już np. Spotlight
+  // zaświadczenie i UPO (z-index 100) są nad arkuszami
   const cert = document.getElementById('certModal');
   if (cert && cert.classList.contains('open')) { e.preventDefault(); closeCertModal(); return; }
-  const ikpM = document.getElementById('ikpModal');
-  if (ikpM && ikpM.classList.contains('open')) { e.preventDefault(); closeIkpModal(); return; }
-  const erejM = document.getElementById('erejestracjaModal');
-  if (erejM && erejM.classList.contains('open')) { e.preventDefault(); closeERejestracjaModal(); return; }
-  const diloM = document.getElementById('diloModal');
-  if (diloM && diloM.classList.contains('open')) { e.preventDefault(); closeDiloModal(); return; }
-  const fPosM = document.getElementById('firmaPoswiadczModal');
-  if (fPosM && fPosM.classList.contains('open')) { e.preventDefault(); closeFirmaPoswiadczModal(); return; }
-  const fPodM = document.getElementById('firmaPodpisModal');
-  if (fPodM && fPodM.classList.contains('open')) { e.preventDefault(); closeFirmaPodpisModal(); return; }
   const upo = document.getElementById('upoModal');
   if (upo && upo.classList.contains('open')) { e.preventDefault(); closeUPO(); return; }
-  const errM = document.getElementById('errModal');
-  if (errM && errM.classList.contains('open')) { e.preventDefault(); closeErrorHistory(); return; }
-  const glM = document.getElementById('glossaryModal');
-  if (glM && glM.classList.contains('open')) { e.preventDefault(); closeGlossary(); return; }
-  const ptM = document.getElementById('pointsModal');
-  if (ptM && ptM.classList.contains('open')) { e.preventDefault(); closePointsDetail(); return; }
+  // wierzchni arkusz (IKP, apteka, PESEL, BLIK, poczta, mandaty, słowniczek…): wcześniej sprawdzane w stałej kolejności,
+  // więc np. Escape na ekranie aptecznym zamykał IKP pod spodem, a przy arkuszach spoza listy rozmowę albo dokument
+  const sheet = topOpenSheetModal();
+  if (sheet) {
+    e.preventDefault();
+    const closer = sheet.querySelector('.tx-close') || sheet.querySelector('.scrim');
+    if (closer) closer.click(); else sheet.classList.remove('open');
+    return;
+  }
   const a11yP = document.getElementById('a11yPanel');
   if (a11yP && a11yP.classList.contains('open')) { e.preventDefault(); closeA11yPanel(); return; }
   if (document.querySelector('.qrx.on')) return; // obsługiwane w znak.js
@@ -912,7 +932,7 @@ function openOfficialCertificate(type = 'pesel') {
     rows = [
       ['Kierowca', `${OS.imie} ${OS.nazwisko}`],
       ['Numer PESEL', OS.moje.pesel],
-      ['Numer prawa jazdy', pj ? pj.f.find(x => /numer/i.test(x[0]))?.[1] || 'PJ/84729/21' : 'PJ/84729/21'],
+      ['Numer prawa jazdy', (pj && pj.f.find(x => /numer|nr\b|blankiet/i.test(x[0]))?.[1]) || '—'],
       ['Liczba aktywnych punktów karnych', pkt],
       ['Ewidencja', 'Centralna Ewidencja Kierowców (CEPiK)'],
       ['Data weryfikacji', today()]
@@ -920,14 +940,16 @@ function openOfficialCertificate(type = 'pesel') {
     legal = 'Zaświadczenie stanowi odpis stanu konta kierowcy z Centralnej Ewidencji Kierowców na dzień sporządzenia dokumentu.';
   } else if (type === 'pojazd') {
     certTitle = 'ODPIS DANYCH POJAZDU Z CENTRALNEJ EWIDENCJI POJAZDÓW';
+    // dane pojazdu tej osoby (wcześniej pola szukane po nazwach, których karta nie ma, więc każdy dostawał ten sam, zmyślony pojazd)
     const auto = OS.docs.find(d => d.id === 'auto') || {};
+    const pole = re => (auto.rows || []).find(x => re.test(x[0]))?.[1] || (auto.f || []).find(x => re.test(x[0]))?.[1] || '—';
     rows = [
       ['Właściciel', `${OS.imie} ${OS.nazwisko}`],
-      ['Marka i model', auto.model || 'Škoda Octavia Combi'],
-      ['Numer rejestracyjny', auto.f?.find(x => /Rejestracja/i.test(x[0]))?.[1] || 'WI 7824P'],
-      ['Numer VIN', auto.f?.find(x => /VIN/i.test(x[0]))?.[1] || 'TMBJJ7NE8L0129841'],
-      ['Badanie techniczne', auto.f?.find(x => /Badanie/i.test(x[0]))?.[1] || 'Ważne do 14.04.2026'],
-      ['Polisa OC', auto.f?.find(x => /Polisa/i.test(x[0]))?.[1] || 'Ważna do 20.07.2026 (PZU S.A.)']
+      ['Marka i model', pole(/^Pojazd/i) !== '—' ? pole(/^Pojazd/i) : (auto.model || '—')],
+      ['Numer rejestracyjny', auto.plate || pole(/rejestr/i)],
+      ['Numer VIN', auto.vin || '—'],
+      ['Badanie techniczne', pole(/Badanie/i)],
+      ['Polisa OC', pole(/^OC/)]
     ];
     legal = 'Dokument potwierdza aktualne dane techniczne pojazdu i stan ubezpieczenia OC zarejestrowany w CEPiK i Ubezpieczeniowym Funduszu Gwarancyjnym.';
   } else if (type === 'ceidg' || type === 'firma') {
@@ -977,8 +999,8 @@ function openOfficialCertificate(type = 'pesel') {
     rows = [
       ['Imię i nazwisko', `${OS.imie} ${OS.nazwisko}`],
       ['Numer PESEL', OS.moje.pesel],
-      ['Seria i numer dowodu', OS.moje.seria || 'ABC 123456'],
-      ['Data urodzenia', OS.moje.urodz || '14.05.1994'],
+      ['Seria i numer dowodu', OS.moje.nr_dowodu],
+      ['Data urodzenia', OS.moje.data_urodzenia],
       ['Obywatelstwo', 'Polskie (POL)'],
       ['Status mDowodu', 'AKTYWNY I WAŻNY']
     ];
@@ -1062,7 +1084,7 @@ function openIkpModal(defaultTab = 'recepty') {
     modal.setAttribute('role', 'dialog');
     modal.setAttribute('aria-modal', 'true');
     modal.setAttribute('aria-label', 'Internetowe Konto Pacjenta (IKP)');
-    document.body.appendChild(modal);
+    (document.getElementById('app') || document.body).appendChild(modal);
   }
 
   const recipes = [
@@ -1251,13 +1273,16 @@ function openERejestracjaModal() {
     modal.setAttribute('role', 'dialog');
     modal.setAttribute('aria-modal', 'true');
     modal.setAttribute('aria-label', 'e-Rejestracja wizyty NFZ');
-    document.body.appendChild(modal);
+    (document.getElementById('app') || document.body).appendChild(modal);
   }
 
+  // terminy w mieście tej osoby, wizyta POZ u jej lekarza z IKP (wcześniej warszawskie przychodnie u wszystkich)
+  const miasto = (OS.opis || '').split(',')[0] || 'Warszawa';
+  const poz = (typeof getIkpData === 'function' && getIkpData().poz) || null;
   const slots = [
-    { id: 's1', date: '14.11.2026', time: '10:30', doc: 'lek. med. Anna Jabłońska', spec: 'Lekarz POZ / Rodzinny', clinic: 'NZOZ Przychodnia Mokotów, Warszawa' },
-    { id: 's2', date: '15.11.2026', time: '14:15', doc: 'dr hab. n. med. Marek Szymański', spec: 'Kardiologia (NFZ)', clinic: 'Szpital Kliniczny Dzieciątka Jezus, Warszawa' },
-    { id: 's3', date: '18.11.2026', time: '09:00', doc: 'lek. med. Karolina Dudek', spec: 'Okulistyka (NFZ)', clinic: 'Centrum Medyczne NFZ Śródmieście, Warszawa' }
+    { id: 's1', date: '14.11.2026', time: '10:30', doc: poz ? poz.doctor.replace(/\s*\(.*\)\s*$/, '') : 'lek. med. Anna Jabłońska', spec: 'Lekarz POZ / Rodzinny', clinic: poz ? `${poz.clinic}, ${miasto}` : `Przychodnia rodzinna, ${miasto}` },
+    { id: 's2', date: '15.11.2026', time: '14:15', doc: 'dr hab. n. med. Marek Szymański', spec: 'Kardiologia (NFZ)', clinic: `Szpital Kliniczny, ${miasto}` },
+    { id: 's3', date: '18.11.2026', time: '09:00', doc: 'lek. med. Karolina Dudek', spec: 'Okulistyka (NFZ)', clinic: `Centrum Medyczne NFZ, ${miasto}` }
   ];
 
   let selectedSlot = slots[0];
@@ -1292,7 +1317,7 @@ function openERejestracjaModal() {
       const calBtn = modal.querySelector('#erejCalBtn');
       if (calBtn) {
         calBtn.onclick = () => {
-          exportCalendarReminder({
+          exportToCalendar({
             title: `Wizyta NFZ: ${selectedSlot.spec}`,
             date: selectedSlot.date,
             desc: `Wizyta u lekarza: ${selectedSlot.doc} (${selectedSlot.clinic}). Pamiętaj o dowodzie osobistym mDowód!`
@@ -1376,7 +1401,7 @@ function openDiloModal() {
     modal.setAttribute('role', 'dialog');
     modal.setAttribute('aria-modal', 'true');
     modal.setAttribute('aria-label', 'Karta DiLO - Diagnostyka i Leczenie Onkologiczne');
-    document.body.appendChild(modal);
+    (document.getElementById('app') || document.body).appendChild(modal);
   }
 
   const diloNumber = 'DILO/NFZ/2026/84102';
@@ -1477,7 +1502,7 @@ function openFirmaPoswiadczModal() {
     modal.setAttribute('role', 'dialog');
     modal.setAttribute('aria-modal', 'true');
     modal.setAttribute('aria-label', 'Poświadczenie reprezentacji firmy');
-    document.body.appendChild(modal);
+    (document.getElementById('app') || document.body).appendChild(modal);
   }
 
   const token = 'CEIDG-' + Math.floor(1000 + Math.random() * 9000) + '-' + Math.floor(1000 + Math.random() * 9000);
@@ -1570,7 +1595,7 @@ function openFirmaPodpisModal() {
     modal.setAttribute('role', 'dialog');
     modal.setAttribute('aria-modal', 'true');
     modal.setAttribute('aria-label', 'Podpisanie dokumentu e-dowodem');
-    document.body.appendChild(modal);
+    (document.getElementById('app') || document.body).appendChild(modal);
   }
 
   function renderView(signed = false) {
