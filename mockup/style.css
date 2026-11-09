@@ -2015,7 +2015,7 @@ body.dark-mode {
   left: 0;
   right: 0;
   bottom: 0;
-  height: 64px;
+  height: 66px;
   box-sizing: border-box;
   background: rgba(255,255,255,.94);
   -webkit-backdrop-filter: blur(16px);
@@ -2024,7 +2024,7 @@ body.dark-mode {
   display: flex;
   align-items: center;
   justify-content: space-around;
-  padding: 2px 4px max(env(safe-area-inset-bottom), 10px) 4px;
+  padding: 3px 4px max(env(safe-area-inset-bottom), 12px) 4px;
   z-index: 30;
   transition: transform .25s var(--ease), opacity .2s;
 }
@@ -2069,12 +2069,12 @@ body.dark-mode {
 }
 
 .bnav-btn.qr-center {
-  margin-top: -18px;
+  margin-top: -14px;
 }
 
 .bnav-qr-circle {
-  width: 44px;
-  height: 44px;
+  width: 42px;
+  height: 42px;
   border-radius: 50%;
   background: var(--red);
   color: #fff;
@@ -3549,4 +3549,923 @@ body.high-contrast {
   color: #000000 !important;
   border: 2px solid #ffffff !important;
   font-weight: 700 !important;
+}
+
+
+/* ==========================================================================
+   NOWE MODUŁY: BLIK, CEPiK AUTOBUS, PESEL CZASOWY, CRW, GIOŚ, NOWE PISMO
+   ========================================================================== */
+
+/* --- 1. INTERAKTYWNY BLIK --- */
+.blik-modal-box {
+  padding-bottom: 24px;
+}
+.blik-amount-banner {
+  background: linear-gradient(135deg, #f8fafc, #edf2f7);
+  border: 1px solid var(--hair);
+  border-radius: 14px;
+  padding: 14px;
+  text-align: center;
+  margin-bottom: 14px;
+}
+.bab-lbl {
+  font-size: 11px;
+  text-transform: uppercase;
+  color: var(--ink2);
+  letter-spacing: .5px;
+  display: block;
+}
+.bab-amt {
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--ink);
+  display: block;
+  margin: 2px 0;
+}
+.bab-rec {
+  font-size: 12px;
+  color: var(--ink2);
+}
+
+.blik-timer-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+.blik-timer-txt {
+  font-size: 12px;
+  color: var(--ink2);
+  display: flex;
+  justify-content: space-between;
+}
+.blik-timer-txt b {
+  color: var(--red);
+  font-family: monospace;
+  font-size: 14px;
+}
+.blik-timer-bar {
+  height: 5px;
+  background: var(--hair);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.blik-timer-progress {
+  height: 100%;
+  background: var(--red);
+  transition: width 1s linear;
+}
+
+.blik-inputs-box {
+  text-align: center;
+  margin-bottom: 14px;
+}
+.bib-lbl {
+  font-size: 13px;
+  color: var(--ink);
+  font-weight: 600;
+  margin-bottom: 8px;
+  display: block;
+}
+.blik-digits-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+}
+.b-digit {
+  width: 38px;
+  height: 48px;
+  font-size: 24px;
+  font-weight: 700;
+  text-align: center;
+  border: 2px solid #cbd5e1;
+  border-radius: 10px;
+  background: #fff;
+  color: var(--ink);
+  outline: none;
+  transition: border-color .15s, box-shadow .15s;
+}
+.b-digit:focus {
+  border-color: var(--red);
+  box-shadow: 0 0 0 3px rgba(220,20,60,.15);
+}
+.b-sep {
+  width: 8px;
+  height: 2px;
+  background: #94a3b8;
+  border-radius: 1px;
+}
+
+.blik-keypad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  max-width: 280px;
+  margin: 0 auto 16px auto;
+}
+.bk-key {
+  height: 44px;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--ink);
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition: background .1s, transform .1s;
+}
+.bk-key:active {
+  background: #e2e8f0;
+  transform: scale(.95);
+}
+.bk-key.action {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink2);
+}
+
+.blik-step-state {
+  text-align: center;
+  padding: 16px 8px;
+}
+.blik-pulse-ring {
+  width: 60px;
+  height: 60px;
+  margin: 0 auto 14px auto;
+  color: var(--red);
+  animation: blikSpin 1.4s linear infinite;
+}
+@keyframes blikSpin {
+  100% { transform: rotate(360deg); }
+}
+.spinner-svg {
+  width: 100%;
+  height: 100%;
+}
+.spinner-svg circle {
+  stroke-dasharray: 90, 150;
+  stroke-dashoffset: 0;
+  stroke-linecap: round;
+}
+.bss-title {
+  font-size: 17px;
+  font-weight: 700;
+  display: block;
+  margin-bottom: 6px;
+}
+.bss-sub {
+  font-size: 13px;
+  color: var(--ink2);
+  line-height: 1.4;
+  margin-bottom: 16px;
+}
+
+.bank-push-sim {
+  background: #f8fafc;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 12px;
+  padding: 12px 14px;
+  text-align: left;
+  margin-bottom: 18px;
+  box-shadow: 0 4px 12px rgba(0,0,0,.06);
+}
+.bps-head {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: #64748b;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+.bank-push-sim b {
+  font-size: 13px;
+  color: var(--ink);
+  display: block;
+  margin-bottom: 2px;
+}
+.bank-push-sim p {
+  font-size: 12px;
+  color: var(--ink2);
+  margin: 0;
+}
+
+.blik-success-wrap {
+  text-align: center;
+  padding: 16px 8px;
+}
+.bsw-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: #d1fae5;
+  color: #059669;
+  font-size: 28px;
+  font-weight: 800;
+  display: grid;
+  place-items: center;
+  margin: 0 auto 12px auto;
+}
+.bsw-title {
+  font-size: 18px;
+  font-weight: 700;
+  display: block;
+  margin-bottom: 6px;
+}
+.bsw-sub {
+  font-size: 13px;
+  color: var(--ink2);
+  line-height: 1.4;
+  margin-bottom: 16px;
+}
+.bsw-details {
+  background: #f8fafc;
+  border: 1px solid var(--hair);
+  border-radius: 10px;
+  padding: 10px 14px;
+  text-align: left;
+  font-size: 13px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 18px;
+}
+.bsw-details div {
+  display: flex;
+  justify-content: space-between;
+}
+.bsw-actions {
+  display: flex;
+  gap: 8px;
+}
+.bsw-actions .btn {
+  flex: 1;
+}
+
+/* --- 2. BEZPIECZNY AUTOBUS & CEPiK --- */
+.bh-police-status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin-bottom: 14px;
+}
+.bps-ic {
+  font-size: 22px;
+  flex: none;
+}
+.bh-police-status b {
+  font-size: 13px;
+  color: #065f46;
+  display: block;
+}
+.bh-police-status p {
+  font-size: 12px;
+  color: #047857;
+  margin: 2px 0 0 0;
+}
+
+.vin-mono {
+  font-family: monospace;
+  letter-spacing: .5px;
+  font-size: 12px !important;
+}
+
+.bus-timeline-box {
+  margin-top: 14px;
+  border-top: 1px solid var(--hair);
+  padding-top: 12px;
+}
+.bt-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink);
+  display: block;
+  margin-bottom: 10px;
+}
+.bt-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-left: 10px;
+  position: relative;
+}
+.bt-list::before {
+  content: "";
+  position: absolute;
+  left: 14px;
+  top: 6px;
+  bottom: 6px;
+  width: 2px;
+  background: #e2e8f0;
+}
+.bt-item {
+  position: relative;
+  padding-left: 18px;
+}
+.bt-dot {
+  position: absolute;
+  left: 0;
+  top: 5px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #10b981;
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 1px #10b981;
+}
+.bt-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+}
+.bt-date {
+  color: var(--ink2);
+}
+.bt-odo {
+  font-weight: 700;
+  color: var(--ink);
+}
+.bt-skp {
+  font-size: 11px;
+  color: var(--ink2);
+  display: block;
+}
+
+/* --- 3. PESEL CZASOWE ODBEZPIECZENIE & FILTRY --- */
+.pesel-temp-box {
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 12px;
+  padding: 12px;
+  margin: 12px 0;
+}
+.pesel-temp-box.active {
+  background: #fffbeb;
+  border-color: #fde68a;
+}
+.ptb-head b {
+  font-size: 13px;
+  display: block;
+  color: #1e40af;
+}
+.ptb-head small {
+  font-size: 12px;
+  color: #475569;
+  display: block;
+  margin: 2px 0 8px 0;
+}
+.ptb-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.hist-filter-tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 10px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+}
+.hft-btn {
+  padding: 5px 10px;
+  border-radius: 16px;
+  border: 1px solid var(--hair);
+  background: #f8fafc;
+  color: var(--ink2);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all .15s;
+}
+.hft-btn.active {
+  background: var(--ink);
+  color: #fff;
+  border-color: var(--ink);
+}
+
+/* --- 4. CENTRALNY REJESTR WYBORCÓW (CRW) --- */
+.crw-hero-card {
+  background: linear-gradient(135deg, #fdf2f8, #fce7f3);
+  border: 1px solid #fbcfe8;
+  border-radius: 14px;
+  padding: 14px;
+  margin-bottom: 14px;
+}
+.ch-badge {
+  font-size: 11px;
+  font-weight: 700;
+  color: #be185d;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.ch-title {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--ink);
+  display: block;
+}
+.ch-okreg {
+  font-size: 13px;
+  color: #831843;
+}
+
+.crw-station-box {
+  background: #f8fafc;
+  border: 1px solid var(--hair);
+  border-radius: 12px;
+  padding: 14px;
+  margin-bottom: 14px;
+}
+.csb-head {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.csb-ic {
+  font-size: 24px;
+  flex: none;
+}
+.csb-head b {
+  font-size: 14px;
+  color: var(--ink);
+}
+.csb-school {
+  font-weight: 700;
+  color: var(--ink);
+  margin: 2px 0;
+  font-size: 14px;
+}
+.csb-addr {
+  font-size: 13px;
+  color: var(--ink2);
+  margin: 0;
+}
+.csb-features {
+  border-top: 1px solid var(--hair);
+  padding-top: 10px;
+}
+.csb-features b {
+  font-size: 12px;
+  color: var(--ink);
+  display: block;
+  margin-bottom: 6px;
+}
+.csb-features ul {
+  margin: 0;
+  padding-left: 16px;
+  font-size: 12px;
+  color: #059669;
+  line-height: 1.5;
+}
+
+.crw-alert-custom {
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 10px;
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.crw-alert-custom b {
+  font-size: 12px;
+  color: #1e40af;
+  display: block;
+}
+.crw-alert-custom small {
+  font-size: 11px;
+  color: #475569;
+  display: block;
+}
+
+.crw-actions-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.crw-data-verify {
+  border-top: 1px solid var(--hair);
+  padding-top: 12px;
+  font-size: 13px;
+}
+.crw-data-verify b {
+  display: block;
+  margin-bottom: 8px;
+}
+.cdv-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 4px 0;
+  font-size: 12px;
+}
+.cdv-row span {
+  color: var(--ink2);
+}
+
+.crw-form-box {
+  padding: 8px 0;
+}
+.cf-title {
+  font-size: 16px;
+  font-weight: 700;
+  display: block;
+  margin-bottom: 4px;
+}
+.cf-desc {
+  font-size: 13px;
+  color: var(--ink2);
+  margin-bottom: 14px;
+}
+.cf-group {
+  margin-bottom: 14px;
+}
+.cf-group label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 6px;
+}
+.cf-select, .cf-input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  font-size: 14px;
+  background: #fff;
+  color: var(--ink);
+  box-sizing: border-box;
+}
+.cf-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+}
+.cf-actions .btn {
+  flex: 1;
+}
+
+/* --- 5. JAKOŚĆ POWIETRZA GIOŚ --- */
+.air-cities-tabs {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  margin-bottom: 14px;
+  padding-bottom: 4px;
+}
+.act-btn {
+  padding: 6px 12px;
+  border-radius: 20px;
+  background: #f1f5f9;
+  border: 1px solid var(--hair);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink2);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all .15s;
+}
+.act-btn.active {
+  background: #3b82f6;
+  color: #fff;
+  border-color: #3b82f6;
+}
+
+.air-advisory-groups {
+  margin-top: 14px;
+  border-top: 1px solid var(--hair);
+  padding-top: 12px;
+}
+.air-advisory-groups b {
+  font-size: 13px;
+  color: var(--ink);
+  display: block;
+  margin-bottom: 8px;
+}
+.aag-row {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--hair);
+  font-size: 12px;
+}
+.aag-row span {
+  color: var(--ink2);
+  font-weight: 600;
+}
+.aag-row b {
+  font-weight: 500;
+  color: var(--ink);
+}
+
+.air-alert-toggle-box {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 14px;
+  padding: 12px;
+  background: #f8fafc;
+  border-radius: 12px;
+  border: 1px solid var(--hair);
+}
+.air-alert-toggle-box b {
+  font-size: 13px;
+  display: block;
+}
+.air-alert-toggle-box small {
+  font-size: 11px;
+  color: var(--ink2);
+  display: block;
+}
+
+/* --- 6. E-DORĘCZENIA: SKRZYNKA I NOWE PISMO --- */
+.poczta-bar-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  gap: 8px;
+}
+.poczta-tabs {
+  display: flex;
+  gap: 6px;
+}
+.ptab-btn {
+  padding: 6px 12px;
+  border-radius: 16px;
+  background: #f1f5f9;
+  border: 1px solid var(--hair);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink2);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.ptab-btn.active {
+  background: var(--ink);
+  color: #fff;
+  border-color: var(--ink);
+}
+.ptab-badge {
+  background: var(--red);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 10px;
+}
+
+.sent-card {
+  border-left: 4px solid #3b82f6 !important;
+}
+.lc-badge.sent {
+  background: #dbeafe;
+  color: #1e40af;
+}
+.upp-badge {
+  color: #1e40af;
+  font-weight: 600;
+}
+.lc-status-signed {
+  font-size: 11px;
+  color: #059669;
+  font-weight: 600;
+}
+
+.pismo-box {
+  padding-bottom: 24px;
+}
+.pismo-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.pf-group label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 4px;
+}
+.pf-select, .pf-input, .pf-textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  font-size: 13px;
+  background: #fff;
+  color: var(--ink);
+  box-sizing: border-box;
+  font-family: inherit;
+}
+.pf-textarea {
+  resize: vertical;
+}
+.pf-attachment-box {
+  background: #f8fafc;
+  border: 1px dashed #cbd5e1;
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+.pab-lbl {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink2);
+  display: block;
+  margin-bottom: 6px;
+}
+.pab-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #e2e8f0;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+.pab-del {
+  border: none;
+  background: transparent;
+  color: #64748b;
+  cursor: pointer;
+  font-size: 11px;
+}
+.pf-signature-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+.psb-ic {
+  font-size: 22px;
+  flex: none;
+}
+.pf-signature-banner b {
+  font-size: 12px;
+  color: #166534;
+  display: block;
+}
+.pf-signature-banner p {
+  font-size: 11px;
+  color: #15803d;
+  margin: 2px 0 0 0;
+}
+.pf-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+.pf-actions .btn {
+  flex: 1;
+}
+
+/* ==========================================================================
+   DARK MODE OVERRIDES (.phone.dark-mode)
+   ========================================================================== */
+.phone.dark-mode .blik-amount-banner,
+.phone.dark-mode .bank-push-sim,
+.phone.dark-mode .bsw-details,
+.phone.dark-mode .crw-station-box,
+.phone.dark-mode .air-alert-toggle-box,
+.phone.dark-mode .pf-attachment-box {
+  background: #1e2430 !important;
+  border-color: rgba(255,255,255,0.12) !important;
+  color: #f1f5f9 !important;
+}
+.phone.dark-mode .b-digit {
+  background: #141824 !important;
+  border-color: rgba(255,255,255,0.2) !important;
+  color: #ffffff !important;
+}
+.phone.dark-mode .bk-key {
+  background: #1e2430 !important;
+  border-color: rgba(255,255,255,0.12) !important;
+  color: #f1f5f9 !important;
+}
+.phone.dark-mode .bk-key:active {
+  background: #2a3344 !important;
+}
+.phone.dark-mode .cf-select,
+.phone.dark-mode .cf-input,
+.phone.dark-mode .pf-select,
+.phone.dark-mode .pf-input,
+.phone.dark-mode .pf-textarea {
+  background: #141824 !important;
+  border-color: rgba(255,255,255,0.2) !important;
+  color: #ffffff !important;
+}
+.phone.dark-mode .bh-police-status {
+  background: rgba(16,185,129,0.15) !important;
+  border-color: rgba(16,185,129,0.3) !important;
+}
+.phone.dark-mode .bh-police-status b,
+.phone.dark-mode .bh-police-status p {
+  color: #34d399 !important;
+}
+.phone.dark-mode .pesel-temp-box {
+  background: rgba(59,130,246,0.15) !important;
+  border-color: rgba(59,130,246,0.3) !important;
+}
+.phone.dark-mode .pesel-temp-box.active {
+  background: rgba(245,158,11,0.15) !important;
+  border-color: rgba(245,158,11,0.3) !important;
+}
+.phone.dark-mode .crw-hero-card {
+  background: rgba(236,72,153,0.15) !important;
+  border-color: rgba(236,72,153,0.3) !important;
+}
+.phone.dark-mode .crw-alert-custom {
+  background: rgba(59,130,246,0.15) !important;
+  border-color: rgba(59,130,246,0.3) !important;
+}
+.phone.dark-mode .pf-signature-banner {
+  background: rgba(16,185,129,0.15) !important;
+  border-color: rgba(16,185,129,0.3) !important;
+}
+.phone.dark-mode .pf-signature-banner b,
+.phone.dark-mode .pf-signature-banner p {
+  color: #34d399 !important;
+}
+.phone.dark-mode .hft-btn,
+.phone.dark-mode .act-btn,
+.phone.dark-mode .ptab-btn {
+  background: #1e2430 !important;
+  border-color: rgba(255,255,255,0.15) !important;
+  color: #cbd5e1 !important;
+}
+.phone.dark-mode .hft-btn.active,
+.phone.dark-mode .ptab-btn.active {
+  background: #ffffff !important;
+  color: #0f141f !important;
+  border-color: #ffffff !important;
+}
+
+/* ==========================================================================
+   HIGH CONTRAST OVERRIDES (.high-contrast)
+   ========================================================================== */
+.high-contrast .blik-amount-banner,
+.high-contrast .bank-push-sim,
+.high-contrast .bsw-details,
+.high-contrast .crw-station-box,
+.high-contrast .crw-hero-card,
+.high-contrast .air-alert-toggle-box,
+.high-contrast .pf-attachment-box,
+.high-contrast .pf-signature-banner,
+.high-contrast .bh-police-status,
+.high-contrast .pesel-temp-box,
+.high-contrast .crw-alert-custom {
+  background: #000000 !important;
+  border: 2px solid #ffd700 !important;
+  color: #ffffff !important;
+}
+.high-contrast .b-digit,
+.high-contrast .bk-key,
+.high-contrast .cf-select,
+.high-contrast .cf-input,
+.high-contrast .pf-select,
+.high-contrast .pf-input,
+.high-contrast .pf-textarea {
+  background: #000000 !important;
+  border: 2px solid #ffd700 !important;
+  color: #ffffff !important;
+}
+.high-contrast .hft-btn,
+.high-contrast .act-btn,
+.high-contrast .ptab-btn {
+  background: #000000 !important;
+  border: 1.5px solid #ffd700 !important;
+  color: #ffffff !important;
+}
+.high-contrast .hft-btn.active,
+.high-contrast .act-btn.active,
+.high-contrast .ptab-btn.active {
+  background: #ffd700 !important;
+  color: #000000 !important;
+  font-weight: 800 !important;
+}
+.high-contrast .bh-police-status b,
+.high-contrast .bh-police-status p,
+.high-contrast .pf-signature-banner b,
+.high-contrast .pf-signature-banner p,
+.high-contrast .ch-badge,
+.high-contrast .bab-amt {
+  color: #ffd700 !important;
 }

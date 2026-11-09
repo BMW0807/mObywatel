@@ -559,7 +559,19 @@ function renderDashboard() {
   if (!host) return;
   const { pkt, limit, auto, tax, kwota, termin } = dashData();
   const pesel = MobStore.isPeselBlocked();
+  const unlockUntil = MobStore.get('pesel_unlock_until', 0);
+  const isTempUnlocked = unlockUntil > Date.now();
   const paid = MobStore.isTaxPaid();
+
+  let peselSub = pesel ? 'Zastrzeżony' : 'Niezastrzeżony';
+  let peselTone = pesel ? 'ok' : 'warn';
+  let peselIcon = pesel ? 'shield' : 'alert';
+  if (isTempUnlocked) {
+    const remM = Math.max(1, Math.ceil((unlockUntil - Date.now()) / 60000));
+    peselSub = `Odbezp. (${remM} min)`;
+    peselTone = 'warn';
+    peselIcon = 'clock';
+  }
 
   const tile = (id, tone, icon, title, sub) =>
     `<button type="button" class="qt ${tone}" data-q="${id}" aria-label="${title}: ${sub}">
@@ -568,8 +580,7 @@ function renderDashboard() {
     </button>`;
 
   host.innerHTML = [
-    tile('pesel', pesel ? 'ok' : 'warn', pesel ? 'shield' : 'alert', 'PESEL',
-      pesel ? 'Zastrzeżony' : 'Niezastrzeżony'),
+    tile('pesel', peselTone, peselIcon, 'PESEL', peselSub),
     tile('pkt', pkt === 0 ? 'ok' : pkt >= limit * 0.75 ? 'warn' : 'info', 'clock', 'Punkty karne',
       `${pkt} z ${limit}`),
     auto ? tile('auto', auto.alert ? 'warn' : 'ok', 'car', auto.model ? auto.model.split(' ')[0] : 'Pojazd',
@@ -579,7 +590,10 @@ function renderDashboard() {
   ].join('');
 
   host.querySelectorAll('.qt').forEach(b => b.onclick = () => ({
-    pesel: togglePeselDirect, pkt: openPointsDetail, auto: () => openDoc('auto'), pay: directPaymentClick
+    pesel: () => { if (typeof openZastrzezPeselModal === 'function') openZastrzezPeselModal(); else togglePeselDirect(); },
+    pkt: openPointsDetail,
+    auto: () => openDoc('auto'),
+    pay: () => { if (typeof openEPlatnosciModal === 'function') openEPlatnosciModal(); else directPaymentClick(); }
   })[b.dataset.q]());
 
   if (typeof layout === 'function') setTimeout(layout, 10);

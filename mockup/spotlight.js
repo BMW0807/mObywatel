@@ -504,6 +504,56 @@
           startTopic('Wyjazd za granicę – poradnik', null, true);
         }
       }
+    },
+    {
+      id: 'uslugi-wybory-crw',
+      title: 'Wybory i Rejestr Wyborców (CRW)',
+      category: 'Dokumenty',
+      catKey: 'dokumenty',
+      desc: 'Twój obwód głosowania, lokal wyborczy, zmiana miejsca i zaświadczenie PKW',
+      icon: '🗳️',
+      badge: 'PKW / CRW',
+      keywords: ['wybory', 'crw', 'komisja wyborcza', 'obwod', 'glosowanie', 'pkw', 'lokal wyborczy', 'zaswiadczenie o glosowaniu'],
+      query: 'Gdzie jest mój lokal wyborczy i komisja w Centralnym Rejestrze Wyborców?',
+      viewAction: function () {
+        if (typeof openWyboryModal === 'function') {
+          openWyboryModal();
+        }
+      }
+    },
+    {
+      id: 'uslugi-jakosc-powietrza',
+      title: 'Jakość powietrza (GIOŚ)',
+      category: 'Sytuacje życiowe',
+      catKey: 'sytuacje',
+      desc: 'Pomiary PM2.5, PM10, indeks jakości powietrza, alerty smogowe i zalecenia',
+      icon: '🌿',
+      badge: 'GIOŚ Eko',
+      keywords: ['jakosc powietrza', 'powietrze', 'smog', 'pm25', 'pm10', 'gios', 'alert smogowy', 'zanieczyszczenie'],
+      query: 'Jaka jest jakość powietrza i stężenie smogu w mojej okolicy?',
+      viewAction: function () {
+        if (typeof openJakoscPowietrzaModal === 'function') {
+          openJakoscPowietrzaModal();
+        }
+      }
+    },
+    {
+      id: 'uslugi-nowe-pismo',
+      title: 'Nowe pismo do urzędu',
+      category: 'Dokumenty',
+      catKey: 'dokumenty',
+      desc: 'Nadanie pisma urzędowego przez e-Doręczenia z podpisem mDowodem i UPP',
+      icon: '✍️',
+      badge: 'e-Doręczenia',
+      keywords: ['nowe pismo', 'pismo do urzedu', 'e-doreczenia', 'purde', 'wyslij pismo', 'podpis mdowodem', 'wniosek urzedowy'],
+      query: 'Jak wysłać oficjalne pismo do urzędu przez e-Doręczenia?',
+      viewAction: function () {
+        if (typeof openNowePismoModal === 'function') {
+          openNowePismoModal();
+        } else if (typeof openPocztaModal === 'function') {
+          openPocztaModal('sent');
+        }
+      }
     }
   ];
 

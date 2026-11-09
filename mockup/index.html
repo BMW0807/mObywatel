@@ -14,7 +14,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=42">
+<link rel="stylesheet" href="style.css?v=43">
 </head>
 <body>
 <div class="phone" id="app">
@@ -242,6 +242,18 @@
     </div>
   </div>
 
+  <div class="sheet-modal" id="blikModal" role="dialog" aria-modal="true" aria-labelledby="blikModalTitle">
+    <div class="scrim" onclick="closeBlikModal()"></div>
+    <div class="modal-box blik-modal-box">
+      <div class="modal-head">
+        <h2 id="blikModalTitle">Płatność kodem BLIK</h2>
+        <button class="tx-close" onclick="closeBlikModal()" aria-label="Zamknij"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></svg></button>
+      </div>
+      <p class="modal-sub">Krajowa Izba Rozliczeniowa (KIR) &amp; ePłatności gov.pl</p>
+      <div class="blik-flow-box" id="blikFlowBox"></div>
+    </div>
+  </div>
+
   <div class="sheet-modal" id="airModal" role="dialog" aria-modal="true" aria-labelledby="airModalTitle">
     <div class="scrim" onclick="closeJakoscPowietrzaModal()"></div>
     <div class="modal-box">
@@ -251,6 +263,18 @@
       </div>
       <p class="modal-sub">Główny Inspektorat Ochrony Środowiska (GIOŚ)</p>
       <div class="air-hero-box"></div>
+    </div>
+  </div>
+
+  <div class="sheet-modal" id="wyboryModal" role="dialog" aria-modal="true" aria-labelledby="wyboryModalTitle">
+    <div class="scrim" onclick="closeWyboryModal()"></div>
+    <div class="modal-box crw-box">
+      <div class="modal-head">
+        <h2 id="wyboryModalTitle">Centralny Rejestr Wyborców (CRW)</h2>
+        <button class="tx-close" onclick="closeWyboryModal()" aria-label="Zamknij"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></svg></button>
+      </div>
+      <p class="modal-sub">Państwowa Komisja Wyborcza &amp; Rejestr Wyborców</p>
+      <div class="crw-body" id="crwBody"></div>
     </div>
   </div>
 
@@ -268,6 +292,18 @@
       </div>
       <p class="modal-sub">Oficjalna korespondencja urzędowa z potwierdzeniem UPO</p>
       <div class="poczta-list"></div>
+    </div>
+  </div>
+
+  <div class="sheet-modal" id="nowePismoModal" role="dialog" aria-modal="true" aria-labelledby="nowePismoTitle">
+    <div class="scrim" onclick="closeNowePismoModal()"></div>
+    <div class="modal-box pismo-box">
+      <div class="modal-head">
+        <h2 id="nowePismoTitle">Nowe pismo do urzędu</h2>
+        <button class="tx-close" onclick="closeNowePismoModal()" aria-label="Zamknij"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></svg></button>
+      </div>
+      <p class="modal-sub">e-Doręczenia: Usługa PURDE i podpis biometryczny mDowód</p>
+      <div class="pismo-form-wrap" id="pismoFormWrap"></div>
     </div>
   </div>
 
@@ -328,22 +364,22 @@
   </div></div>
   <div class="homebar" aria-hidden="true"></div>
 </div>
-<script src="osoby.js?v=42"></script>
-<script src="sylwetki.js?v=42"></script>
-<script src="core.js?v=42"></script>
-<script src="accessibility.js?v=42"></script>
-<script src="variants.js?v=42"></script>
-<script src="scenarios.js?v=42"></script>
-<script src="agent.js?v=42"></script>
-<script src="znak-kod.js?v=42"></script>
-<script src="znak.js?v=42"></script>
-<script src="uslugi.js?v=42"></script>
-<script src="weryfikacja.js?v=42"></script>
-<script src="poczta.js?v=42"></script>
-<script src="ikp-integracja.js?v=42"></script>
-<script src="mandaty.js?v=42"></script>
-<script src="powiadomienia-eksport.js?v=42"></script>
-<script src="katalog-kart.js?v=42"></script>
-<script src="spotlight.js?v=42"></script>
+<script src="osoby.js?v=43"></script>
+<script src="sylwetki.js?v=43"></script>
+<script src="core.js?v=43"></script>
+<script src="accessibility.js?v=43"></script>
+<script src="variants.js?v=43"></script>
+<script src="scenarios.js?v=43"></script>
+<script src="agent.js?v=43"></script>
+<script src="znak-kod.js?v=43"></script>
+<script src="znak.js?v=43"></script>
+<script src="uslugi.js?v=43"></script>
+<script src="weryfikacja.js?v=43"></script>
+<script src="poczta.js?v=43"></script>
+<script src="ikp-integracja.js?v=43"></script>
+<script src="mandaty.js?v=43"></script>
+<script src="powiadomienia-eksport.js?v=43"></script>
+<script src="katalog-kart.js?v=43"></script>
+<script src="spotlight.js?v=43"></script>
 </body>
 </html>

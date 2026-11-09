@@ -1,6 +1,8 @@
 /* ---------- mObywatel 2.0 - Centrum Powiadomień i e-Doręczenia (poczta.js) ---------- */
 
 const POCZTA = {
+  currentTab: 'inbox',
+
   letters: [
     {
       id: 'let_us_01',
@@ -33,6 +35,34 @@ const POCZTA = {
       content: `Wprowadzono pomyślnie zmianę danych w Centralnej Ewidencji Pojazdów (CEPiK) na podstawie zaświadczenia z okręgowej stacji kontroli pojazdów.`
     }
   ],
+
+  defaultSent: [
+    {
+      id: 'sent_01',
+      recipient: 'Urząd Miasta Krakowa',
+      subject: 'Wniosek o wydanie odpisu aktu urodzenia dziecka',
+      date: '28.10.2026, 12:45',
+      badge: 'Urząd Stanu Cywilnego',
+      upp: 'UPP/2026/10/28/554192',
+      sha256: 'a4f9b8c2d1e7845f0912ab345cd678ef1234567890abcdef1234567890abcdef',
+      content: 'Wnoszę o wydanie wielojęzycznego odpisu skróconego aktu urodzenia...'
+    }
+  ],
+
+  getSent() {
+    if (typeof MobStore !== 'undefined') {
+      return MobStore.get('poczta_sent', this.defaultSent);
+    }
+    return this.defaultSent;
+  },
+
+  addSent(pismo) {
+    const list = this.getSent();
+    list.unshift(pismo);
+    if (typeof MobStore !== 'undefined') {
+      MobStore.set('poczta_sent', list);
+    }
+  },
 
   notifications: [
     {
@@ -71,30 +101,80 @@ const POCZTA = {
 };
 
 // ----------------- MODAL: E-DORĘCZENIA (SKRZYNKA POCZTOWA) -----------------
-function openPocztaModal() {
+function openPocztaModal(tab) {
   const m = document.getElementById('pocztaModal');
   if (!m) return;
+  POCZTA.currentTab = tab || POCZTA.currentTab || 'inbox';
+
+  const unreadCount = POCZTA.letters.filter(x => !x.read).length;
+  const sentList = POCZTA.getSent();
 
   const listEl = m.querySelector('.poczta-list');
   if (listEl) {
-    listEl.innerHTML = POCZTA.letters.map(l => `
-      <div class="letter-card ${l.read ? 'read' : 'unread'}" onclick="openLetterDetail('${l.id}')">
-        <div class="lc-head">
-          <span class="lc-badge">${l.badge}</span>
-          <small class="lc-date">${l.date}</small>
+    listEl.innerHTML = `
+      <div class="poczta-bar-row">
+        <div class="poczta-tabs">
+          <button type="button" class="ptab-btn ${POCZTA.currentTab === 'inbox' ? 'active' : ''}" onclick="openPocztaModal('inbox')">
+            Odebrane ${unreadCount ? `<span class="ptab-badge">${unreadCount}</span>` : ''}
+          </button>
+          <button type="button" class="ptab-btn ${POCZTA.currentTab === 'sent' ? 'active' : ''}" onclick="openPocztaModal('sent')">
+            Wysłane (${sentList.length})
+          </button>
         </div>
-        <b class="lc-subject">${l.subject}</b>
-        <div class="lc-sender">${l.sender}</div>
-        <div class="lc-foot">
-          <span class="lc-upo">📜 ${l.upo}</span>
-          ${!l.read ? '<span class="lc-new-dot">Nowe</span>' : ''}
-        </div>
+        <button type="button" class="btn-xs primary poczta-new-btn" onclick="openNowePismoModal()">
+          + Nowe pismo
+        </button>
       </div>
-    `).join('');
+
+      <div class="poczta-items-container">
+        ${POCZTA.currentTab === 'inbox' ? renderInboxLetters() : renderSentLetters()}
+      </div>
+    `;
   }
 
   m.classList.add('open');
   if (typeof openDialogFocus === 'function') openDialogFocus('pocztaModal', m);
+}
+
+function renderInboxLetters() {
+  if (!POCZTA.letters.length) {
+    return '<div class="poczta-empty">Brak wiadomości w skrzynce odbiorczej.</div>';
+  }
+  return POCZTA.letters.map(l => `
+    <div class="letter-card ${l.read ? 'read' : 'unread'}" onclick="openLetterDetail('${l.id}')">
+      <div class="lc-head">
+        <span class="lc-badge">${l.badge}</span>
+        <small class="lc-date">${l.date}</small>
+      </div>
+      <b class="lc-subject">${l.subject}</b>
+      <div class="lc-sender">${l.sender}</div>
+      <div class="lc-foot">
+        <span class="lc-upo">📜 ${l.upo}</span>
+        ${!l.read ? '<span class="lc-new-dot">Nowe</span>' : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderSentLetters() {
+  const sent = POCZTA.getSent();
+  if (!sent.length) {
+    return '<div class="poczta-empty">Brak wysłanych pism. Użyj przycisku „+ Nowe pismo”, aby nadać pismo do urzędu.</div>';
+  }
+  return sent.map(s => `
+    <div class="letter-card sent-card" onclick="openSentDetail('${s.id}')">
+      <div class="lc-head">
+        <span class="lc-badge sent">${s.badge || 'Podmiot Publiczny'}</span>
+        <small class="lc-date">${s.date}</small>
+      </div>
+      <b class="lc-subject">${s.subject}</b>
+      <div class="lc-sender">Do: <b>${s.recipient}</b></div>
+      <div class="lc-foot">
+        <span class="lc-upo upp-badge">🛡️ ${s.upp}</span>
+        <span class="lc-status-signed">✓ Podpisane mDowodem</span>
+      </div>
+    </div>
+  `).join('');
 }
 
 function closePocztaModal() {
@@ -111,7 +191,7 @@ function openLetterDetail(letterId) {
   l.read = true;
   updateBadges();
 
-  const msg = `📨 ${l.sender}\n\nTemat: ${l.subject}\nData: ${l.date}\nUPO: ${l.upo}\n\n${l.content}\n\nCzy chcesz pobrać oficjalne Urzędowe Poświadczenie Odbioru (UPO .xml)?`;
+  const msg = `📬 ${l.sender}\n\nTemat: ${l.subject}\nData: ${l.date}\nUPO: ${l.upo}\n\n${l.content.replace(/\\n/g, '\n')}\n\nCzy chcesz pobrać oficjalne Urzędowe Poświadczenie Odbioru (UPO .xml)?`;
   if (confirm(msg)) {
     if (typeof exportUpoToFile === 'function') {
       exportUpoToFile({
@@ -122,7 +202,151 @@ function openLetterDetail(letterId) {
       });
     }
   }
-  openPocztaModal();
+  openPocztaModal('inbox');
+}
+
+function openSentDetail(sentId) {
+  const s = POCZTA.getSent().find(x => x.id === sentId);
+  if (!s) return;
+  const msg = `📤 Pismo wysłane do: ${s.recipient}\n\nTemat: ${s.subject}\nData nadania: ${s.date}\nUPP: ${s.upp}\nSkrót SHA-256: ${s.sha256 || 'a4f9...8ef'}\n\nTreść:\n${s.content}\n\nCzy chcesz pobrać Urzędowe Poświadczenie Przedłożenia (UPP)?`;
+  if (confirm(msg)) {
+    if (typeof exportUpoToFile === 'function') {
+      exportUpoToFile({
+        tytul: s.subject,
+        nadawca: typeof OS !== 'undefined' ? OS.nazwisko : 'Obywatel',
+        odbiorca: s.recipient,
+        dataDoreczenia: s.date,
+        sumaKontrolna: s.upp
+      });
+    }
+  }
+}
+
+// ----------------- MODAL: KREATOR NOWEGO PISMA I E-PODPIS -----------------
+function openNowePismoModal() {
+  const m = document.getElementById('nowePismoModal');
+  if (!m) return;
+
+  const wrap = m.querySelector('#pismoFormWrap');
+  if (wrap) {
+    wrap.innerHTML = `
+      <div class="pismo-form">
+        <div class="pf-group">
+          <label for="pismoRecipient">Wybierz urząd lub instytucję (adresat):</label>
+          <select id="pismoRecipient" class="pf-select">
+            <option value="Pierwszy Urząd Skarbowy w Krakowie">Pierwszy Urząd Skarbowy w Krakowie</option>
+            <option value="Urząd Miasta Krakowa">Urząd Miasta Krakowa (Wydział Spraw Administracyjnych)</option>
+            <option value="Zakład Ubezpieczeń Społecznych (ZUS)">Zakład Ubezpieczeń Społecznych (Oddział w Krakowie)</option>
+            <option value="Narodowy Fundusz Zdrowia (NFZ)">Małopolski Oddział Wojewódzki NFZ</option>
+            <option value="Komenda Miejska Policji">Komenda Miejska Policji w Krakowie</option>
+            <option value="Główny Inspektorat Ochrony Środowiska (GIOŚ)">Główny Inspektorat Ochrony Środowiska</option>
+          </select>
+        </div>
+
+        <div class="pf-group">
+          <label for="pismoType">Rodzaj pisma:</label>
+          <select id="pismoType" class="pf-select">
+            <option value="Pismo ogólne do podmiotu publicznego">Pismo ogólne do podmiotu publicznego</option>
+            <option value="Wniosek o wydanie zaświadczenia">Wniosek o wydanie zaświadczenia</option>
+            <option value="Odwołanie od decyzji administracyjnej">Odwołanie od decyzji administracyjnej</option>
+            <option value="Zawiadomienie / Zgłoszenie">Zawiadomienie / Zgłoszenie</option>
+          </select>
+        </div>
+
+        <div class="pf-group">
+          <label for="pismoSubject">Tytuł pisma / sprawy:</label>
+          <input type="text" id="pismoSubject" class="pf-input" placeholder="np. Wniosek o wydanie zaświadczenia o niezaleganiu" value="Wniosek o wydanie zaświadczenia o niezaleganiu">
+        </div>
+
+        <div class="pf-group">
+          <label for="pismoContent">Treść pisma:</label>
+          <textarea id="pismoContent" class="pf-textarea" rows="4" placeholder="Wpisz treść pisma urzędowego...">Wnoszę o wydanie urzędowego zaświadczenia potwierdzającego brak zaległości podatkowych na dzień złożenia niniejszego wniosku. Zaświadczenie jest wymagane do celów procedury kredytowej.</textarea>
+        </div>
+
+        <div class="pf-attachment-box">
+          <span class="pab-lbl">📎 Załączniki (opcjonalnie):</span>
+          <div class="pab-chip">
+            <span>📄 Pelnomocnictwo_2026.pdf (142 KB)</span>
+            <button type="button" class="pab-del" onclick="this.parentElement.remove()">✕</button>
+          </div>
+          <button type="button" class="btn-xs ghost" onclick="if(typeof showToast==='function')showToast('Dodano załącznik do pisma.')">+ Dodaj kolejny plik</button>
+        </div>
+
+        <div class="pf-signature-banner">
+          <span class="psb-ic">✍️</span>
+          <div>
+            <b>Kwalifikowany podpis elektroniczny mDowód</b>
+            <p>Pismo zostanie opatrzone urzędowym podpisem elektronicznym potwierdzającym Twoją tożsamość biometryczną.</p>
+          </div>
+        </div>
+
+        <div class="pf-actions">
+          <button type="button" class="btn ghost" onclick="closeNowePismoModal()">Anuluj</button>
+          <button type="button" class="btn primary pf-sign-btn" onclick="submitAndSignPismo()">
+            🔐 Podpisz biometrią i wyślij
+          </button>
+        </div>
+      </div>
+    `;
+  }
+
+  m.classList.add('open');
+  if (typeof openDialogFocus === 'function') openDialogFocus('nowePismoModal', m);
+}
+
+function closeNowePismoModal() {
+  const m = document.getElementById('nowePismoModal');
+  if (m) {
+    m.classList.remove('open');
+    if (typeof restoreDialogFocus === 'function') restoreDialogFocus('nowePismoModal');
+  }
+}
+
+function submitAndSignPismo() {
+  const subj = (document.getElementById('pismoSubject') || {}).value || 'Pismo ogólne';
+  const rec = (document.getElementById('pismoRecipient') || {}).value || 'Urząd Miasta';
+  const type = (document.getElementById('pismoType') || {}).value || 'Pismo ogólne';
+  const cont = (document.getElementById('pismoContent') || {}).value || 'Treść pisma...';
+
+  // Animacja biometrii Face ID
+  const faceEl = document.getElementById('faceid');
+  if (faceEl) {
+    faceEl.classList.add('active');
+    setTimeout(() => faceEl.classList.add('ok'), 600);
+    setTimeout(() => {
+      faceEl.classList.remove('active', 'ok');
+      finalizePismoSubmission(rec, subj, type, cont);
+    }, 1300);
+  } else {
+    finalizePismoSubmission(rec, subj, type, cont);
+  }
+}
+
+function finalizePismoSubmission(recipient, subject, type, content) {
+  const randNum = Math.floor(100000 + Math.random() * 900000);
+  const uppCode = `UPP/2026/11/${randNum}`;
+  const nowStr = new Date().toLocaleString('pl-PL', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
+
+  const newPismo = {
+    id: `sent_${Date.now()}`,
+    recipient: recipient,
+    subject: subject,
+    date: nowStr,
+    badge: type.split(' ')[0],
+    upp: uppCode,
+    sha256: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
+    content: content
+  };
+
+  POCZTA.addSent(newPismo);
+  closeNowePismoModal();
+
+  if (typeof showToast === 'function') {
+    showToast(`✓ Pismo wysłane! Wygenerowano ${uppCode}`);
+  }
+
+  // Otwarcie skrzynki w zakładce Wysłane
+  openPocztaModal('sent');
 }
 
 // ----------------- MODAL: CENTRUM POWIADOMIEŃ -----------------
@@ -181,7 +405,7 @@ function updateBadges() {
 // Podpięcie kliknięcia ikon nagłówka
 document.addEventListener('DOMContentLoaded', () => {
   const mb = document.getElementById('mailBtn');
-  if (mb) mb.onclick = openPocztaModal;
+  if (mb) mb.onclick = () => openPocztaModal('inbox');
   const bb = document.getElementById('bellBtn');
   if (bb) bb.onclick = openPowiadomieniaModal;
   updateBadges();
