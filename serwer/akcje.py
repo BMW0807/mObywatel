@@ -54,7 +54,7 @@ def przedsiebiorca(): return isinstance((P().get('firma') or {}).get('ceidg'), d
 
 def dziecko(a):
     """None = wniosek dla siebie; dict = małoletnie dziecko z rejestru PESEL; ValueError, gdy osoby nie ma wśród małoletnich dzieci."""
-    o = (a.get('osoba') or '').strip().lower()
+    o = re.sub(r'^dla\s+', '', str(a.get('osoba') or '').strip().lower())   # „dla Zosi” = Zosia
     ja = OSOBA['imie'].lower()
     if not o or o in ('ja', 'mnie', 'siebie', 'dla mnie') or o.split()[0] == ja: return None
     dzieci = [r for r in P()['rodzina'] if r.get('rola') in ('syn', 'córka') and r.get('wiek') is not None and r['wiek'] < 18]
@@ -449,7 +449,10 @@ def wykonaj(a, s):
     return dict(numer_szkody='2026/11/553 017', dalej='ubezpieczyciel potwierdzi i zacznie likwidację w 7 dni, wypłata zwykle do 30 dni'), dict(icon='check', tone='ok', title='Szkoda zgłoszona', source='Przekazane do ubezpieczyciela',
         rows=[['Numer szkody', '2026/11/553 017'], ['Dalej', 'ubezpieczyciel potwierdzi i zacznie likwidację w 7 dni'], ['Wypłata', 'zwykle do 30 dni']])
 
-def _wartosc(a): return float(str(a.get('cena', 0)).replace(' ', '').replace(' ', '').replace('zł', '').replace(',', '.') or 0)
+def _wartosc(a):
+    c = float(str(a.get('cena', 0)).replace(' ', '').replace(' ', '').replace('zł', '').replace(',', '.') or 0)
+    if c != c or c in (float('inf'), float('-inf')): raise ValueError('Podaj cenę pojazdu w złotych.')
+    return c
 @akcja('zloz_pcc3')
 def podglad(a, s):
     c = _wartosc(a)
@@ -504,26 +507,37 @@ def podglad(a, s):
 def wykonaj(a, s):
     return dict(zapisano=True), dict(icon='check', tone='ok', title='Zapisano na kurs', rows=[['Status', 'zapisano'], ['Przypomnienie', 'dzień wcześniej']])
 
+ROLE_ZENSKIE = ('żona', 'mama', 'matka', 'córka', 'siostra')
 def _osoby_podrozy(a):
-    dorosli = {r['imie'].split()[0].lower(): r['imie'] for r in P()['rodzina'] if r.get('wiek') is None or r['wiek'] >= 18}
+    dorosli = {r['imie'].split()[0].lower(): r for r in P()['rodzina'] if r.get('wiek') is None or r['wiek'] >= 18}
     ja = imie_nazwisko(); os_, sami = [ja], []
-    for o in a.get('osoby') or []:
-        k = (o or '').strip().split()[0].lower() if (o or '').strip() else ''
+    osoby = a.get('osoby') or []
+    if isinstance(osoby, str): osoby = [osoby]
+    for o in osoby:
+        o = str(o or '').strip()
+        k = o.split()[0].lower() if o else ''
         if not k or k == OSOBA['imie'].lower(): continue
         if k in dorosli: sami.append(dorosli[k])
         else: os_.append(o)
     return os_, sami
+def _sami_nota(sami):
+    """Kto z dorosłych zgłasza się sam: forma według płci tej osoby (z roli w rodzinie) i liczby osób."""
+    if not sami: return None
+    imiona = ', '.join(r['imie'] for r in sami)
+    if len(sami) > 1:
+        return '%s zgłoszą się %s w swoich mObywatelach.' % (imiona, 'same' if all(r['rola'] in ROLE_ZENSKIE for r in sami) else 'sami')
+    return '%s zgłosi się %s w swoim mObywatelu.' % (imiona, 'sama' if sami[0]['rola'] in ROLE_ZENSKIE else 'sam')
 @akcja('zglos_podroz')
 def podglad(a, s):
     os_, sami = _osoby_podrozy(a)
     rows = [['Kraj', a.get('kraj', '')]] + ([['Termin', 'od %s do %s' % (a.get('od', ''), a.get('do', ''))]] if a.get('od') or a.get('do') else []) + \
            [['Osoby', ', '.join(os_)], ['Komunikaty MSZ', 'SMS i e-mail']]
     return dict(icon='doc', title='Zgłoszenie podróży (Odyseusz)', source='MSZ', rows=rows,
-                note=('%s zgłosi się sam w swoim mObywatelu.' if P()['plec'] == 'K' else '%s zgłosi się sama w swoim mObywatelu.') % ', '.join(sami) if sami else None, label='Zgłoś podróż')
+                note=_sami_nota(sami), label='Zgłoś podróż')
 @akcja('zglos_podroz')
 def wykonaj(a, s):
     os_, sami = _osoby_podrozy(a)
-    return dict(zgloszono=True, osoby=os_, dorosli_zglaszaja_sie_sami=sami, powiadomienia='dodaj kraj do obserwowanych, wtedy push przez 6 miesięcy'), \
+    return dict(zgloszono=True, osoby=os_, dorosli_zglaszaja_sie_sami=[r['imie'] for r in sami], powiadomienia='dodaj kraj do obserwowanych, wtedy push przez 6 miesięcy'), \
         dict(icon='check', tone='ok', title='Podróż zgłoszona', rows=[['MSZ', 'skontaktuje się z Tobą w razie zagrożenia'], ['Powiadomienia', 'dodaj %s do obserwowanych' % a.get('kraj', 'kraj')]])
 
 def _glosowanie(a):
@@ -570,6 +584,9 @@ def pld_(s):
     try: return pl(d(s))
     except (ValueError, TypeError): return s or ''
 
+def _pkd(a):
+    p = a.get('pkd') or []
+    return p if isinstance(p, str) else ', '.join(str(x) for x in p)   # model czasem poda jeden kod jako tekst, nie listę
 FORMY = {'skala': 'skala podatkowa', 'liniowy': 'podatek liniowy 19%', 'ryczałt': 'ryczałt od przychodów ewidencjonowanych'}
 def _start(a):
     t = (a.get('data_rozpoczecia') or '').strip()
@@ -580,7 +597,7 @@ def _start(a):
 @akcja('zaloz_firme')
 def podglad(a, s):
     return dict(icon='doc', title='Wniosek CEIDG-1', source='CEIDG',
-                rows=[['Nazwa', a.get('nazwa', '')], ['PKD 2025', ', '.join(a.get('pkd') or [])], ['Start', a.get('data_rozpoczecia', '')], ['Adres', OSOBA['adres']],
+                rows=[['Nazwa', a.get('nazwa', '')], ['PKD 2025', _pkd(a)], ['Start', a.get('data_rozpoczecia', '')], ['Adres', OSOBA['adres']],
                       ['Podatek', FORMY.get(a.get('forma_opodatkowania'), a.get('forma_opodatkowania') or 'skala podatkowa')], ['e-Doręczenia', 'założę adres do e-Doręczeń firmy'],
                       ['NIP i REGON', 'nadane automatycznie'], ['Podpis', 'profil zaufany']],
                 note='Do ubezpieczeń w ZUS zgłosisz się w 7 dni od startu na biznes.gov.pl. VAT-R składasz osobno, jeśli będziesz płacić VAT.', label='Podpisz i wyślij')

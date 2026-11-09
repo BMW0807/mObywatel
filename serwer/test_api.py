@@ -265,6 +265,117 @@ class ApiTestCase(unittest.TestCase):
         self.assertIn('max-age=604800', h_wp.get('Cache-Control', ''))
         self.assertLess(len(b_wp), 100 * 1024)
 
+    def test_glos_diag_with_reserved_keys_does_not_crash(self):
+        # klucz 't' w diagnostyce kolidował z polem dziennika i dawał TypeError (500)
+        status, _, body = self.request('/api/glos', method='POST', data={'t': 'x', 'ts': 'y', 'wynik': 'cisza'})
+        self.assertEqual(status, 200)
+        self.assertTrue(json.loads(body.decode('utf-8')).get('ok'))
+
+    def test_agent_rejects_malformed_history_without_500(self):
+        def fake_llm(messages, keys, log_fn):
+            # agent dostaje tylko poprawne wiadomości (bez śmieci z klienta)
+            for m in messages:
+                self.assertIn(m['role'], ('user', 'assistant'))
+            return {'content': [{'type': 'text', 'text': 'Dzień dobry.'}]}
+
+        with mock.patch.object(agent, 'llm', side_effect=fake_llm):
+            status, _, body = self.request('/api/agent', method='POST', data={
+                'messages': [1, 'x', {'role': 'system', 'content': 'a'}, {'role': 'user'},
+                             {'role': 'user', 'content': [{'type': 'tool_use'}, 'zle']},
+                             {'role': 'user', 'content': 'Cześć'}],
+                'stan': 'zly', 'confirm': True, 'osoba': ['marta'], 'lang': 5,
+            })
+        self.assertEqual(status, 200, body)
+        r = json.loads(body.decode('utf-8'))
+        self.assertEqual(r['events'][0]['plain'], 'Dzień dobry.')
+
+        status2, _, _ = self.request('/api/agent', method='POST', data={'messages': [{'role': 'user', 'content': 5}]})
+        self.assertEqual(status2, 400)
+
+    def test_agent_confirm_action_error_is_tool_error_not_500(self):
+        calls = {'n': 0}
+
+        def fake_llm(messages, keys, log_fn):
+            calls['n'] += 1
+            if calls['n'] == 1:
+                return {'content': [{'type': 'tool_use', 'id': 'tu_pcc', 'name': 'zloz_pcc3', 'input': {'pojazd': 'Golf', 'cena': 5000}}]}
+            last = messages[-1]['content'][0]
+            self.assertEqual(last['type'], 'tool_result')
+            self.assertTrue(last.get('is_error'))
+            return {'content': [{'type': 'text', 'text': 'Nie udało się.'}]}
+
+        with mock.patch.object(agent, 'llm', side_effect=fake_llm):
+            st1, _, b1 = self.request('/api/agent', method='POST', data={'osoba': 'marta', 'messages': [{'role': 'user', 'content': 'PCC'}]})
+            self.assertEqual(st1, 200)
+            r1 = json.loads(b1.decode('utf-8'))
+            self.assertEqual(r1.get('czeka'), 'potwierdzenie')
+            # klient wysyła potwierdzenie z popsutą ceną: wykonanie zgłasza wyjątek
+            r1['messages'][-1]['content'][0]['input']['cena'] = 'nie wiem'
+            st2, _, b2 = self.request('/api/agent', method='POST', data={
+                'osoba': 'marta', 'messages': r1['messages'], 'stan': r1['stan'], 'confirm': {'id': 'tu_pcc', 'ok': True}})
+        self.assertEqual(st2, 200, b2)
+        self.assertEqual(json.loads(b2.decode('utf-8'))['events'][-1]['plain'], 'Nie udało się.')
+
+    def test_agent_leaked_tool_call_result_goes_back_to_model(self):
+        calls = {'n': 0}
+
+        def fake_llm(messages, keys, log_fn):
+            calls['n'] += 1
+            if calls['n'] == 1:
+                # wywołanie narzędzia wypisane w tekście, stop_reason end_turn
+                return {'content': [{'type': 'text', 'text': 'Sprawdzam. to=functions.moje_dokumenty {}'}], 'stop_reason': 'end_turn'}
+            last = messages[-1]['content'][0]
+            self.assertEqual(last['type'], 'tool_result')
+            self.assertIn('dokumenty', last['content'])
+            return {'content': [{'type': 'text', 'text': 'Masz ważny dowód.'}], 'stop_reason': 'end_turn'}
+
+        with mock.patch.object(agent, 'llm', side_effect=fake_llm):
+            status, _, body = self.request('/api/agent', method='POST', data={'osoba': 'marta', 'messages': [{'role': 'user', 'content': 'Moje dokumenty'}]})
+        self.assertEqual(status, 200)
+        self.assertEqual(calls['n'], 2)
+        self.assertEqual(json.loads(body.decode('utf-8'))['events'][-1]['plain'], 'Masz ważny dowód.')
+
+    def test_agent_partial_state_from_client(self):
+        def fake_llm(messages, keys, log_fn):
+            if not any(isinstance(m['content'], list) and any(b.get('type') == 'tool_result' for b in m['content']) for m in messages):
+                return {'content': [{'type': 'tool_use', 'id': 'tu_s', 'name': 'skrzynka', 'input': {}}]}
+            res = messages[-1]['content'][0]['content']
+            self.assertNotIn('blad', res)
+            return {'content': [{'type': 'text', 'text': 'OK'}]}
+
+        with mock.patch.object(agent, 'llm', side_effect=fake_llm):
+            status, _, body = self.request('/api/agent', method='POST', data={
+                'osoba': 'marta', 'stan': {'pesel': 'niezastrzeżony'}, 'messages': [{'role': 'user', 'content': 'Skrzynka'}]})
+        self.assertEqual(status, 200)
+        self.assertIn('pisma_wyslane', json.loads(body.decode('utf-8'))['stan'])
+
+    def test_voice_endpoints_validate_input_and_missing_key(self):
+        orig_keys = dict(server.KEYS)
+        try:
+            server.KEYS.update({'openai': 'test', 'openai@t': 9e18, 'elevenlabs': None, 'elevenlabs@t': 9e18})
+            st_tts, _, _ = self.request('/api/tts', method='POST', data={'text': '   '})
+            self.assertEqual(st_tts, 400)
+            st_stt, _, _ = self.request('/api/stt', method='POST', data=b'', headers={'Content-Type': 'audio/webm'})
+            self.assertEqual(st_stt, 400)
+            # ElevenLabs działa, ale po jego błędzie nie ma klucza OpenAI: 503 z opisem zamiast TypeError (500)
+            server.KEYS.update({'openai': None, 'elevenlabs': 'el'})
+            with mock.patch.object(server, 'el_pobierz', side_effect=OSError('siec')):
+                st_fb, _, b_fb = self.request('/api/tts', method='POST', data={'text': 'Dzień dobry'})
+            self.assertEqual(st_fb, 503, b_fb)
+        finally:
+            server.KEYS.clear(); server.KEYS.update(orig_keys)
+            server.EL_STOP.clear()
+
+    def test_bad_requests_return_4xx(self):
+        st_nul, _, _ = self.request('/a%00b.js')
+        self.assertEqual(st_nul, 400)
+        st_tok, _, _ = self.request('/api/znak/beat', method='POST', data='{"dev":"x","token":Infinity}',
+                                    headers={'Content-Type': 'application/json'})
+        self.assertEqual(st_tok, 400)
+        st_lang, _, body = self.request('/api/i18n/brak', method='POST', data={'lang': ['en'], 'teksty': 'abc'})
+        self.assertEqual(st_lang, 200)
+        self.assertEqual(json.loads(body.decode('utf-8')), {'t': {}})
+
     def test_zanonimizuj_scrubs_sensitive_tokens(self):
         raw = {
             'msg': 'PESEL 91071427765, dowód ABC 123456, tel +48 600 700 800, mail a@b.pl, klucz nvapi-1234567890abcdef'

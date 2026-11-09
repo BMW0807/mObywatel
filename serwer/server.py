@@ -101,6 +101,27 @@ GZIP_CACHE = {}
 
 class PayloadZaDuzy(Exception): pass
 class ZlyJSON(Exception): pass
+class BrakKlucza(Exception): pass
+
+ROLE = ('user', 'assistant')
+def _blok_ok(b):
+    if not isinstance(b, dict): return False
+    t = b.get('type')
+    if t == 'text': return isinstance(b.get('text'), str)
+    if t == 'tool_use': return isinstance(b.get('id'), str) and isinstance(b.get('name'), str) and isinstance(b.get('input', {}), dict)
+    if t == 'tool_result': return isinstance(b.get('tool_use_id'), str)
+    return False
+def wiadomosci(x):
+    """Historia rozmowy od klienta: tylko obiekty {role, content} z tekstem albo listą poprawnych bloków (inaczej agent wywraca się na KeyError)."""
+    if not isinstance(x, list): return []
+    out = []
+    for m in x:
+        if not isinstance(m, dict) or m.get('role') not in ROLE: continue
+        c = m.get('content')
+        if isinstance(c, list): c = [b for b in c if _blok_ok(b)]
+        elif not isinstance(c, str): continue
+        out.append(dict(role=m['role'], content=c))
+    return out
 
 # --- znak mObywatela: każde urządzenie pokazuje zmieniający się żeton; kto go zeskanuje, przekazuje dane jego właścicielowi ---
 ZN = {'devs': {}, 'skrz': {}, 'skan': {}}
@@ -167,10 +188,12 @@ def stt(data, ctype, lang='pl'):
         try:
             return json.loads(el_pobierz(req)).get('text', '').strip(), 'elevenlabs'
         except Exception as e: el_blad('stt', e)
+    klucz = k('openai')
+    if not klucz: raise BrakKlucza('rozpoznawanie mowy jest chwilowo niedostępne (błąd ElevenLabs, brak klucza OpenAI)')
     pola = {'model': STT_MODEL, 'prompt': STT_PROMPT if lang == 'pl' else 'mObywatel, mDowód, PESEL, ZUS, CEPiK, Face ID', 'response_format': 'json'}
     if kod: pola['language'] = kod
     body, ct = multipart(pola, plik)
-    req = urllib.request.Request('https://api.openai.com/v1/audio/transcriptions', data=body, headers={'Authorization': 'Bearer ' + k('openai'), 'Content-Type': ct})
+    req = urllib.request.Request('https://api.openai.com/v1/audio/transcriptions', data=body, headers={'Authorization': 'Bearer ' + klucz, 'Content-Type': ct})
     with urllib.request.urlopen(req, timeout=60) as r:
         return json.loads(r.read()).get('text', '').strip(), 'openai'
 
@@ -184,9 +207,11 @@ def tts(text, lang='pl'):
         try:
             return el_pobierz(req), 'elevenlabs'
         except Exception as e: el_blad('tts', e)
+    klucz = k('openai')
+    if not klucz: raise BrakKlucza('synteza mowy jest chwilowo niedostępna (błąd ElevenLabs, brak klucza OpenAI)')
     ins = TTS_INSTR if lang == 'pl' or lang not in tlumacz.JEZYKI else ('Speak %s with natural native pronunciation and accent. Tone: calm, friendly public-service clerk who helps concretely. Moderate pace; pronounce numbers, dates and codes clearly. Polish names and addresses: pronounce them the Polish way.' % tlumacz.JEZYKI[lang][0])
     body = json.dumps(dict(model=TTS_MODEL, voice=TTS_VOICE, input=text[:3500], instructions=ins, response_format='mp3')).encode()
-    req = urllib.request.Request('https://api.openai.com/v1/audio/speech', data=body, headers={'Authorization': 'Bearer ' + k('openai'), 'Content-Type': 'application/json'})
+    req = urllib.request.Request('https://api.openai.com/v1/audio/speech', data=body, headers={'Authorization': 'Bearer ' + klucz, 'Content-Type': 'application/json'})
     with urllib.request.urlopen(req, timeout=60) as r: return r.read(), 'openai'
 
 class H(SimpleHTTPRequestHandler):
@@ -339,8 +364,12 @@ class H(SimpleHTTPRequestHandler):
         if p in ('/komputer', '/komputer/'): p = '/komputer.html'
         elif p in ('/aplikacja', '/aplikacja/'): p = '/index.html'
         return self.serwer_statyczny(p, q, head_only=head_only)
-    def do_GET(self): return self._obsluz_get(head_only=False)
-    def do_HEAD(self): return self._obsluz_get(head_only=True)
+    def _get_bezpiecznie(self, head_only):
+        try: return self._obsluz_get(head_only=head_only)
+        except ValueError:   # np. bajt NUL w ścieżce pliku: os.path i open() zgłaszają ValueError
+            return self.js(dict(error='nieprawidłowy adres'), 400, head_only=head_only)
+    def do_GET(self): return self._get_bezpiecznie(False)
+    def do_HEAD(self): return self._get_bezpiecznie(True)
     def do_POST(self):
         p = urlparse(self.path).path
         try:
@@ -351,12 +380,17 @@ class H(SimpleHTTPRequestHandler):
                 return self.js(dict(error='Zbyt wiele żądań — odczekaj %d s i spróbuj ponownie.' % retry, retry_after=retry), 429, extra_headers={'Retry-After': str(retry)})
             if p == '/api/agent':
                 req = self.json_body(MAX_JSON_BODY)
-                msgs_in = req.get('messages') if isinstance(req.get('messages'), list) else []
+                msgs_in = wiadomosci(req.get('messages'))
+                if not isinstance(req.get('stan'), dict): req['stan'] = None
+                if not isinstance(req.get('confirm'), dict) or not isinstance(req['confirm'].get('id'), str): req['confirm'] = None
+                if not isinstance(req.get('osoba'), str): req['osoba'] = None
+                if not isinstance(req.get('lang'), str): req['lang'] = 'pl'
                 if zablokowane():
                     msgs = msgs_in + [{'role': 'assistant', 'content': [{'type': 'text', 'text': ODDAJ}]}]
                     log(dict(t='blokada', path=p))
                     return self.js(dict(messages=msgs, stan=req.get('stan'), events=[dict(t='text', html=ODDAJ, plain=ODDAJ)], czeka=None))
                 if not k(agent.PROVIDER): return self.js(dict(error='brak klucza API modelu'), 503)
+                if not msgs_in: return self.js(dict(error='brak wiadomości w rozmowie'), 400)
                 t0 = time.time()
                 user = msgs_in[-1] if msgs_in and isinstance(msgs_in[-1], dict) else None
                 u_txt = user.get('content') if user and isinstance(user.get('content'), str) else ''
@@ -366,15 +400,16 @@ class H(SimpleHTTPRequestHandler):
                 return self.js(dict(messages=msgs, stan=stan, events=events, czeka=czeka))
             if p == '/api/i18n/brak':
                 req = self.json_body(60000); lang = req.get('lang')
-                if lang not in tlumacz.JEZYKI or lang == 'pl': return self.js(dict(t={}))
-                teksty = [str(x)[:700] for x in (req.get('teksty') or [])][:150]
+                if not isinstance(lang, str) or lang not in tlumacz.JEZYKI or lang == 'pl': return self.js(dict(t={}))
+                teksty = req.get('teksty') if isinstance(req.get('teksty'), list) else []
+                teksty = [str(x)[:700] for x in teksty][:150]
                 d = tlumacz.przetlumacz(lang, teksty)   # tylko słownik; braki trafiają do rejestru, bez tłumaczenia maszynowego
                 log(dict(t='i18n', lang=lang, n=len(teksty), brak=len(teksty) - len(d)))
                 return self.js(dict(t=d))
             if p == '/api/znak/beat':
                 req = self.json_body(16384); dev = str(req.get('dev', ''))[:40]
                 try: tok = int(req.get('token')) & 0xffff
-                except (TypeError, ValueError): return self.js(dict(error='zly zeton'), 400)
+                except (TypeError, ValueError, OverflowError): return self.js(dict(error='zly zeton'), 400)
                 with _lock:
                     zn_clean(); now = time.time(); v = ZN['devs'].get(dev)
                     zajety = any(d != dev and now - w['t'] < 15 and tok in (w['token'], w.get('prev')) for d, w in ZN['devs'].items())
@@ -387,22 +422,25 @@ class H(SimpleHTTPRequestHandler):
                 return self.js(dict(otrzymane=otrz, skanuje=skanuje and not otrz, zmien=zajety))
             if p == '/api/znak/przekaz':
                 req = self.json_body(20000); to = req.get('to')
+                if not isinstance(to, str): return self.js(dict(ok=False, error='odbiorca niedostepny'), 404)
                 with _lock:
                     if to not in ZN['devs']: return self.js(dict(ok=False, error='odbiorca niedostepny'), 404)
                     ZN['skrz'].setdefault(to, []).append(dict(ok=bool(req.get('ok')), dane=req.get('dane') if req.get('ok') else None, t=time.time()))
-                log(dict(t='znak_przekaz', ok=bool(req.get('ok')), kind=ZN['devs'][to]['kind']))
+                    kind = ZN['devs'][to].get('kind')   # odczyt pod blokadą: urządzenie może zniknąć po zn_clean() w innym wątku
+                log(dict(t='znak_przekaz', ok=bool(req.get('ok')), kind=kind))
                 return self.js(dict(ok=True))
             if p == '/api/glos':   # diagnostyka nagrań porzuconych w przeglądarce (cisza, brak mikrofonu)
                 raw = self.body(4096)[:2000]
                 try: d = json.loads(raw or b'{}')
                 except ValueError: d = {}
                 if not isinstance(d, dict): d = {}
-                log(dict(t='glos_diag', **{k_: d[k_] for k_ in list(d)[:12] if isinstance(k_, str)}))
+                log(dict({k_: d[k_] for k_ in list(d)[:12] if isinstance(k_, str) and k_ not in ('t', 'ts')}, t='glos_diag'))
                 return self.js(dict(ok=True))
             if p == '/api/stt':
                 data = self.body(MAX_AUDIO_BODY)
                 if zablokowane(): return self.js(dict(text='🎤 nagranie'))
                 if not (k('openai') or el_ok('stt')): return self.js(dict(error='brak klucza do rozpoznawania mowy'), 503)
+                if not data: return self.js(dict(error='puste nagranie'), 400)
                 from urllib.parse import parse_qs
                 lang = (parse_qs(urlparse(self.path).query).get('lang') or ['pl'])[0]
                 t0 = time.time(); txt, kto = stt(data, self.headers.get('Content-Type') or 'audio/webm', lang if lang in tlumacz.JEZYKI else 'pl')
@@ -415,7 +453,8 @@ class H(SimpleHTTPRequestHandler):
                 if zablokowane(): return self.js(dict(error='blokada'), 503)
                 if not (k('openai') or el_ok('tts')): return self.js(dict(error='brak klucza do syntezy mowy'), 503)
                 t0 = time.time(); txt = str(req.get('text') or '').strip()
-                lang = req.get('lang') if req.get('lang') in tlumacz.JEZYKI else 'pl'
+                if not txt: return self.js(dict(error='brak tekstu do odczytania'), 400)
+                lang = req.get('lang') if isinstance(req.get('lang'), str) and req.get('lang') in tlumacz.JEZYKI else 'pl'
                 data, kto = TTS_CACHE.get((lang, txt)), 'cache'
                 if data is None:
                     data, kto = tts(txt, lang)
@@ -436,6 +475,8 @@ class H(SimpleHTTPRequestHandler):
             self.js(dict(error=str(e)), 413)
         except ZlyJSON as e:
             self.js(dict(error=str(e)), 400)
+        except BrakKlucza as e:
+            self.js(dict(error=str(e)), 503)
         except urllib.error.HTTPError as e:
             msg = e.read().decode('utf-8', 'replace')[:400]; log(dict(t='err', path=p, code=e.code, msg=msg)); self.js(dict(error=msg), 502)
         except Exception as e:

@@ -53,8 +53,9 @@ def _wczytaj():
         pliki_f = [pf] + [os.path.join(KAT, f) for f in sorted(os.listdir(KAT)) if f.endswith('_chunks.jsonl')]
         def linie(pliki):
             for p_ in pliki:
-                for l_ in open(p_, encoding='utf-8'):
-                    if l_.strip(): yield l_
+                with open(p_, encoding='utf-8') as f_:
+                    for l_ in f_:
+                        if l_.strip(): yield l_
         for l in linie(pliki_k):
             r = json.loads(l); karty[r['id']] = r
         df = Counter(); dl = 0; post = defaultdict(list); tyt = {}

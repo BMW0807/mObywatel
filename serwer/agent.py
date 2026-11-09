@@ -170,6 +170,7 @@ def openai(messages, key, log):
             elif it.get('type') == 'function_call':
                 try: args = json.loads(it.get('arguments') or '{}')
                 except Exception: args = {}
+                if not isinstance(args, dict): args = {}
                 content.append({'type': 'tool_use', 'id': it.get('call_id') or it.get('id'), 'name': it.get('name'), 'input': args})
         u = out.get('usage') or {}
         log(dict(t='llm', model=out.get('model', OPENAI_MODEL), tier=out.get('service_tier'), ms=int((time.time() - t0) * 1000),
@@ -276,7 +277,9 @@ def napraw_wyciek(content):
         if txt: out.append(dict(type='text', text=txt))
         if m and not any(x['type'] == 'tool_use' for x in content):
             try:
-                out.append(dict(type='tool_use', id='wyciek_%d' % int(time.time() * 1000), name=m.group(1), input=json.loads(m.group(2))))
+                a = json.loads(m.group(2))
+                if isinstance(a, dict):
+                    out.append(dict(type='tool_use', id='wyciek_%d' % int(time.time() * 1000), name=m.group(1), input=a))
             except Exception:
                 pass
     return out
@@ -386,10 +389,19 @@ def dodaj_mowe(ev):
         if e.get('t') not in ('chips', 'multi') or not o: continue
         e['mow'] = ('Możesz wybrać kilka: ' + ', '.join(o) if e['t'] == 'multi' else 'Do wyboru: ' + (', '.join(o[:-1]) + ' albo ' + o[-1] if len(o) > 1 else o[0])) + '.'
 
+def _stan(stan):
+    """Stan od klienta uzupełniamy o brakujące klucze (np. zapisany przez starszą wersję), żeby odczyty nie kończyły się KeyError."""
+    s = dane.stan_poczatkowy()
+    if isinstance(stan, dict): s.update(stan)
+    for k_, typ in (('zastrzezone', list), ('uniewaznione', list), ('zaplacone', list), ('pisma_wyslane', list), ('dzieci_nowe', list), ('zawieszone', dict)):
+        if not isinstance(s.get(k_), typ): s[k_] = typ()
+    if not isinstance(s.get('pesel'), str): s['pesel'] = dane.stan_poczatkowy()['pesel']
+    return s
+
 def _run(messages, stan, confirm, keys, log, osoba):
     _JEZ.j = 'pl'
     persony.ustaw(osoba)
-    stan = stan or dane.stan_poczatkowy()
+    stan = _stan(stan)
     events = []
     if confirm:
         last = messages[-1] if messages else None
@@ -402,15 +414,21 @@ def _run(messages, stan, confirm, keys, log, osoba):
             log(dict(t='qr', name=tu['name'], ok=bool(confirm.get('ok'))))
             messages.append({'role': 'user', 'content': [{'type': 'tool_result', 'tool_use_id': tu['id'], 'content': res}]})
         elif tu and tu['name'] in NAZWY_AKCJI:
+            blad = False
             if confirm.get('ok'):
-                d, karta = akcje.A[tu['name']]['wykonaj'](tu['input'], stan)
-                events.append(dict(t='card', **karta))
-                res = json.dumps(dict(wykonano=True, potwierdzono_face_id=True, wynik=d), ensure_ascii=False)
-                log(dict(t='akcja', name=tu['name'], input_keys=sorted((tu.get('input') or {}).keys()), ok=True))
+                try:
+                    d, karta = akcje.A[tu['name']]['wykonaj'](tu.get('input') or {}, stan)
+                    events.append(dict(t='card', **karta))
+                    res = json.dumps(dict(wykonano=True, potwierdzono_face_id=True, wynik=d), ensure_ascii=False)
+                    log(dict(t='akcja', name=tu['name'], input_keys=sorted((tu.get('input') or {}).keys()), ok=True))
+                except Exception as e:   # np. ValueError z wyjaśnieniem: nie wywracamy całej rozmowy, model dostaje błąd narzędzia
+                    res, blad = 'NIE wykonano. Błąd: %s' % e, True
             else:
                 res = 'Użytkowniczka anulowała na karcie potwierdzenia. NIE wykonano.'
                 log(dict(t='akcja', name=tu['name'], ok=False))
-            messages.append({'role': 'user', 'content': [{'type': 'tool_result', 'tool_use_id': tu['id'], 'content': res}]})
+            wynik = {'type': 'tool_result', 'tool_use_id': tu['id'], 'content': res}
+            if blad: wynik['is_error'] = True
+            messages.append({'role': 'user', 'content': [wynik]})
     napraw(messages)
     po_akcji = bool(confirm)
     czeka = None
@@ -419,7 +437,7 @@ def _run(messages, stan, confirm, keys, log, osoba):
         content = napraw_wyciek([b for b in out['content'] if b.get('type') in ('text', 'tool_use')])
         for b in content:
             if b['type'] == 'text': b['text'] = popraw_jezyk(b['text'], keys, log)
-        content = [dict(type='text', text=b['text']) if b['type'] == 'text' else dict(type='tool_use', id=b['id'], name=b['name'], input=b.get('input') or {}) for b in content if b['type'] != 'text' or b['text'].strip()]
+        content = [dict(type='text', text=b['text']) if b['type'] == 'text' else dict(type='tool_use', id=b['id'], name=b['name'], input=b['input'] if isinstance(b.get('input'), dict) else {}) for b in content if b['type'] != 'text' or b['text'].strip()]
         if not content:
             messages.append({'role': 'assistant', 'content': [dict(type='text', text='(brak odpowiedzi)')]}); break
         messages.append({'role': 'assistant', 'content': content})
@@ -464,7 +482,7 @@ def _run(messages, stan, confirm, keys, log, osoba):
                 czeka = 'potwierdzenie'
             else:
                 wyniki.append({'type': 'tool_result', 'tool_use_id': b['id'], 'content': 'Nieznane narzędzie', 'is_error': True})
-        if czeka or out.get('stop_reason') != 'tool_use' or not wyniki:
+        if czeka or not wyniki:   # wyniki odczytów oddajemy modelowi także przy wywołaniu odzyskanym z tekstu (stop_reason inny niż tool_use)
             break
         messages.append({'role': 'user', 'content': wyniki})
     return messages, stan, events, czeka

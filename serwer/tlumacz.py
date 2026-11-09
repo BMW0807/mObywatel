@@ -38,7 +38,7 @@ def slownik(lang):
         except OSError: mt = None
         if lang not in _cache or (mt and mt != _mtime.get(lang)):
             try:
-                d = json.load(open(p, encoding='utf-8'))
+                with open(p, encoding='utf-8') as f: d = json.load(f)
                 if lang in _cache: d.update({k_: v for k_, v in _cache[lang].items() if k_ not in d})
                 _cache[lang] = d
             except Exception: _cache.setdefault(lang, {})
@@ -48,7 +48,7 @@ def _zapisz(lang):
     """Zapis z połączeniem z plikiem (serwer i tłumaczenie wsadowe mogą pisać równolegle)."""
     p = os.path.join(KAT, lang + '.json'); tmp = p + '.tmp.%d' % os.getpid()
     try:
-        dysk = json.load(open(p, encoding='utf-8'))
+        with open(p, encoding='utf-8') as f: dysk = json.load(f)
         for k_, v in dysk.items(): _cache[lang].setdefault(k_, v)
     except Exception: pass
     with open(tmp, 'w', encoding='utf-8') as f: json.dump(_cache[lang], f, ensure_ascii=False, indent=0, sort_keys=True)
@@ -56,12 +56,14 @@ def _zapisz(lang):
     try: _mtime[lang] = os.path.getmtime(p)
     except OSError: pass
 def zrodla():
-    try: return set(json.load(open(os.path.join(KAT, '_zrodla.json'), encoding='utf-8')))
+    try:
+        with open(os.path.join(KAT, '_zrodla.json'), encoding='utf-8') as f: return set(json.load(f))
     except Exception: return set()
 def _dodaj_zrodla(xs):
     with _lock:
         z = zrodla(); n = len(z); z |= set(xs)
-        if len(z) != n: json.dump(sorted(z), open(os.path.join(KAT, '_zrodla.json'), 'w', encoding='utf-8'), ensure_ascii=False, indent=0)
+        if len(z) != n:
+            with open(os.path.join(KAT, '_zrodla.json'), 'w', encoding='utf-8') as f: json.dump(sorted(z), f, ensure_ascii=False, indent=0)
 
 
 TLUMACZ_MODEL = os.environ.get('TLUMACZ_MODEL', 'gpt-6-luna')   # model tłumaczenia rozmowy (gpt-5.4-mini był tańszy, ale słabszy)
@@ -70,7 +72,8 @@ _glos = {}
 def glosariusz(lang):
     """Skrót słowniczka języka do instrukcji tłumacza rozmowy (nazwy w oryginale, ustalone słowa, cztery pojęcia)."""
     if lang in _glos: return _glos[lang]
-    try: g = json.load(open(os.path.join(GLOS_KAT, lang + '.json'), encoding='utf-8'))
+    try:
+        with open(os.path.join(GLOS_KAT, lang + '.json'), encoding='utf-8') as f: g = json.load(f)
     except Exception: _glos[lang] = ''; return ''
     nazwy = '; '.join(f'{k} ({v})' if v else k for k, v in g.get('nazwy', {}).items() if '/' not in k and ',' not in k)
     terminy = '; '.join(f'{k} = {v}' for k, v in g.get('terminy', {}).items())
