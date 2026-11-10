@@ -4715,3 +4715,434 @@ a.btn.primary { color: var(--on-accent); }
 .service-card, .letter-card, .notif-item, .eplat-item, .poz-card, .zdarzenie-item, .rx-card { border-radius: 18px; }
 .sc-icon .ik { font-size: 22px; }
 .dark-mode .service-card, .dark-mode .letter-card, .dark-mode .notif-item, .dark-mode .rx-card, .dark-mode .poz-card { box-shadow: 0 1px 0 rgba(255,255,255,.04) inset, 0 8px 24px -16px rgba(0,0,0,.8); }
+
+
+/* ==========================================================================
+   STYLIZACJA 7 NOWYCH MODUŁÓW (GIOŚ, RODZINA, ZBYCIE, KRK, EMERYTURA, ODYSEUSZ, KARTY)
+   ========================================================================== */
+
+/* --- KATALOG USŁUG - KATEGORIE --- */
+.services-cat-block {
+  margin-bottom: 22px;
+}
+.services-cat-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink);
+  margin: 0 0 10px 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* --- 1. GIOŚ ZGŁOSZENIE --- */
+.gios-box { padding-bottom: 24px; }
+.gios-form-wrap { display: flex; flex-direction: column; gap: 14px; }
+.gfw-desc { font-size: 13px; color: var(--ink2); line-height: 1.45; background: #f8fafc; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--hair); }
+.gfw-label { font-size: 13px; font-weight: 700; color: var(--ink); display: block; margin-top: 2px; }
+.gios-cat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.gios-cat-btn {
+  background: #fff;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 10px;
+  text-align: left;
+  cursor: pointer;
+  transition: all .15s;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.gios-cat-btn.active {
+  border-color: #ea580c;
+  background: #fff7ed;
+  box-shadow: 0 0 0 2px rgba(234,88,12,.2);
+}
+.gcb-icon { font-size: 20px; }
+.gcb-name { font-size: 12px; font-weight: 700; color: var(--ink); }
+.gcb-desc { font-size: 10px; color: var(--ink2); line-height: 1.3; }
+.gfw-field { display: flex; flex-direction: column; gap: 5px; }
+.gfw-field label, .gfw-sublabel { font-size: 12px; font-weight: 600; color: var(--ink); }
+.gios-input, .gios-select, .gios-textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  font-size: 13px;
+  background: #fff;
+  color: var(--ink);
+  box-sizing: border-box;
+  font-family: inherit;
+}
+.gios-loc-box { position: relative; }
+.gios-gps-badge {
+  display: inline-block;
+  margin-top: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #059669;
+}
+.gios-photo-strip {
+  background: #f8fafc;
+  border: 1px dashed #cbd5e1;
+  border-radius: 10px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.gps-photo-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fff;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+  font-size: 12px;
+}
+.gpi-tag { font-weight: 700; color: var(--ink); }
+.gpi-ok { color: #059669; font-weight: 600; }
+.gios-anon-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--ink2);
+}
+.gios-actions { display: flex; gap: 8px; margin-top: 6px; }
+.gios-actions .btn { flex: 1; }
+.gios-success-card { text-align: center; padding: 16px 8px; }
+.gsc-icon { width: 56px; height: 56px; border-radius: 50%; background: #d1fae5; color: #059669; font-size: 28px; font-weight: 800; display: grid; place-items: center; margin: 0 auto 12px auto; }
+.gsc-title { font-size: 17px; font-weight: 700; color: var(--ink); display: block; margin-bottom: 4px; }
+.gsc-sub { font-size: 13px; color: var(--ink2); margin-bottom: 14px; }
+.gsc-ticket-box { background: #f8fafc; border: 1px solid var(--hair); border-radius: 10px; padding: 10px 14px; text-align: left; display: flex; flex-direction: column; gap: 6px; font-size: 12px; margin-bottom: 14px; }
+.gtb-row { display: flex; justify-content: space-between; }
+.gsc-note { font-size: 12px; color: var(--ink2); line-height: 1.4; margin-bottom: 16px; }
+.gsc-actions .btn { width: 100%; }
+
+/* --- 2. MOJA RODZINA I DZIECI --- */
+.rodzina-box { padding-bottom: 24px; }
+.rodzina-hero-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: linear-gradient(135deg, #fdf2f8, #fce7f3);
+  border: 1px solid #fbcfe8;
+  border-radius: 14px;
+  padding: 12px 14px;
+  margin-bottom: 16px;
+}
+.rhb-icon { font-size: 28px; flex: none; }
+.rodzina-hero-banner b { font-size: 14px; color: #831843; display: block; }
+.rodzina-hero-banner small { font-size: 11px; color: #9d174d; }
+.rodzina-kids-list { display: flex; flex-direction: column; gap: 14px; margin-bottom: 16px; }
+.kid-card {
+  background: #fff;
+  border: 1px solid var(--hair);
+  border-radius: 14px;
+  padding: 14px;
+  box-shadow: 0 2px 8px rgba(0,0,0,.04);
+}
+.kc-head { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.kc-avatar { width: 38px; height: 38px; border-radius: 50%; background: #f1f5f9; display: grid; place-items: center; font-size: 20px; flex: none; }
+.kc-name { font-size: 15px; font-weight: 700; color: var(--ink); display: block; }
+.kc-sub { font-size: 11px; color: var(--ink2); }
+.kc-badge { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 12px; margin-left: auto; }
+.kc-badge.ok { background: #d1fae5; color: #065f46; }
+.kc-docs-grid { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+.kc-doc-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 10px 12px;
+  cursor: pointer;
+  transition: background .15s;
+}
+.kc-doc-item:hover { background: #f1f5f9; }
+.kcd-ic { font-size: 20px; flex: none; }
+.kc-doc-item b { font-size: 13px; color: var(--ink); display: block; }
+.kc-doc-item small { font-size: 11px; color: var(--ink2); }
+.kcd-arr { margin-left: auto; color: var(--ink2); font-weight: 700; }
+.kc-benefits-box {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 11px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.kcb-row { display: flex; justify-content: space-between; }
+.rodzina-actions .btn { width: 100%; }
+
+/* --- 3. ZBYCIE POJAZDU --- */
+.zbycie-box { padding-bottom: 24px; }
+.zbycie-form-wrap { display: flex; flex-direction: column; gap: 12px; }
+.zfw-alert { background: #fffbeb; border: 1px solid #fef3c7; border-radius: 10px; padding: 10px 12px; font-size: 12px; }
+.zfw-alert b { color: #92400e; display: block; margin-bottom: 2px; }
+.zfw-alert p { color: #b45309; margin: 0; line-height: 1.35; }
+.zbycie-actions { display: flex; gap: 8px; margin-top: 6px; }
+.zbycie-actions .btn { flex: 1; }
+.zbycie-success-card { text-align: center; padding: 16px 8px; }
+.zsc-icon { width: 56px; height: 56px; border-radius: 50%; background: #d1fae5; color: #059669; font-size: 28px; font-weight: 800; display: grid; place-items: center; margin: 0 auto 12px auto; }
+.zsc-title { font-size: 18px; font-weight: 700; color: var(--ink); display: block; margin-bottom: 4px; }
+.zsc-sub { font-size: 13px; color: var(--ink2); margin-bottom: 14px; }
+.zsc-info-box { background: #f8fafc; border: 1px solid var(--hair); border-radius: 10px; padding: 12px 14px; text-align: left; display: flex; flex-direction: column; gap: 6px; font-size: 12px; margin-bottom: 16px; }
+.zib-row { display: flex; justify-content: space-between; }
+.zsc-actions .btn { width: 100%; }
+
+/* --- 4. KRAJOWY REJESTR KARNY (KRK) --- */
+.krk-box { padding-bottom: 24px; }
+.krk-doc-sheet {
+  background: #fff;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 14px;
+  padding: 16px;
+  box-shadow: 0 4px 14px rgba(0,0,0,.06);
+  margin-bottom: 14px;
+}
+.kds-head { display: flex; align-items: center; gap: 12px; border-bottom: 1px solid var(--hair); padding-bottom: 12px; margin-bottom: 12px; }
+.kds-emblem { font-size: 32px; flex: none; }
+.kds-titles span { font-size: 11px; letter-spacing: 1px; color: var(--ink2); font-weight: 700; display: block; }
+.kds-titles b { font-size: 14px; color: var(--ink); display: block; }
+.kds-titles small { font-size: 11px; color: #4338ca; font-weight: 700; }
+.kds-banner { text-align: center; margin-bottom: 14px; }
+.kds-banner b { font-size: 16px; font-weight: 800; color: var(--ink); display: block; }
+.kds-banner small { font-size: 10px; color: var(--ink2); display: block; }
+.kds-verdict-box {
+  background: #ecfdf5;
+  border: 1.5px solid #a7f3d0;
+  border-radius: 12px;
+  padding: 12px;
+  text-align: center;
+  margin-bottom: 14px;
+}
+.kvb-stamp { font-size: 10px; font-weight: 800; color: #047857; letter-spacing: 1px; margin-bottom: 2px; }
+.kvb-big-status { font-size: 26px; font-weight: 900; color: #065f46; letter-spacing: 1.5px; }
+.kvb-text { font-size: 11px; color: #047857; margin: 4px 0 0 0; line-height: 1.35; }
+.kds-data-grid { display: flex; flex-direction: column; gap: 6px; font-size: 12px; border-top: 1px solid var(--hair); border-bottom: 1px solid var(--hair); padding: 10px 0; margin-bottom: 10px; }
+.kdg-row { display: flex; justify-content: space-between; }
+.kds-legal-note { font-size: 10px; color: var(--ink2); line-height: 1.35; }
+.krk-actions-bar { display: flex; gap: 8px; }
+.krk-actions-bar .btn { flex: 1; }
+
+/* --- 5. KALKULATOR EMERYTURY ZUS --- */
+.emeryt-box { padding-bottom: 24px; }
+.emeryt-wrap { display: flex; flex-direction: column; gap: 14px; }
+.ew-hero {
+  background: linear-gradient(135deg, #f5f3ff, #ede9fe);
+  border: 1px solid #ddd6fe;
+  border-radius: 14px;
+  padding: 16px;
+  text-align: center;
+}
+.ew-sub { font-size: 11px; color: #5b21b6; font-weight: 600; display: block; margin-bottom: 6px; }
+.ew-age-badge { display: inline-block; background: #6d28d9; color: #fff; font-size: 13px; font-weight: 700; padding: 2px 10px; border-radius: 12px; margin-bottom: 6px; }
+.ew-amount { font-size: 30px; font-weight: 900; color: #4c1d95; display: block; }
+.ew-amount small { font-size: 14px; font-weight: 500; }
+.ew-diff { font-size: 12px; font-weight: 700; margin-top: 6px; }
+.ew-diff.plus { color: #059669; }
+.ew-diff.minus { color: #dc2626; }
+.ew-diff.std { color: #6b7280; }
+.ew-slider-box {
+  background: #f8fafc;
+  border: 1px solid var(--hair);
+  border-radius: 12px;
+  padding: 14px;
+}
+.esb-head { display: flex; justify-content: space-between; font-size: 13px; font-weight: 600; margin-bottom: 10px; }
+.ew-slider { width: 100%; accent-color: #6d28d9; height: 6px; cursor: pointer; }
+.esb-scale { display: flex; justify-content: space-between; font-size: 10px; color: var(--ink2); margin-top: 6px; }
+.ew-stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.esg-card { background: #fff; border: 1px solid var(--hair); border-radius: 10px; padding: 10px; font-size: 12px; }
+.esg-lbl { font-size: 11px; color: var(--ink2); display: block; margin-bottom: 2px; }
+.esg-val { font-size: 14px; font-weight: 700; color: var(--ink); }
+.ew-tip-box { background: #fffbeb; border: 1px solid #fde68a; border-radius: 10px; padding: 10px 12px; font-size: 11px; color: #92400e; line-height: 1.4; }
+.ew-actions { display: flex; gap: 8px; }
+.ew-actions .btn { flex: 1; }
+
+/* --- 6. ODYSEUSZ MSZ --- */
+.odyseusz-box { padding-bottom: 24px; }
+.ody-wrap { display: flex; flex-direction: column; gap: 12px; }
+.ody-hero { background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 12px; padding: 12px 14px; }
+.ody-tag { font-size: 10px; font-weight: 800; color: #0369a1; letter-spacing: .5px; display: block; margin-bottom: 4px; }
+.ody-hero b { font-size: 15px; color: #0c4a6e; display: block; margin-bottom: 4px; }
+.ody-hero p { font-size: 12px; color: #0369a1; margin: 0; line-height: 1.35; }
+.ody-consul-card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.occ-head { display: flex; gap: 10px; align-items: center; }
+.occ-flag { font-size: 24px; }
+.occ-head b { font-size: 13px; color: var(--ink); display: block; }
+.occ-head small { font-size: 11px; color: var(--ink2); }
+.occ-phone-row, .occ-level-row { display: flex; justify-content: space-between; font-size: 12px; border-top: 1px solid var(--hair); padding-top: 6px; }
+.ody-actions { display: flex; gap: 8px; margin-top: 4px; }
+.ody-actions .btn { flex: 1; }
+
+/* --- 7. ZASTRZEŻENIE KART ZBP --- */
+.karty-box { padding-bottom: 24px; }
+.karty-wrap { display: flex; flex-direction: column; gap: 12px; }
+.karty-alert-hero {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #fef2f2;
+  border: 1.5px solid #fecaca;
+  border-radius: 12px;
+  padding: 12px 14px;
+}
+.kah-ic { font-size: 26px; flex: none; }
+.karty-alert-hero b { font-size: 14px; color: #991b1b; display: block; }
+.karty-alert-hero p { font-size: 12px; color: #b91c1c; margin: 2px 0 0 0; }
+.karty-hotline-box {
+  background: #f8fafc;
+  border: 1px solid var(--hair);
+  border-radius: 12px;
+  padding: 12px;
+  text-align: center;
+}
+.khb-lbl { font-size: 11px; color: var(--ink2); display: block; }
+.khb-phone { font-size: 24px; font-weight: 900; color: #dc2626; display: block; margin: 2px 0; }
+.khb-phone a { color: inherit; text-decoration: none; }
+.karty-hotline-box small { font-size: 11px; color: var(--ink2); }
+.karty-sec-h { font-size: 13px; font-weight: 700; color: var(--ink); display: block; margin-top: 4px; }
+.karty-bank-list { display: flex; flex-direction: column; gap: 8px; }
+.kbl-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fff;
+  border: 1px solid var(--hair);
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+.kbli-info b { font-size: 13px; color: var(--ink); display: block; }
+.kbli-info small { font-size: 11px; color: var(--ink2); }
+.kbli-status { font-size: 11px; font-weight: 700; color: #059669; padding: 3px 8px; border-radius: 6px; background: #ecfdf5; }
+.kbli-status.blocked { color: #dc2626; background: #fee2e2; }
+.danger-btn { background: #dc2626 !important; border-color: #dc2626 !important; color: #fff !important; font-weight: 700; }
+.karty-actions { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
+
+/* ==========================================================================
+   TRYB CIEMNY (.phone.dark-mode) - 7 NOWYCH MODUŁÓW
+   ========================================================================== */
+.phone.dark-mode .services-cat-title { color: #f1f5f9; }
+.phone.dark-mode .gios-cat-btn,
+.phone.dark-mode .gfw-desc,
+.phone.dark-mode .gsc-ticket-box,
+.phone.dark-mode .kid-card,
+.phone.dark-mode .kc-doc-item,
+.phone.dark-mode .zsc-info-box,
+.phone.dark-mode .krk-doc-sheet,
+.phone.dark-mode .ew-slider-box,
+.phone.dark-mode .esg-card,
+.phone.dark-mode .ody-consul-card,
+.phone.dark-mode .karty-hotline-box,
+.phone.dark-mode .kbl-item {
+  background: #1e2430 !important;
+  border-color: rgba(255,255,255,0.12) !important;
+  color: #f1f5f9 !important;
+}
+.phone.dark-mode .gios-cat-btn.active {
+  background: rgba(234,88,12,0.2) !important;
+  border-color: #ea580c !important;
+}
+.phone.dark-mode .gios-input,
+.phone.dark-mode .gios-select,
+.phone.dark-mode .gios-textarea {
+  background: #141824 !important;
+  border-color: rgba(255,255,255,0.2) !important;
+  color: #ffffff !important;
+}
+.phone.dark-mode .rodzina-hero-banner {
+  background: rgba(236,72,153,0.15) !important;
+  border-color: rgba(236,72,153,0.3) !important;
+}
+.phone.dark-mode .rodzina-hero-banner b { color: #f472b6 !important; }
+.phone.dark-mode .rodzina-hero-banner small { color: #fbcfe8 !important; }
+.phone.dark-mode .kc-benefits-box {
+  background: rgba(16,185,129,0.15) !important;
+  border-color: rgba(16,185,129,0.3) !important;
+}
+.phone.dark-mode .ew-hero {
+  background: rgba(109,40,217,0.2) !important;
+  border-color: rgba(109,40,217,0.35) !important;
+}
+.phone.dark-mode .ew-amount { color: #c4b5fd !important; }
+.phone.dark-mode .ew-sub { color: #ddd6fe !important; }
+.phone.dark-mode .ody-hero {
+  background: rgba(14,165,233,0.15) !important;
+  border-color: rgba(14,165,233,0.3) !important;
+}
+.phone.dark-mode .ody-hero b,
+.phone.dark-mode .ody-hero p,
+.phone.dark-mode .ody-tag { color: #7dd3fc !important; }
+.phone.dark-mode .karty-alert-hero {
+  background: rgba(239,68,68,0.15) !important;
+  border-color: rgba(239,68,68,0.3) !important;
+}
+.phone.dark-mode .karty-alert-hero b,
+.phone.dark-mode .karty-alert-hero p { color: #fca5a5 !important; }
+.phone.dark-mode .kvb-big-status { color: #34d399 !important; }
+.phone.dark-mode .kds-verdict-box {
+  background: rgba(16,185,129,0.15) !important;
+  border-color: rgba(16,185,129,0.3) !important;
+}
+
+/* ==========================================================================
+   WYSOKI KONTRAST (.high-contrast) - 7 NOWYCH MODUŁÓW
+   ========================================================================== */
+.high-contrast .services-cat-title { color: #ffd700 !important; }
+.high-contrast .gios-cat-btn,
+.high-contrast .gfw-desc,
+.high-contrast .gsc-ticket-box,
+.high-contrast .rodzina-hero-banner,
+.high-contrast .kid-card,
+.high-contrast .kc-doc-item,
+.high-contrast .zfw-alert,
+.high-contrast .zsc-info-box,
+.high-contrast .krk-doc-sheet,
+.high-contrast .kds-verdict-box,
+.high-contrast .ew-hero,
+.high-contrast .ew-slider-box,
+.high-contrast .esg-card,
+.high-contrast .ew-tip-box,
+.high-contrast .ody-hero,
+.high-contrast .ody-consul-card,
+.high-contrast .karty-alert-hero,
+.high-contrast .karty-hotline-box,
+.high-contrast .kbl-item {
+  background: #000000 !important;
+  border: 2px solid #ffd700 !important;
+  color: #ffffff !important;
+}
+.high-contrast .gios-cat-btn.active,
+.high-contrast .kc-badge.ok,
+.high-contrast .kbli-status {
+  background: #ffd700 !important;
+  color: #000000 !important;
+  font-weight: 800 !important;
+}
+.high-contrast .gios-input,
+.high-contrast .gios-select,
+.high-contrast .gios-textarea {
+  background: #000000 !important;
+  border: 2px solid #ffd700 !important;
+  color: #ffffff !important;
+}
+.high-contrast .ew-amount,
+.high-contrast .khb-phone,
+.high-contrast .kvb-big-status {
+  color: #ffd700 !important;
+}

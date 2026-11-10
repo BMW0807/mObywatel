@@ -268,6 +268,8 @@ class H(SimpleHTTPRequestHandler):
         if not isinstance(d, dict): raise ZlyJSON('Oczekiwano obiektu JSON')
         return d
     def serwer_statyczny(self, rel_path, query='', head_only=False):
+        if '\x00' in rel_path or '\x00' in unquote(rel_path):
+            raise ValueError('NUL byte w ścieżce')
         root_real = os.path.realpath(ROOT)
         clean = os.path.normpath(unquote(rel_path).lstrip('/\\'))
         if clean in ('', '.'): clean = 'index.html'

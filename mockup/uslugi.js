@@ -1039,6 +1039,744 @@ USLUGI.toggleSmogAlert = function() {
 };
 
 // ----------------- WIDOK KATALOGU USŁUG (#viewServices) -----------------
+
+// ==========================================================================
+// 7 NOWYCH MODUŁÓW E-USŁUG mObywatel 2.0
+// ==========================================================================
+
+// ----------------- 1. ZGŁOŚ NARUSZENIE ŚRODOWISKOWE (GIOŚ) -----------------
+let giosSelectedCategory = 'dzikie_wysypisko';
+
+function openGiosModal() {
+  const m = document.getElementById('giosZgloszenieModal');
+  if (!m) return;
+  giosSelectedCategory = 'dzikie_wysypisko';
+  renderGiosForm();
+  m.classList.add('open');
+  if (typeof openDialogFocus === 'function') openDialogFocus('giosZgloszenieModal', m);
+}
+
+function closeGiosModal() {
+  const m = document.getElementById('giosZgloszenieModal');
+  if (m) {
+    m.classList.remove('open');
+    if (typeof restoreDialogFocus === 'function') restoreDialogFocus('giosZgloszenieModal');
+  }
+}
+
+function renderGiosForm() {
+  const box = document.getElementById('giosContent');
+  if (!box) return;
+
+  const cats = [
+    { id: 'dzikie_wysypisko', icon: '🗑️', name: 'Dzikie wysypisko', desc: 'Nielegalne składowanie odpadów, opon, gruzu' },
+    { id: 'scieki_woda', icon: '🚯', name: 'Zanieczyszczenie wód', desc: 'Wylewanie ścieków do rzeki, rowu, jeziora' },
+    { id: 'dym_ogien', icon: '💨', name: 'Spalanie odpadów', desc: 'Dymiący komin, palenie plastików, lakierów' },
+    { id: 'odpady_niebezpieczne', icon: '☣️', name: 'Odpady niebezpieczne', desc: 'Beczki z chemikaliami, azbest, odpady medyczne' }
+  ];
+
+  box.innerHTML = `
+    <div class="gios-form-wrap">
+      <div class="gfw-desc">
+        Główny Inspektorat Ochrony Środowiska przyjmuje zgłoszenia o zdarzeniach mogących niekorzystnie wpływać na środowisko.
+      </div>
+
+      <b class="gfw-label">Wybierz kategorię naruszenia:</b>
+      <div class="gios-cat-grid">
+        ${cats.map(c => `
+          <button type="button" class="gios-cat-btn ${giosSelectedCategory === c.id ? 'active' : ''}" onclick="selectGiosCategory('${c.id}')">
+            <span class="gcb-icon">${c.icon}</span>
+            <span class="gcb-name">${c.name}</span>
+            <small class="gcb-desc">${c.desc}</small>
+          </button>
+        `).join('')}
+      </div>
+
+      <div class="gfw-field">
+        <label for="giosLocInput">Lokalizacja zdarzenia (geotagowanie GPS):</label>
+        <div class="gios-loc-box">
+          <input type="text" id="giosLocInput" class="gios-input" value="Kraków, rejon ul. Lipskiej (GPS: 50.0482°N, 19.9821°E)" readonly>
+          <span class="gios-gps-badge">📍 GPS precyzyjny (±4m)</span>
+        </div>
+      </div>
+
+      <div class="gfw-field">
+        <label for="giosDescInput">Opis sytuacji / uwagi dla inspektorów:</label>
+        <textarea id="giosDescInput" class="gios-textarea" rows="3" placeholder="Opisz co zauważyłeś, np. porzucone opony i odpady budowlane na skraju lasu...">Porzucone odpady budowlane i kilkanaście zużytych opon ciężarowych na skraju nieużytków.</textarea>
+      </div>
+
+      <div class="gfw-field">
+        <span class="gfw-sublabel">Dokumentacja fotograficzna (aparat):</span>
+        <div class="gios-photo-strip">
+          <div class="gps-photo-item">
+            <span class="gpi-tag">📷 Foto 1</span>
+            <small>ZDJECIE_20261110_1028.JPG (2.4 MB)</small>
+            <span class="gpi-ok">✓ Załączono</span>
+          </div>
+          <button type="button" class="btn-xs ghost" onclick="if(typeof showToast==='function')showToast('Symulacja: zrobiono dodatkowe zdjęcie terenu')">+ Zrób kolejne zdjęcie</button>
+        </div>
+      </div>
+
+      <div class="gios-anon-toggle">
+        <input type="checkbox" id="giosAnonCheck" class="gios-check">
+        <label for="giosAnonCheck">Zgłoszenie anonimowe (dane zgłaszającego nie zostaną przekazane)</label>
+      </div>
+
+      <div class="gios-actions">
+        <button type="button" class="btn ghost" onclick="closeGiosModal()">Anuluj</button>
+        <button type="button" class="btn primary" onclick="submitGiosReport()">🚨 Wyślij zgłoszenie do GIOŚ</button>
+      </div>
+    </div>
+  `;
+}
+
+function selectGiosCategory(catId) {
+  giosSelectedCategory = catId;
+  renderGiosForm();
+}
+
+function submitGiosReport() {
+  const box = document.getElementById('giosContent');
+  if (!box) return;
+
+  const ticketId = `GIOS/2026/WM/${Math.floor(10000 + Math.random() * 90000)}`;
+
+  box.innerHTML = `
+    <div class="gios-success-card">
+      <div class="gsc-icon">✓</div>
+      <b class="gsc-title">Zgłoszenie zostało zarejestrowane!</b>
+      <p class="gsc-sub">Informacja trafiła do Wojewódzkiego Inspektoratu Ochrony Środowiska (WIOŚ).</p>
+      
+      <div class="gsc-ticket-box">
+        <div class="gtb-row"><span>Numer sprawy:</span><b class="vin-mono">${ticketId}</b></div>
+        <div class="gtb-row"><span>Data i godzina:</span><b>${new Date().toLocaleString('pl-PL')}</b></div>
+        <div class="gtb-row"><span>Status:</span><b style="color:#059669">Przekazano inspektorom dyżurnym</b></div>
+        <div class="gtb-row"><span>Weryfikacja w terenie:</span><b>W trakcie planowania</b></div>
+      </div>
+
+      <p class="gsc-note">Dziękujemy za obywatelską postawę i dbałość o czyste środowisko naturalne.</p>
+
+      <div class="gsc-actions">
+        <button type="button" class="btn primary" onclick="closeGiosModal()">Wróć do usług</button>
+      </div>
+    </div>
+  `;
+
+  if (typeof showToast === 'function') {
+    showToast(`✓ Zgłoszenie przyjęte przez GIOŚ (${ticketId})`);
+  }
+}
+
+// ----------------- 2. MOJA RODZINA I DZIECI -----------------
+function openRodzinaModal() {
+  const m = document.getElementById('rodzinaDzieciModal');
+  if (!m) return;
+
+  const box = document.getElementById('rodzinaContent');
+  if (box) {
+    box.innerHTML = `
+      <div class="rodzina-hero-banner">
+        <div class="rhb-icon">👨‍👩‍👧‍👦</div>
+        <div>
+          <b>Centrum Rodziny i Dokumenty Dzieci</b>
+          <small>Cyfrowe legitymacje szkolne, recepty i świadczenia ZUS dla Twoich dzieci</small>
+        </div>
+      </div>
+
+      <div class="rodzina-kids-list">
+        <!-- Dziecko 1 -->
+        <div class="kid-card">
+          <div class="kc-head">
+            <div class="kc-avatar">👧</div>
+            <div>
+              <b class="kc-name">Zofia Wiśniewska</b>
+              <small class="kc-sub">12 lat • PESEL: 14281504928</small>
+            </div>
+            <span class="kc-badge ok">Szkoła Podstawowa</span>
+          </div>
+
+          <div class="kc-docs-grid">
+            <div class="kc-doc-item" onclick="openChildSchoolCard('Zofia Wiśniewska')">
+              <span class="kcd-ic">🪪</span>
+              <div>
+                <b>mLegitymacja Szkolna</b>
+                <small>SP nr 26 w Krakowie • Ważna do 30.09.2027</small>
+              </div>
+              <span class="kcd-arr">→</span>
+            </div>
+
+            <div class="kc-doc-item" onclick="openChildPrescriptions('Zofia')">
+              <span class="kcd-ic">💊</span>
+              <div>
+                <b>e-Recepty i Zdrowie (IKP)</b>
+                <small>1 aktywna e-Recepta (Amoksiklav) • Bilans 10-latka</small>
+              </div>
+              <span class="kcd-arr">→</span>
+            </div>
+          </div>
+
+          <div class="kc-benefits-box">
+            <div class="kcb-row">
+              <span>Program Rodzina 800+:</span>
+              <b style="color:#059669">✓ Przyznane (800 zł / m-c)</b>
+            </div>
+            <div class="kcb-row">
+              <span>Program Dobry Start 300+:</span>
+              <b>✓ Wypłacono na rok 2026/2027</b>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dziecko 2 -->
+        <div class="kid-card">
+          <div class="kc-head">
+            <div class="kc-avatar">👦</div>
+            <div>
+              <b class="kc-name">Piotr Wiśniewski</b>
+              <small class="kc-sub">8 lat • PESEL: 18231201941</small>
+            </div>
+            <span class="kc-badge ok">Szkoła Podstawowa</span>
+          </div>
+
+          <div class="kc-docs-grid">
+            <div class="kc-doc-item" onclick="openChildSchoolCard('Piotr Wiśniewski')">
+              <span class="kcd-ic">🪪</span>
+              <div>
+                <b>mLegitymacja Szkolna</b>
+                <small>SP nr 26 w Krakowie • Ważna do 30.09.2027</small>
+              </div>
+              <span class="kcd-arr">→</span>
+            </div>
+          </div>
+
+          <div class="kc-benefits-box">
+            <div class="kcb-row">
+              <span>Program Rodzina 800+:</span>
+              <b style="color:#059669">✓ Przyznane (800 zł / m-c)</b>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="rodzina-actions">
+        <button type="button" class="btn secondary" onclick="closeRodzinaModal();if(typeof openDoc==='function')openDoc('kdr')">
+          💳 Karta Dużej Rodziny (KDR)
+        </button>
+      </div>
+    `;
+  }
+
+  m.classList.add('open');
+  if (typeof openDialogFocus === 'function') openDialogFocus('rodzinaDzieciModal', m);
+}
+
+function closeRodzinaModal() {
+  const m = document.getElementById('rodzinaDzieciModal');
+  if (m) {
+    m.classList.remove('open');
+    if (typeof restoreDialogFocus === 'function') restoreDialogFocus('rodzinaDzieciModal');
+  }
+}
+
+function openChildSchoolCard(childName) {
+  if (typeof showToast === 'function') {
+    showToast(`Otwarto oficjalną mLegitymację szkolną dla: ${childName}`);
+  }
+  closeRodzinaModal();
+  if (typeof openDoc === 'function') openDoc('legitymacja-szkolna');
+}
+
+function openChildPrescriptions(childName) {
+  closeRodzinaModal();
+  if (typeof openIkpModal === 'function') openIkpModal('recepty');
+}
+
+// ----------------- 3. ZGŁOSZENIE ZBYCIA POJAZDU (CEPiK) -----------------
+function openZbycieModal(presetPlate) {
+  const m = document.getElementById('zbyciePojazduModal');
+  if (!m) return;
+
+  const box = document.getElementById('zbycieContent');
+  if (box) {
+    box.innerHTML = `
+      <div class="zbycie-form-wrap">
+        <div class="zfw-alert">
+          <b>⚠️ Obowiązek ustawowy:</b>
+          <p>Zgłoś sprzedaż pojazdu w ciągu 30 dni od podpisania umowy, aby uniknąć kary finansowej (art. 78 ustawy Prawo o ruchu drogowym) i zabezpieczyć się przed mandatami nowego właściciela.</p>
+        </div>
+
+        <div class="gfw-field">
+          <label for="zbycieVehSelect">Wybierz sprzedany pojazd:</label>
+          <select id="zbycieVehSelect" class="gios-select">
+            <option value="SKODA">Skoda Octavia (KR 7821P) • VIN: TMBJJ7NE1KZ129482</option>
+            <option value="FIAT">Fiat Panda (LU 5521P) • VIN: ZFA31200005192841</option>
+          </select>
+        </div>
+
+        <div class="gfw-field">
+          <label for="zbycieBuyerType">Kto kupił pojazd?</label>
+          <select id="zbycieBuyerType" class="gios-select">
+            <option value="osoba">Osoba fizyczna (PESEL)</option>
+            <option value="firma">Firma / Przedsiębiorca (NIP)</option>
+          </select>
+        </div>
+
+        <div class="gfw-field">
+          <label for="zbycieBuyerName">Imię i nazwisko / Nazwa nabywcy:</label>
+          <input type="text" id="zbycieBuyerName" class="gios-input" value="Marek Zieliński" placeholder="np. Jan Kowalski">
+        </div>
+
+        <div class="gfw-field">
+          <label for="zbycieBuyerId">Numer PESEL / NIP nabywcy:</label>
+          <input type="text" id="zbycieBuyerId" class="gios-input" value="84092109412" placeholder="11 cyfr PESEL">
+        </div>
+
+        <div class="gfw-field">
+          <label for="zbycieDate">Data zawarcia umowy sprzedaży:</label>
+          <input type="date" id="zbycieDate" class="gios-input" value="2026-11-08">
+        </div>
+
+        <div class="gfw-field">
+          <label for="zbyciePrice">Kwota transakcji z umowy (zł):</label>
+          <input type="number" id="zbyciePrice" class="gios-input" value="38500" placeholder="np. 38500">
+        </div>
+
+        <div class="gfw-field">
+          <span class="gfw-sublabel">Skan / zdjęcie umowy kupna-sprzedaży:</span>
+          <div class="pab-chip">
+            <span>📄 Umowa_sprzedazy_Skoda_Octavia_podpisana.pdf (420 KB)</span>
+            <span style="color:#059669;font-weight:700">✓ Gotowy do wysyłki</span>
+          </div>
+        </div>
+
+        <div class="pf-signature-banner">
+          <span class="psb-ic">✍️</span>
+          <div>
+            <b>Podpis mDowodem</b>
+            <p>Zgłoszenie zbycia zostanie natychmiast przekazane do Wydziału Komunikacji w Krakowie i Ubezpieczeniowego Funduszu Gwarancyjnego (UFG).</p>
+          </div>
+        </div>
+
+        <div class="zbycie-actions">
+          <button type="button" class="btn ghost" onclick="closeZbycieModal()">Anuluj</button>
+          <button type="button" class="btn primary" onclick="submitZbyciePojazdu()">🔐 Podpisz i zgłoś zbycie</button>
+        </div>
+      </div>
+    `;
+  }
+
+  m.classList.add('open');
+  if (typeof openDialogFocus === 'function') openDialogFocus('zbyciePojazduModal', m);
+}
+
+function closeZbycieModal() {
+  const m = document.getElementById('zbyciePojazduModal');
+  if (m) {
+    m.classList.remove('open');
+    if (typeof restoreDialogFocus === 'function') restoreDialogFocus('zbyciePojazduModal');
+  }
+}
+
+function submitZbyciePojazdu() {
+  // Animacja biometrii Face ID
+  const faceEl = document.getElementById('faceid');
+  if (faceEl) {
+    faceEl.classList.add('active');
+    setTimeout(() => faceEl.classList.add('ok'), 600);
+    setTimeout(() => {
+      faceEl.classList.remove('active', 'ok');
+      finalizeZbycie();
+    }, 1200);
+  } else {
+    finalizeZbycie();
+  }
+}
+
+function finalizeZbycie() {
+  const box = document.getElementById('zbycieContent');
+  if (!box) return;
+
+  const upoNum = `UPO/CEPIK/2026/11/${Math.floor(100000 + Math.random() * 900000)}`;
+
+  box.innerHTML = `
+    <div class="zbycie-success-card">
+      <div class="zsc-icon">✓</div>
+      <b class="zsc-title">Zgłoszenie zbycia przyjęte!</b>
+      <p class="zsc-sub">Pojazd został odnotowany jako zbyty w Centralnej Ewidencji Pojazdów (CEPiK) oraz Starostwie.</p>
+
+      <div class="zsc-info-box">
+        <div class="zib-row"><span>Pojazd:</span><b>Skoda Octavia (KR 7821P)</b></div>
+        <div class="zib-row"><span>Nabywca:</span><b>Marek Zieliński (PESEL: 8409•••412)</b></div>
+        <div class="zib-row"><span>Urzędowe UPO:</span><b class="vin-mono">${upoNum}</b></div>
+        <div class="zib-row"><span>Powiadomienie UFG:</span><b style="color:#059669">Wysłane pomyślnie</b></div>
+      </div>
+
+      <div class="zsc-actions">
+        <button type="button" class="btn primary" onclick="closeZbycieModal()">Zamknij</button>
+      </div>
+    </div>
+  `;
+
+  if (typeof showToast === 'function') {
+    showToast(`✓ Zgłoszono zbycie pojazdu! Wygenerowano ${upoNum}`);
+  }
+}
+
+// ----------------- 4. KRAJOWY REJESTR KARNY (KRK) -----------------
+function openKrkModal() {
+  const m = document.getElementById('krkModal');
+  if (!m) return;
+
+  const box = document.getElementById('krkContent');
+  const o = (typeof OS !== 'undefined' && OS.nazwisko) ? OS.nazwisko : 'Jan Wiśniewski';
+  const pesel = (typeof OS !== 'undefined' && OS.moje && OS.moje.pesel) ? OS.moje.pesel : '91071427765';
+  const certId = `KRK/E-ZASW/2026/11/${Math.floor(100000 + Math.random() * 900000)}`;
+
+  if (box) {
+    box.innerHTML = `
+      <div class="krk-doc-sheet">
+        <div class="kds-head">
+          <div class="kds-emblem">🦅</div>
+          <div class="kds-titles">
+            <span>RZECZPOSPOLITA POLSKA</span>
+            <b>MINISTERSTWO SPRAWIEDLIWOŚCI</b>
+            <small>KRAJOWY REJESTR KARNY</small>
+          </div>
+        </div>
+
+        <div class="kds-banner">
+          <b>ZAŚWIADCZENIE O NIEKARALNOŚCI</b>
+          <small>Wydane w trybie art. 19 ust. 1 ustawy z dnia 24 maja 2000 r. o Krajowym Rejestrze Karnym</small>
+        </div>
+
+        <div class="kds-verdict-box">
+          <div class="kvb-stamp">✓ POTWIERDZONA TOŻSAMOŚĆ</div>
+          <div class="kvb-big-status">NIE FIGURUJE</div>
+          <p class="kvb-text">w Kartotece Karnej Krajowego Rejestru Karnego oraz Rejestrze Sprawców Przestępstw na Tle Seksualnym.</p>
+        </div>
+
+        <div class="kds-data-grid">
+          <div class="kdg-row"><span>Imię i nazwisko:</span><b>${o}</b></div>
+          <div class="kdg-row"><span>Numer PESEL:</span><b class="vin-mono">${pesel}</b></div>
+          <div class="kdg-row"><span>Numer zaświadczenia:</span><b class="vin-mono">${certId}</b></div>
+          <div class="kdg-row"><span>Data wystawienia:</span><b>${new Date().toLocaleDateString('pl-PL')}</b></div>
+          <div class="kdg-row"><span>Pieczęć elektroniczna:</span><b>Kwalifikowana Pieczęć Elektroniczna MS</b></div>
+        </div>
+
+        <div class="kds-legal-note">
+          Niniejsze zaświadczenie stanowi dokument urzędowy opatrzony kwalifikowaną pieczęcią elektroniczną Ministra Sprawiedliwości. Spełnia wymogi tzw. Ustawy Kamilka (praca z dziećmi), wymogi przetargowe oraz procedury rekrutacyjne.
+        </div>
+      </div>
+
+      <div class="krk-actions-bar">
+        <button type="button" class="btn secondary" onclick="downloadKrkPdf('${certId}')">📜 Pobierz oficjalny PDF</button>
+        <button type="button" class="btn primary" onclick="closeKrkModal()">Wróć</button>
+      </div>
+    `;
+  }
+
+  m.classList.add('open');
+  if (typeof openDialogFocus === 'function') openDialogFocus('krkModal', m);
+}
+
+function closeKrkModal() {
+  const m = document.getElementById('krkModal');
+  if (m) {
+    m.classList.remove('open');
+    if (typeof restoreDialogFocus === 'function') restoreDialogFocus('krkModal');
+  }
+}
+
+function downloadKrkPdf(certId) {
+  if (typeof showToast === 'function') {
+    showToast(`Pobrano oficjalne e-Zaświadczenie KRK (${certId}.pdf) z pieczęcią Ministerstwa Sprawiedliwości`);
+  }
+}
+
+// ----------------- 5. KALKULATOR EMERYTURY ZUS -----------------
+let emerytSelectedAge = 65;
+
+function openEmeryturaModal() {
+  const m = document.getElementById('emeryturaModal');
+  if (!m) return;
+  emerytSelectedAge = 65;
+  renderEmeryturaView();
+  m.classList.add('open');
+  if (typeof openDialogFocus === 'function') openDialogFocus('emeryturaModal', m);
+}
+
+function closeEmeryturaModal() {
+  const m = document.getElementById('emeryturaModal');
+  if (m) {
+    m.classList.remove('open');
+    if (typeof restoreDialogFocus === 'function') restoreDialogFocus('emeryturaModal');
+  }
+}
+
+function renderEmeryturaView() {
+  const box = document.getElementById('emerytContent');
+  if (!box) return;
+
+  // Obliczenia prognozy emerytalnej wg wieku
+  const baseP = 4820; // kwota dla wieku 65 lat
+  const diff = emerytSelectedAge - 65;
+  const payout = Math.round(baseP * Math.pow(1.092, diff));
+  const diffPct = Math.round(((payout - baseP) / baseP) * 100);
+
+  box.innerHTML = `
+    <div class="emeryt-wrap">
+      <div class="ew-hero">
+        <span class="ew-sub">Prognozowana emerytura brutto przy przejściu w wieku:</span>
+        <div class="ew-age-badge">${emerytSelectedAge} lat</div>
+        <b class="ew-amount">${payout.toLocaleString('pl-PL')} zł <small>/ miesiąc</small></b>
+        ${diff !== 0 ? `
+          <div class="ew-diff ${diff > 0 ? 'plus' : 'minus'}">
+            ${diff > 0 ? `+${diffPct}% więcej dzięki pracy dłużej o ${diff} ${diff === 1 ? 'rok' : 'lata'}` : `${diffPct}% mniej niż przy wieku ustawowym`}
+          </div>
+        ` : '<div class="ew-diff std">Wiek powszechny (ustawowy)</div>'}
+      </div>
+
+      <div class="ew-slider-box">
+        <div class="esb-head">
+          <span>Wiek zakończenia aktywności zawodowej:</span>
+          <b>${emerytSelectedAge} lat</b>
+        </div>
+        <input type="range" min="60" max="72" value="${emerytSelectedAge}" class="ew-slider" id="emerytAgeRange" oninput="changeEmerytAge(this.value)">
+        <div class="esb-scale">
+          <span>60 lat</span>
+          <span>65 lat (ustawowy)</span>
+          <span>72 lata</span>
+        </div>
+      </div>
+
+      <div class="ew-stats-grid">
+        <div class="esg-card">
+          <span class="esg-lbl">Zwaloryzowane składki ZUS:</span>
+          <b class="esg-val">542 810 zł</b>
+        </div>
+        <div class="esg-card">
+          <span class="esg-lbl">Subkonto w ZUS:</span>
+          <b class="esg-val">168 450 zł</b>
+        </div>
+        <div class="esg-card">
+          <span class="esg-lbl">Kapitał początkowy:</span>
+          <b class="esg-val">84 200 zł</b>
+        </div>
+        <div class="esg-card">
+          <span class="esg-lbl">Dalsze trwanie życia (GUS):</span>
+          <b class="esg-val">${Math.max(120, 218 - (emerytSelectedAge - 60) * 12)} m-cy</b>
+        </div>
+      </div>
+
+      <div class="ew-tip-box">
+        💡 <b>Zasada waloryzacji ZUS:</b> Każdy dodatkowy rok pracy po osiągnięciu wieku emerytalnego zwiększa Twoje przyszłe świadczenie średnio o <b>8–12%</b> dzięki powiększeniu puli składek i statystycznemu skróceniu okresu pobierania.
+      </div>
+
+      <div class="ew-actions">
+        <button type="button" class="btn secondary" onclick="closeEmeryturaModal();if(typeof askAssistantWithPrompt==='function')askAssistantWithPrompt('Jak mogę zwiększyć swoją przyszłą emeryturę w ZUS?')">Zapytaj Asystenta AI</button>
+        <button type="button" class="btn primary" onclick="bookZusAppointment()">📅 Umów e-Wizytę w ZUS</button>
+      </div>
+    </div>
+  `;
+}
+
+function changeEmerytAge(val) {
+  emerytSelectedAge = parseInt(val, 10);
+  renderEmeryturaView();
+}
+
+function bookZusAppointment() {
+  if (typeof showToast === 'function') {
+    showToast('Przekierowano do rezerwacji e-Wizyty w ZUS (terminy dostępne od jutra)');
+  }
+}
+
+// ----------------- 6. POLAK ZA GRANICĄ • ODYSEUSZ (MSZ) -----------------
+let odyseuszSelectedCountry = 'Włochy';
+
+function openOdyseuszModal() {
+  const m = document.getElementById('odyseuszModal');
+  if (!m) return;
+  renderOdyseuszView();
+  m.classList.add('open');
+  if (typeof openDialogFocus === 'function') openDialogFocus('odyseuszModal', m);
+}
+
+function closeOdyseuszModal() {
+  const m = document.getElementById('odyseuszModal');
+  if (m) {
+    m.classList.remove('open');
+    if (typeof restoreDialogFocus === 'function') restoreDialogFocus('odyseuszModal');
+  }
+}
+
+function renderOdyseuszView() {
+  const box = document.getElementById('odyseuszContent');
+  if (!box) return;
+
+  const embassies = {
+    'Włochy': { city: 'Rzym', addr: 'Via Rubens 20, 00197 Roma', phone: '+39 335 599 5212', level: '1 – Zwykła ostrożność', color: '#10b981' },
+    'Hiszpania': { city: 'Madryt', addr: 'Calle Guisando 23 bis, 28035 Madrid', phone: '+34 913 736 605', level: '1 – Zwykła ostrożność', color: '#10b981' },
+    'Grecja': { city: 'Ateny', addr: 'Chryssanthemon 22, 154 52 Paleo Psychico', phone: '+30 693 655 4629', level: '1 – Zwykła ostrożność', color: '#10b981' },
+    'Chorwacja': { city: 'Zagrzeb', addr: 'Krležin gvozd 3, 10000 Zagreb', phone: '+385 1 4899 414', level: '1 – Zwykła ostrożność', color: '#10b981' },
+    'Turcja': { city: 'Ankara', addr: 'Atatürk Bulvarı 241, Kavaklıdere', phone: '+90 530 469 1881', level: '2 – Zachowaj szczególną ostrożność', color: '#f59e0b' },
+    'Egipt': { city: 'Kair', addr: '5 El Anab Street, Dokki, Giza', phone: '+20 106 182 8585', level: '2 – Ostrzeżenie dla podróżnych', color: '#f59e0b' }
+  };
+
+  const current = embassies[odyseuszSelectedCountry] || embassies['Włochy'];
+
+  box.innerHTML = `
+    <div class="ody-wrap">
+      <div class="ody-hero">
+        <span class="ody-tag">✈️ SERWIS MINISTERSTWA SPRAW ZAGRANICZNYCH</span>
+        <b>System Rejestracji Podróży Odyseusz</b>
+        <p>Zgłoś swój wyjazd, aby w razie kryzysu, trzęsienia ziemi lub zamieszek konsul mógł się z Tobą natychmiast skontaktować.</p>
+      </div>
+
+      <div class="gfw-field">
+        <label for="odyCountrySelect">Wybierz kraj docelowy:</label>
+        <select id="odyCountrySelect" class="gios-select" onchange="selectOdyCountry(this.value)">
+          ${Object.keys(embassies).map(k => `<option value="${k}" ${k === odyseuszSelectedCountry ? 'selected' : ''}>${k}</option>`).join('')}
+        </select>
+      </div>
+
+      <div class="ody-consul-card">
+        <div class="occ-head">
+          <span class="occ-flag">🏛️</span>
+          <div>
+            <b>Ambasada i Konsulat RP w: ${current.city}</b>
+            <small>${current.addr}</small>
+          </div>
+        </div>
+        <div class="occ-phone-row">
+          <span>🚨 Całodobowy telefon alarmowy:</span>
+          <b class="vin-mono">${current.phone}</b>
+        </div>
+        <div class="occ-level-row">
+          <span>Poziom ostrzeżenia MSZ:</span>
+          <b style="color:${current.color}">${current.level}</b>
+        </div>
+      </div>
+
+      <div class="gfw-field">
+        <label for="odyDates">Termin pobytu:</label>
+        <input type="text" id="odyDates" class="gios-input" value="15.11.2026 – 22.11.2026 (7 dni)">
+      </div>
+
+      <div class="gfw-field">
+        <label for="odyContact">Numer telefonu w podróży:</label>
+        <input type="tel" id="odyContact" class="gios-input" value="+48 601 234 567">
+      </div>
+
+      <div class="ody-actions">
+        <button type="button" class="btn ghost" onclick="closeOdyseuszModal()">Zamknij</button>
+        <button type="button" class="btn primary" onclick="submitOdyRegistration()">🌍 Zarejestruj podróż w Odyseuszu</button>
+      </div>
+    </div>
+  `;
+}
+
+function selectOdyCountry(c) {
+  odyseuszSelectedCountry = c;
+  renderOdyseuszView();
+}
+
+function submitOdyRegistration() {
+  if (typeof showToast === 'function') {
+    showToast(`✓ Podróż do: ${odyseuszSelectedCountry} zarejestrowana w MSZ Odyseusz!`);
+  }
+  closeOdyseuszModal();
+}
+
+// ----------------- 7. AWARYJNE ZASTRZEŻENIE KART PŁATNICZYCH (ZBP) -----------------
+function openZastrzezKartyModal() {
+  const m = document.getElementById('zastrzezKartyModal');
+  if (!m) return;
+
+  const box = document.getElementById('kartyContent');
+  if (box) {
+    box.innerHTML = `
+      <div class="karty-wrap">
+        <div class="karty-alert-hero">
+          <span class="kah-ic">🚨</span>
+          <div>
+            <b>Zgubiłeś portfel lub skradziono Ci karty?</b>
+            <p>Jeden system blokuje karty debetowe i kredytowe we wszystkich bankach w Polsce jednocześnie.</p>
+          </div>
+        </div>
+
+        <div class="karty-hotline-box">
+          <span class="khb-lbl">Oficjalna infolinia Związku Banków Polskich (24/7):</span>
+          <b class="khb-phone">(+48) 828 828 828</b>
+          <small>Automatyczny system rozpoznawania banku po nazwie głosowej</small>
+        </div>
+
+        <b class="karty-sec-h">Twoje powiązane banki i karty:</b>
+        <div class="karty-bank-list" id="kartyBankList">
+          <div class="kbl-item">
+            <div class="kbli-info">
+              <b>🏛️ PKO Bank Polski</b>
+              <small>Karta debetowa PKO Visa •••• 4912, Kredytowa Mastercard •••• 8102</small>
+            </div>
+            <span class="kbli-status" id="st_pko">Aktywna</span>
+          </div>
+
+          <div class="kbl-item">
+            <div class="kbli-info">
+              <b>🏦 mBank S.A.</b>
+              <small>Karta debetowa Visa zbliżeniowa •••• 3319</small>
+            </div>
+            <span class="kbli-status" id="st_mbank">Aktywna</span>
+          </div>
+
+          <div class="kbl-item">
+            <div class="kbli-info">
+              <b>🛡️ ING Bank Śląski</b>
+              <small>Karta walutowa EUR Mastercard •••• 9012</small>
+            </div>
+            <span class="kbli-status" id="st_ing">Aktywna</span>
+          </div>
+        </div>
+
+        <div class="karty-actions">
+          <button type="button" class="btn secondary" onclick="closeZastrzezKartyModal();if(typeof openZastrzezPeselModal==='function')openZastrzezPeselModal()">
+            🔒 Zastrzeż także PESEL
+          </button>
+          <button type="button" class="btn primary danger-btn" onclick="executeCardBlock()">
+            🛑 ZABLOKUJ WSZYSTKIE KARTY TERAZ
+          </button>
+        </div>
+      </div>
+    `;
+  }
+
+  m.classList.add('open');
+  if (typeof openDialogFocus === 'function') openDialogFocus('zastrzezKartyModal', m);
+}
+
+function closeZastrzezKartyModal() {
+  const m = document.getElementById('zastrzezKartyModal');
+  if (m) {
+    m.classList.remove('open');
+    if (typeof restoreDialogFocus === 'function') restoreDialogFocus('zastrzezKartyModal');
+  }
+}
+
+function executeCardBlock() {
+  const st1 = document.getElementById('st_pko');
+  const st2 = document.getElementById('st_mbank');
+  const st3 = document.getElementById('st_ing');
+
+  if (st1) { st1.textContent = '🚫 ZABLOKOWANA'; st1.className = 'kbli-status blocked'; }
+  if (st2) { st2.textContent = '🚫 ZABLOKOWANA'; st2.className = 'kbli-status blocked'; }
+  if (st3) { st3.textContent = '🚫 ZABLOKOWANA'; st3.className = 'kbli-status blocked'; }
+
+  if (typeof showToast === 'function') {
+    showToast('🛑 Wszystkie karty płatnicze zostały natychmiast zablokowane w systemie ZBP!');
+  }
+}
+
+// ----------------- WIDOK KATALOGU USŁUG (#viewServices) -----------------
 function renderUslugiTab() {
   const root = document.getElementById('viewServices');
   if (!root) return;
@@ -1047,73 +1785,158 @@ function renderUslugiTab() {
 
   root.innerHTML = `
     <div class="services-header">
-      <h2 class="services-title">Usługi publiczne</h2>
-      <p class="services-sub">Oficjalne e-usługi administracji rządowej i samorządowej</p>
+      <h2 class="services-title">Katalog e-Usług</h2>
+      <p class="services-sub">Oficjalne usługi administracji rządowej, samorządowej i sądownictwa</p>
     </div>
 
-    <div class="services-grid">
-      <button type="button" class="service-card highlight" onclick="openIkpModal('recepty')">
-        <div class="sc-icon" style="background:var(--ok-wash);color:var(--ok-ink)"><i class="ik ik-hospital" aria-hidden="true"></i></div>
-        <div class="sc-content">
-          <b>Zdrowie i e-Recepty (IKP)</b>
-          <small>Recepty z kodem kreskowym, skierowania, eWUŚ, EKUZ i leki stałe</small>
-        </div>
-        <span class="sc-arrow"><i class="ik ik-arrow" aria-hidden="true"></i></span>
-      </button>
+    <!-- 1. KATEGORIA: BEZPIECZEŃSTWO I ZDROWIE -->
+    <div class="services-cat-block">
+      <h3 class="services-cat-title">🛡️ Bezpieczeństwo i Tożsamość</h3>
+      <div class="services-grid">
+        <button type="button" class="service-card highlight" onclick="openZastrzezPeselModal()">
+          <div class="sc-icon" style="background:rgba(220,20,60,.1);color:var(--red)">🔒</div>
+          <div class="sc-content">
+            <b>Zastrzeż PESEL</b>
+            <small>Status: <span style="color:${isPeselBlocked ? '#10b981' : '#dc143c'};font-weight:700">${isPeselBlocked ? 'Zastrzeżony (Bezpieczny)' : 'Niezastrzeżony'}</span></small>
+          </div>
+          <span class="sc-arrow">→</span>
+        </button>
 
-      <button type="button" class="service-card highlight" onclick="openZastrzezPeselModal()">
-        <div class="sc-icon" style="background:var(--red-wash);color:var(--red-ink)"><i class="ik ik-lock" aria-hidden="true"></i></div>
-        <div class="sc-content">
-          <b>Zastrzeż PESEL</b>
-          <small>Status: <span style="color:${isPeselBlocked ? 'var(--ok-ink)' : 'var(--red-ink)'};font-weight:700">${isPeselBlocked ? 'Zastrzeżony (Bezpieczny)' : 'Niezastrzeżony'}</span></small>
-        </div>
-        <span class="sc-arrow"><i class="ik ik-arrow" aria-hidden="true"></i></span>
-      </button>
+        <button type="button" class="service-card" onclick="openZastrzezKartyModal()">
+          <div class="sc-icon" style="background:rgba(239,68,68,.1);color:#ef4444">🛑</div>
+          <div class="sc-content">
+            <b>Zastrzeż karty (ZBP)</b>
+            <small>Awaryjna blokada kart płatniczych wszystkich banków</small>
+          </div>
+          <span class="sc-arrow">→</span>
+        </button>
 
-      <button type="button" class="service-card" onclick="openEPlatnosciModal()">
-        <div class="sc-icon" style="background:var(--ok-wash);color:var(--ok-ink)"><i class="ik ik-card" aria-hidden="true"></i></div>
-        <div class="sc-content">
-          <b>ePłatności (BLIK)</b>
-          <small>Podatki od nieruchomości i opłaty lokalne z kodem BLIK</small>
-        </div>
-        <span class="sc-arrow"><i class="ik ik-arrow" aria-hidden="true"></i></span>
-      </button>
+        <button type="button" class="service-card" onclick="openKrkModal()">
+          <div class="sc-icon" style="background:rgba(79,70,229,.1);color:#4f46e5">📜</div>
+          <div class="sc-content">
+            <b>Zaświadczenie o niekaralności (KRK)</b>
+            <small>Krajowy Rejestr Karny • Certyfikat z pieczęcią MS</small>
+          </div>
+          <span class="sc-arrow">→</span>
+        </button>
 
-      <button type="button" class="service-card" onclick="openBezpiecznyAutobusModal('KR 12345')">
-        <div class="sc-icon" style="background:rgba(245,158,11,.1);color:#f59e0b"><i class="ik ik-bus" aria-hidden="true"></i></div>
-        <div class="sc-content">
-          <b>Bezpieczny autobus & CEPiK</b>
-          <small>Badania techniczne, licznik, baza kradzieżowa Policji</small>
-        </div>
-        <span class="sc-arrow"><i class="ik ik-arrow" aria-hidden="true"></i></span>
-      </button>
+        <button type="button" class="service-card" onclick="openOdyseuszModal()">
+          <div class="sc-icon" style="background:rgba(14,165,233,.1);color:#0ea5e9">✈️</div>
+          <div class="sc-content">
+            <b>Polak za granicą (Odyseusz)</b>
+            <small>Rejestracja podróży MSZ i telefony alarmowe konsulatów</small>
+          </div>
+          <span class="sc-arrow">→</span>
+        </button>
+      </div>
+    </div>
 
-      <button type="button" class="service-card" onclick="openJakoscPowietrzaModal()">
-        <div class="sc-icon" style="background:rgba(59,130,246,.1);color:#3b82f6"><i class="ik ik-leaf" aria-hidden="true"></i></div>
-        <div class="sc-content">
-          <b>Jakość powietrza (GIOŚ)</b>
-          <small>${air.city}: <b style="color:${air.color}">${air.index}</b> (${air.pm25} µg/m³)</small>
-        </div>
-        <span class="sc-arrow"><i class="ik ik-arrow" aria-hidden="true"></i></span>
-      </button>
+    <!-- 2. KATEGORIA: ZDROWIE I ŚRODOWISKO -->
+    <div class="services-cat-block">
+      <h3 class="services-cat-title">🌿 Zdrowie i Środowisko</h3>
+      <div class="services-grid">
+        <button type="button" class="service-card highlight" onclick="openIkpModal('recepty')">
+          <div class="sc-icon" style="background:rgba(16,185,129,.12);color:#059669">🏥</div>
+          <div class="sc-content">
+            <b>Zdrowie i e-Recepty (IKP)</b>
+            <small>Recepty z kodem kreskowym, skierowania, eWUŚ i leki</small>
+          </div>
+          <span class="sc-arrow">→</span>
+        </button>
 
-      <button type="button" class="service-card" onclick="openPointsDetail()">
-        <div class="sc-icon" style="background:rgba(139,92,246,.1);color:#8b5cf6"><i class="ik ik-car" aria-hidden="true"></i></div>
-        <div class="sc-content">
-          <b>Punkty karne CEPiK</b>
-          <small>Licznik punktów, mandaty i zaświadczenie PDF</small>
-        </div>
-        <span class="sc-arrow"><i class="ik ik-arrow" aria-hidden="true"></i></span>
-      </button>
+        <button type="button" class="service-card" onclick="openJakoscPowietrzaModal()">
+          <div class="sc-icon" style="background:rgba(59,130,246,.1);color:#3b82f6">🌿</div>
+          <div class="sc-content">
+            <b>Jakość powietrza (GIOŚ)</b>
+            <small>${air.city}: <b style="color:${air.color}">${air.index}</b> (${air.pm25} µg/m³)</small>
+          </div>
+          <span class="sc-arrow">→</span>
+        </button>
 
-      <button type="button" class="service-card" onclick="openWyboryModal()">
-        <div class="sc-icon" style="background:rgba(236,72,153,.1);color:#ec4899"><i class="ik ik-ballot" aria-hidden="true"></i></div>
-        <div class="sc-content">
-          <b>Wybory i Rejestr Wyborców (CRW)</b>
-          <small>Sprawdź obwód, zmień miejsce głosowania, zaświadczenie</small>
-        </div>
-        <span class="sc-arrow"><i class="ik ik-arrow" aria-hidden="true"></i></span>
-      </button>
+        <button type="button" class="service-card" onclick="openGiosModal()">
+          <div class="sc-icon" style="background:rgba(234,88,12,.1);color:#ea580c">🚨</div>
+          <div class="sc-content">
+            <b>Zgłoś naruszenie środowiskowe</b>
+            <small>Dzikie wysypiska, ścieki i spalanie śmieci do GIOŚ</small>
+          </div>
+          <span class="sc-arrow">→</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- 3. KATEGORIA: RODZINA I EMERYTURA -->
+    <div class="services-cat-block">
+      <h3 class="services-cat-title">👨‍👩‍👧‍👦 Rodzina i Świadczenia ZUS</h3>
+      <div class="services-grid">
+        <button type="button" class="service-card highlight" onclick="openRodzinaModal()">
+          <div class="sc-icon" style="background:rgba(236,72,153,.1);color:#ec4899">👶</div>
+          <div class="sc-content">
+            <b>Moja Rodzina i Dzieci</b>
+            <small>mLegitymacje dzieci, e-Recepty, 800+ i Dobry Start</small>
+          </div>
+          <span class="sc-arrow">→</span>
+        </button>
+
+        <button type="button" class="service-card" onclick="openEmeryturaModal()">
+          <div class="sc-icon" style="background:rgba(139,92,246,.1);color:#8b5cf6">📊</div>
+          <div class="sc-content">
+            <b>Kalkulator Emerytury ZUS</b>
+            <small>Symulator wieku emerytalnego i waloryzacja kapitału</small>
+          </div>
+          <span class="sc-arrow">→</span>
+        </button>
+
+        <button type="button" class="service-card" onclick="openEPlatnosciModal()">
+          <div class="sc-icon" style="background:rgba(16,185,129,.1);color:#10b981">💳</div>
+          <div class="sc-content">
+            <b>ePłatności (BLIK)</b>
+            <small>Podatki lokalne i opłaty samorządowe z kodem BLIK</small>
+          </div>
+          <span class="sc-arrow">→</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- 4. KATEGORIA: KIEROWCA I POJAZDY -->
+    <div class="services-cat-block">
+      <h3 class="services-cat-title">🚗 Kierowca i Pojazdy</h3>
+      <div class="services-grid">
+        <button type="button" class="service-card" onclick="openBezpiecznyAutobusModal('KR 12345')">
+          <div class="sc-icon" style="background:rgba(245,158,11,.1);color:#f59e0b">🚌</div>
+          <div class="sc-content">
+            <b>Bezpieczny autobus & CEPiK</b>
+            <small>Badania techniczne, licznik, baza kradzieżowa Policji</small>
+          </div>
+          <span class="sc-arrow">→</span>
+        </button>
+
+        <button type="button" class="service-card" onclick="openPointsDetail()">
+          <div class="sc-icon" style="background:rgba(139,92,246,.1);color:#8b5cf6">🚗</div>
+          <div class="sc-content">
+            <b>Punkty karne CEPiK</b>
+            <small>Licznik punktów, mandaty i zaświadczenie PDF</small>
+          </div>
+          <span class="sc-arrow">→</span>
+        </button>
+
+        <button type="button" class="service-card" onclick="openZbycieModal('SKODA')">
+          <div class="sc-icon" style="background:rgba(37,99,235,.1);color:#2563eb">📝</div>
+          <div class="sc-content">
+            <b>Zgłoszenie zbycia pojazdu</b>
+            <small>Zgłoś sprzedaż auta w 30 dni do Starostwa i UFG</small>
+          </div>
+          <span class="sc-arrow">→</span>
+        </button>
+
+        <button type="button" class="service-card" onclick="openWyboryModal()">
+          <div class="sc-icon" style="background:rgba(236,72,153,.1);color:#ec4899">🗳️</div>
+          <div class="sc-content">
+            <b>Wybory i Rejestr Wyborców (CRW)</b>
+            <small>Sprawdź obwód, zmień miejsce głosowania, zaświadczenie</small>
+          </div>
+          <span class="sc-arrow">→</span>
+        </button>
+      </div>
     </div>
   `;
 }

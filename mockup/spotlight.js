@@ -554,6 +554,104 @@
           openPocztaModal('sent');
         }
       }
+    },
+    {
+      id: 'uslugi-gios-naruszenie',
+      title: 'Zgłoś naruszenie środowiskowe (GIOŚ)',
+      category: 'Sytuacje życiowe',
+      catKey: 'sytuacje',
+      desc: 'Zgłoszenie dzikiego wysypiska, wylewania ścieków lub spalania odpadów z geolokalizacją GPS',
+      icon: '🚨',
+      badge: 'GIOŚ Interwencja',
+      keywords: ['zglos naruszenie', 'dzikie wysypisko', 'smieci w lesie', 'wylewanie sciekow', 'gios', 'wios', 'spalanie smieci', 'odpady'],
+      query: 'Jak zgłosić dzikie wysypisko śmieci lub wylewanie ścieków do rzeki?',
+      viewAction: function () {
+        if (typeof openGiosModal === 'function') openGiosModal();
+      }
+    },
+    {
+      id: 'uslugi-rodzina-dzieci',
+      title: 'Moja Rodzina i Dzieci',
+      category: 'Dokumenty',
+      catKey: 'dokumenty',
+      desc: 'mLegitymacje szkolne dzieci, e-recepty pediatryczne oraz świadczenia 800+ i 300+',
+      icon: '👨‍👩‍👧‍👦',
+      badge: 'Rodzina',
+      keywords: ['dzieci', 'dziecko', 'rodzina', 'mlegitymacja', 'legitymacja szkolna', '800+', 'dobry start', '300+', 'szkola'],
+      query: 'Gdzie znajdę mLegitymację szkolną dziecka i status wniosku 800+?',
+      viewAction: function () {
+        if (typeof openRodzinaModal === 'function') openRodzinaModal();
+      }
+    },
+    {
+      id: 'uslugi-zbycie-pojazdu',
+      title: 'Zgłoszenie zbycia pojazdu',
+      category: 'Kierowca i pojazdy',
+      catKey: 'kierowca',
+      desc: 'Zgłoszenie sprzedaży auta do Wydziału Komunikacji (CEPiK) i UFG w 30 dni',
+      icon: '📝',
+      badge: 'CEPiK Sprzedaż',
+      keywords: ['zbycie pojazdu', 'sprzedaz auta', 'zbycie auta', 'umowa kupna sprzedazy', 'wydzial komunikacji', 'starostwo', 'ufg'],
+      query: 'Jak zgłosić sprzedaż samochodu w mObywatelu, aby uniknąć kary?',
+      viewAction: function () {
+        if (typeof openZbycieModal === 'function') openZbycieModal('SKODA');
+      }
+    },
+    {
+      id: 'uslugi-krk',
+      title: 'Zaświadczenie o niekaralności (KRK)',
+      category: 'Dokumenty',
+      catKey: 'dokumenty',
+      desc: 'Krajowy Rejestr Karny • Oficjalne e-zaświadczenie z pieczęcią Ministra Sprawiedliwości',
+      icon: '📜',
+      badge: 'Krajowy Rejestr Karny',
+      keywords: ['krk', 'niekaralnosc', 'zaswiadczenie o niekaralnosci', 'krajowy rejestr karny', 'ustawa kamilka', 'praca z dziecmi', 'sad'],
+      query: 'Pobierz urzędowe zaświadczenie o niekaralności z Krajowego Rejestru Karnego',
+      viewAction: function () {
+        if (typeof openKrkModal === 'function') openKrkModal();
+      }
+    },
+    {
+      id: 'uslugi-emerytura',
+      title: 'Kalkulator Emerytury ZUS',
+      category: 'Finanse i podatki',
+      catKey: 'finanse',
+      desc: 'Symulator wieku emerytalnego, prognoza świadczenia i waloryzacja kapitału ZUS',
+      icon: '📊',
+      badge: 'ZUS Emerytury',
+      keywords: ['emerytura', 'kalkulator emerytury', 'zus emerytura', 'prognoza emerytury', 'wiek emerytalny', 'subkonto zus', 'waloryzacja'],
+      query: 'Ile wyniesie moja emerytura jeśli popracuję rok lub dwa lata dłużej?',
+      viewAction: function () {
+        if (typeof openEmeryturaModal === 'function') openEmeryturaModal();
+      }
+    },
+    {
+      id: 'uslugi-odyseusz',
+      title: 'Polak za granicą • Odyseusz (MSZ)',
+      category: 'Sytuacje życiowe',
+      catKey: 'sytuacje',
+      desc: 'Rejestracja podróży w systemie MSZ, telefony alarmowe konsulatów i ostrzeżenia',
+      icon: '✈️',
+      badge: 'MSZ Odyseusz',
+      keywords: ['odyseusz', 'msz', 'podroz', 'wyjazd zagraniczny', 'ambasada', 'konsulat', 'pomoc konsularna', 'ostrzezenia msz'],
+      query: 'Jak zgłosić podróż zagraniczną w systemie Odyseusz Ministerstwa Spraw Zagranicznych?',
+      viewAction: function () {
+        if (typeof openOdyseuszModal === 'function') openOdyseuszModal();
+      }
+    },
+    {
+      id: 'uslugi-zastrzez-karty',
+      title: 'Awaryjne zastrzeżenie kart (ZBP)',
+      category: 'Finanse i podatki',
+      catKey: 'finanse',
+      desc: 'Natychmiastowe zablokowanie kart debetowych i kredytowych wszystkich polskich banków',
+      icon: '🛑',
+      badge: 'Infolinia 828 828 828',
+      keywords: ['zastrzez karty', 'zgubiona karta', 'kradziez portfela', 'blokada karty', 'zbp', '828 828 828', 'karta bankowa'],
+      query: 'Zgubiłem portfel – jak natychmiast zablokować wszystkie karty bankowe?',
+      viewAction: function () {
+        if (typeof openZastrzezKartyModal === 'function') openZastrzezKartyModal();
+      }
     }
   ];
 

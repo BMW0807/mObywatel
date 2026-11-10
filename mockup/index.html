@@ -328,6 +328,98 @@
     </div>
   </div>
 
+  
+  <!-- 1. Zgłoś naruszenie środowiskowe (GIOŚ) -->
+  <div class="sheet-modal" id="giosZgloszenieModal" role="dialog" aria-modal="true" aria-labelledby="giosTitle">
+    <div class="scrim" onclick="closeGiosModal()"></div>
+    <div class="modal-box gios-box">
+      <div class="modal-head">
+        <h2 id="giosTitle">Zgłoś naruszenie środowiskowe</h2>
+        <button class="tx-close" onclick="closeGiosModal()" aria-label="Zamknij"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></svg></button>
+      </div>
+      <p class="modal-sub">Główny Inspektorat Ochrony Środowiska (GIOŚ)</p>
+      <div class="gios-content" id="giosContent"></div>
+    </div>
+  </div>
+
+  <!-- 2. Moja Rodzina i Dzieci -->
+  <div class="sheet-modal" id="rodzinaDzieciModal" role="dialog" aria-modal="true" aria-labelledby="rodzinaTitle">
+    <div class="scrim" onclick="closeRodzinaModal()"></div>
+    <div class="modal-box rodzina-box">
+      <div class="modal-head">
+        <h2 id="rodzinaTitle">Moja Rodzina i Dzieci</h2>
+        <button class="tx-close" onclick="closeRodzinaModal()" aria-label="Zamknij"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></svg></button>
+      </div>
+      <p class="modal-sub">mLegitymacje dzieci, e-Recepty i świadczenia 800+ (ZUS)</p>
+      <div class="rodzina-content" id="rodzinaContent"></div>
+    </div>
+  </div>
+
+  <!-- 3. Zgłoszenie zbycia pojazdu (CEPiK) -->
+  <div class="sheet-modal" id="zbyciePojazduModal" role="dialog" aria-modal="true" aria-labelledby="zbycieTitle">
+    <div class="scrim" onclick="closeZbycieModal()"></div>
+    <div class="modal-box zbycie-box">
+      <div class="modal-head">
+        <h2 id="zbycieTitle">Zgłoszenie zbycia pojazdu</h2>
+        <button class="tx-close" onclick="closeZbycieModal()" aria-label="Zamknij"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></svg></button>
+      </div>
+      <p class="modal-sub">Wydział Komunikacji &amp; CEPiK (obowiązek w 30 dni)</p>
+      <div class="zbycie-content" id="zbycieContent"></div>
+    </div>
+  </div>
+
+  <!-- 4. Krajowy Rejestr Karny (KRK) -->
+  <div class="sheet-modal" id="krkModal" role="dialog" aria-modal="true" aria-labelledby="krkTitle">
+    <div class="scrim" onclick="closeKrkModal()"></div>
+    <div class="modal-box krk-box">
+      <div class="modal-head">
+        <h2 id="krkTitle">Krajowy Rejestr Karny (KRK)</h2>
+        <button class="tx-close" onclick="closeKrkModal()" aria-label="Zamknij"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></svg></button>
+      </div>
+      <p class="modal-sub">Ministerstwo Sprawiedliwości • Zaświadczenie o niekaralności</p>
+      <div class="krk-content" id="krkContent"></div>
+    </div>
+  </div>
+
+  <!-- 5. Kalkulator Emerytury ZUS -->
+  <div class="sheet-modal" id="emeryturaModal" role="dialog" aria-modal="true" aria-labelledby="emerytTitle">
+    <div class="scrim" onclick="closeEmeryturaModal()"></div>
+    <div class="modal-box emeryt-box">
+      <div class="modal-head">
+        <h2 id="emerytTitle">Kalkulator Emerytury ZUS</h2>
+        <button class="tx-close" onclick="closeEmeryturaModal()" aria-label="Zamknij"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></svg></button>
+      </div>
+      <p class="modal-sub">Zakład Ubezpieczeń Społecznych • Prognoza i waloryzacja składek</p>
+      <div class="emeryt-content" id="emerytContent"></div>
+    </div>
+  </div>
+
+  <!-- 6. Odyseusz MSZ -->
+  <div class="sheet-modal" id="odyseuszModal" role="dialog" aria-modal="true" aria-labelledby="odyseuszTitle">
+    <div class="scrim" onclick="closeOdyseuszModal()"></div>
+    <div class="modal-box odyseusz-box">
+      <div class="modal-head">
+        <h2 id="odyseuszTitle">Polak za granicą • Odyseusz (MSZ)</h2>
+        <button class="tx-close" onclick="closeOdyseuszModal()" aria-label="Zamknij"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></svg></button>
+      </div>
+      <p class="modal-sub">Ministerstwo Spraw Zagranicznych • Bezpieczeństwo w podróży</p>
+      <div class="odyseusz-content" id="odyseuszContent"></div>
+    </div>
+  </div>
+
+  <!-- 7. Awaryjne zastrzeżenie kart ZBP -->
+  <div class="sheet-modal" id="zastrzezKartyModal" role="dialog" aria-modal="true" aria-labelledby="kartyTitle">
+    <div class="scrim" onclick="closeZastrzezKartyModal()"></div>
+    <div class="modal-box karty-box">
+      <div class="modal-head">
+        <h2 id="kartyTitle">Awaryjne zastrzeżenie kart płatniczych</h2>
+        <button class="tx-close" onclick="closeZastrzezKartyModal()" aria-label="Zamknij"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></svg></button>
+      </div>
+      <p class="modal-sub">Związek Banków Polskich (ZBP) • Infolinia 828 828 828</p>
+      <div class="karty-content" id="kartyContent"></div>
+    </div>
+  </div>
+
   <!-- Ekran Główny Usług (przełączany w nawigacji dolnej) -->
   <section class="view-services" id="viewServices" aria-label="Katalog e-usług" hidden></section>
 
