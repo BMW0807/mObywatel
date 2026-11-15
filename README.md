@@ -132,4 +132,4 @@ Licencja MIT nie obejmuje:
 - zdjęć osób z pokazu (`mockup/assets/foto-*.jpg`);
 - opisów usług w `serwer/wiedza/`, które pochodzą z serwisu gov.pl. Przy ich ponownym wykorzystaniu sprawdź warunki podane na gov.pl.
 
-Osoby i dane w prototypie są fikcyjne. Projekt nie jest usługą administracji publicznej ani oficjalną aplikacją mObywatel.
+Osoby i dane w prototypie są fikcyjne. Projekt nie jest usługą administracji publicznej ani oficjalną aplikacją mObywatel..
