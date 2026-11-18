@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400" width="600" height="400">
+  <defs>
+    <linearGradient id="ikpGrad2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00695c"/>
+      <stop offset="45%" stop-color="#00897b"/>
+      <stop offset="100%" stop-color="#004d40"/>
+    </linearGradient>
+    <radialGradient id="ikpGlow2" cx="80%" cy="20%" r="60%">
+      <stop offset="0%" stop-color="rgba(128,203,196,0.35)"/>
+      <stop offset="100%" stop-color="rgba(0,105,92,0)"/>
+    </radialGradient>
+    <pattern id="medGrid2" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+    </pattern>
+  </defs>
+  <rect width="600" height="400" rx="36" fill="url(#ikpGrad2)"/>
+  <rect width="600" height="400" rx="36" fill="url(#medGrid2)"/>
+  <rect width="600" height="400" rx="36" fill="url(#ikpGlow2)"/>
+  <!-- Medical cross watermark -->
+  <g transform="translate(430, 220)" fill="rgba(255,255,255,0.07)">
+    <rect x="-24" y="-72" width="48" height="144" rx="14"/>
+    <rect x="-72" y="-24" width="144" height="48" rx="14"/>
+  </g>
+  <!-- ECG / Pulse wave -->
+  <path d="M 30 330 L 120 330 L 140 310 L 155 355 L 175 285 L 195 345 L 210 330 L 320 330" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Top right medical emblem -->
+  <circle cx="550" cy="52" r="16" fill="rgba(255,255,255,0.12)"/>
+  <path d="M 544 52 L 556 52 M 550 46 L 550 58" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/>
+</svg>
