@@ -400,6 +400,26 @@ class ApiTestCase(unittest.TestCase):
         self.assertIn('[PESEL]', clean)
         self.assertIn('[KLUCZ]', clean)
 
+    def test_security_headers_present(self):
+        st, headers, _ = self.request('/api/health')
+        self.assertEqual(st, 200)
+        self.assertEqual(headers.get('X-Frame-Options'), 'SAMEORIGIN')
+        self.assertIn("frame-ancestors 'self'", headers.get('Content-Security-Policy', ''))
+
+    def test_rate_bucket_prunes_on_high_unique_ips(self):
+        now = 100000.0
+        with mock.patch('time.time', return_value=now):
+            for i in range(2100):
+                server.sprawdz_limit(f'fake-ip-{i}', 'api')
+        self.assertLessEqual(len(server.RATE_BUCKETS), 2000)
+
+    def test_agent_stan_malformed_fields_safe(self):
+        bad_stan = {'kontakt_kod': 'nie_slownik', 'sprawy': 'nie_lista', 'pesel': 123}
+        sanitized = agent._stan(bad_stan)
+        self.assertIsInstance(sanitized['kontakt_kod'], dict)
+        self.assertIsInstance(sanitized['sprawy'], list)
+        self.assertIsInstance(sanitized['pesel'], str)
+
 
 if __name__ == '__main__':
     unittest.main()

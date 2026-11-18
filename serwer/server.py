@@ -87,6 +87,10 @@ def sprawdz_limit(ip, koszyk='api'):
         if len(RATE_BUCKETS) > 2000:
             stare = [k_ for k_, czasy in RATE_BUCKETS.items() if not czasy or now - czasy[-1] > RATE_WINDOW]
             for k_ in stare: RATE_BUCKETS.pop(k_, None)
+            if len(RATE_BUCKETS) > 2000:
+                # shortcut: proste obcięcie najstarszych wpisów przy zalewie unikalnych IP, zamiast pełnego LRU
+                nadmiar = sorted(RATE_BUCKETS.items(), key=lambda it: it[1][-1] if it[1] else 0)[:len(RATE_BUCKETS) - 1500]
+                for k_, _ in nadmiar: RATE_BUCKETS.pop(k_, None)
         czasy = [t for t in RATE_BUCKETS.get(klucz_ip, []) if now - t < RATE_WINDOW]
         if len(czasy) >= limit:
             RATE_BUCKETS[klucz_ip] = czasy
@@ -223,17 +227,15 @@ class H(SimpleHTTPRequestHandler):
     def end_headers(self):
         self.send_header('X-Content-Type-Options', 'nosniff')
         self.send_header('Referrer-Policy', 'same-origin')
+        self.send_header('X-Frame-Options', 'SAMEORIGIN')
+        self.send_header('Content-Security-Policy', "frame-ancestors 'self'; base-uri 'self';")
         if not getattr(self, '_cc_set', False) and not self.path.startswith('/api/'):
             self.send_header('Cache-Control', 'no-cache')
         super().end_headers()
     def klient_ip(self):
         raw_ip = (self.client_address[0] if self.client_address else '') or 'local'
-        try:
-            ip_obj = ipaddress.ip_address(raw_ip)
-            zaufany = ip_obj.is_loopback or ip_obj.is_private
-        except ValueError:
-            zaufany = raw_ip in ('localhost', 'local')
-        if zaufany:
+        # shortcut: ufa nagłówkom proxy tylko przy jawnej fladze środowiskowej TRUST_PROXY=1
+        if os.environ.get('TRUST_PROXY') == '1':
             xff = (self.headers.get('X-Forwarded-For') or '').split(',')[0].strip()
             if xff: return xff[:64]
             xri = (self.headers.get('X-Real-IP') or '').strip()

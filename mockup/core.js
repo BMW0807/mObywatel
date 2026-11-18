@@ -312,12 +312,39 @@ function newConv(){
 }
 function topicIcon(t){const n=norm(t);return /portfel|zgubil|ukrad|zastrz/.test(n)?'shield':/stluczk|kolizj|wypadek|auto|samoch|pojazd|\boc\b|ubezpiecz/.test(n)?'car':/urodzi|dzieck|noworod/.test(n)?'baby':/sms|oszust|dziwn|podejrz/.test(n)?'alert':/skrzynk|pismo|doreczen|urzedu/.test(n)?'mail':/podatek|zaplac|oplat|kdr|duzej rodziny/.test(n)?'coin':/punkt/.test(n)?'clock':/dowod|pesel/.test(n)?'id':/zalatwienia|przypomn/.test(n)?'bell':'doc'}
 const plain=h=>{const d=document.createElement('div');d.innerHTML=h;return d.textContent.replace(/\s+/g,' ').trim()};
+function saveConvs(){
+ try{
+  const p=typeof OS!=='undefined'?OS.id:'marta';
+  const list=CONVS.filter(c=>c.title).map(c=>({
+   id:c.id,title:c.title,icon:c.icon,last:c.last,t:c.t,
+   api:c.api||[],stan:c.stan||null,html:c.el?c.el.innerHTML:''
+  }));
+  localStorage.setItem('mob_'+p+'_convs',JSON.stringify(list.slice(0,8)));
+ }catch(e){}
+}
+function loadConvs(){
+ try{
+  const p=typeof OS!=='undefined'?OS.id:'marta';
+  const raw=localStorage.getItem('mob_'+p+'_convs');
+  if(!raw)return;
+  const list=JSON.parse(raw);
+  if(!Array.isArray(list)||!list.length)return;
+  list.forEach((item,idx)=>{
+   let c=(idx===0&&!VIS.title)?VIS:mkConv();
+   c.title=item.title;c.icon=item.icon||'doc';c.last=item.last||'';c.t=item.t||Date.now();
+   c.api=item.api||[];c.stan=item.stan||null;
+   if(item.html){c.el.innerHTML=item.html}
+  });
+  renderHist();
+ }catch(e){}
+}
 function touch(kind,text){
  const c=WR;if(!c)return;c.t=Date.now();
  if(kind==='user'&&!c.title){c.title=text;c.icon=topicIcon(text)}
  if(kind==='bot')c.last=text;
  if(c!==VIS)c.unread=true;
  renderHist();
+ saveConvs();
 }
 const hm=ts=>new Date(ts).toLocaleTimeString('pl-PL',{hour:'2-digit',minute:'2-digit'});
 function renderHist(){
@@ -333,6 +360,7 @@ function openHist(){if(!app.classList.contains('chatting'))return;renderHist();i
 function closeHist(){if(!app.classList.contains('hist'))return;app.classList.remove('hist');const b=$('#histBtn');b&&b.setAttribute('aria-expanded','false');if(typeof restoreDialogFocus==='function')restoreDialogFocus('hist')}
 function startTopic(t,fn,forceDirect){if(VIS.title)newConv();enterChat();act(()=>{addUser(t);fn?fn():route(t)})}
 VIS=WR=mkConv(msgs);
+loadConvs();
 app.addEventListener('scroll',()=>{if(app.scrollTop||app.scrollLeft){app.scrollTop=0;app.scrollLeft=0}});
 
 /* ---------- lista spraw do załatwienia (arkusz od dołu) ---------- */

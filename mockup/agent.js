@@ -1,8 +1,34 @@
 /* ---------- tryb agenta: model językowy + narzędzia przez /api/agent, głos przez /api/stt i /api/tts ---------- */
 let AGENT=false,NEXT_VOICE=false;
 const scriptRoute=route,scriptStartTopic=startTopic;
-CONVS.forEach(c=>{c.api=[];c.stan=null});
+CONVS.forEach(c=>{c.api=c.api||[];c.stan=c.stan||null});
 const _mk=mkConv;mkConv=function(box){const c=_mk(box);c.api=[];c.stan=null;return c};
+
+function syncStanWithStore(stan){
+ const s=Object.assign({},stan||{});
+ if(typeof MobStore!=='undefined'){
+  if(MobStore.isPeselBlocked()&&!String(s.pesel||'').startsWith('zastrzeżony')){
+   s.pesel='zastrzeżony (w aplikacji)';
+  }else if(!MobStore.isPeselBlocked()&&String(s.pesel||'').startsWith('zastrzeżony')&&s.pesel!=='zastrzeżony z urzędu'){
+   s.pesel='niezastrzeżony';
+  }
+  if(MobStore.isTaxPaid()){
+   s.zaplacone=Array.from(new Set([...(s.zaplacone||[]),'POD-NIER-IV']));
+  }
+ }
+ return s;
+}
+
+function syncStoreWithStan(stan){
+ if(typeof MobStore==='undefined'||!stan)return;
+ if(stan.pesel){
+  const blocked=String(stan.pesel).startsWith('zastrzeżony');
+  if(MobStore.isPeselBlocked()!==blocked)MobStore.setPeselBlocked(blocked);
+ }
+ if(Array.isArray(stan.zaplacone)&&stan.zaplacone.length>0){
+  if(!MobStore.isTaxPaid())MobStore.setTaxPaid(true);
+ }
+}
 
 function botText(html,txt){clearEmpty();const p=txt||plain(html);msgs.append(el(`<div class="msg bot" data-t="0">${html}</div>`));end();touch('bot',p);if(typeof announceSR==='function')announceSR(p)}
 function lockOld(box){box.querySelectorAll('.ui .actions').forEach(x=>x.remove());box.querySelectorAll('.chips').forEach(x=>x.remove())}
@@ -64,7 +90,8 @@ async function agentCall(c,extra,voice,meta={}){
  let res=null,err=null,code='Błąd połączenia';
  try{
   const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),45000);
-  const r=await fetch('/api/agent',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.assign({conv:c.id,messages:c.api,stan:c.stan,osoba:OS.id,lang:window.LANG||'pl'},extra)),signal:controller.signal});
+  const currentStan=syncStanWithStore(c.stan);
+  const r=await fetch('/api/agent',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.assign({conv:c.id,messages:c.api,stan:currentStan,osoba:OS.id,lang:window.LANG||'pl'},extra)),signal:controller.signal});
   clearTimeout(timer);
   try{res=await r.json()}catch(je){res={}}
   if(!r.ok){
@@ -89,6 +116,8 @@ async function agentCall(c,extra,voice,meta={}){
    return {err,code};
   }
   c.api=res.messages;c.stan=res.stan;
+  syncStoreWithStan(res.stan);
+  if(typeof saveConvs==='function')saveConvs();
   await renderEvents(res.events||[],voice);
   return {};
  }finally{settle()}

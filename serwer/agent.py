@@ -368,7 +368,7 @@ def run(messages, stan, confirm=None, keys=None, log=lambda x: None, osoba=None,
             except Exception as ex: log(dict(t='tlumacz_blad', msg=str(ex)))
         th = threading.Thread(target=karty); th.start()
         if teksty: wynik['t'] = tlumacz.tlumacz_wolne(teksty, 'pl', j, key)
-        th.join()
+        th.join(timeout=10.0)
         for (e, f, i), t in zip(wolne, wynik.get('t') or teksty):
             if f == 'md': e.update(md=t, html=md(t), plain=bez_myslnikow(re.sub(r'\*\*', '', t).strip()))
             elif f == 'mow': e['mow'] = t
@@ -393,7 +393,7 @@ def _stan(stan):
     """Stan od klienta uzupełniamy o brakujące klucze (np. zapisany przez starszą wersję), żeby odczyty nie kończyły się KeyError."""
     s = dane.stan_poczatkowy()
     if isinstance(stan, dict): s.update(stan)
-    for k_, typ in (('zastrzezone', list), ('uniewaznione', list), ('zaplacone', list), ('pisma_wyslane', list), ('dzieci_nowe', list), ('zawieszone', dict)):
+    for k_, typ in (('zastrzezone', list), ('uniewaznione', list), ('zaplacone', list), ('pisma_wyslane', list), ('dzieci_nowe', list), ('sprawy', list), ('zawieszone', dict), ('kontakt_kod', dict)):
         if not isinstance(s.get(k_), typ): s[k_] = typ()
     if not isinstance(s.get('pesel'), str): s['pesel'] = dane.stan_poczatkowy()['pesel']
     return s
