@@ -68,21 +68,24 @@ renderStack();
 function layout(){
  const H=app.clientHeight,W=app.clientWidth;
  if(!H||!W)return;
- app.classList.toggle('compact-h',H<740);
- app.classList.toggle('xcompact-h',H<640);
+ app.classList.toggle('compact-h',H<600);
+ app.classList.toggle('xcompact-h',H<600&&W<360);
  const stEl=$('.status'),framed=getComputedStyle(stEl).display!=='none';
  const T=framed?(stEl.offsetHeight||36):Math.max(parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--sat'))||0,6);
  const topH=$('#top').offsetHeight||50;
  const comp=$('#composer').offsetHeight;
  $('#top').style.top=T+'px';
- const titleTop=T+Math.max(4,Math.round((topH-38)/2));
+ 
+ const downShift = 14; // Przesunięcie całego stosu kart w dół
+ 
+ const titleTop=T+Math.max(4,Math.round((topH-38)/2))+downShift;
  $('#title').style.top=titleTop+'px';
  app.style.setProperty('--histTop',(T+topH+2)+'px');
  app.style.setProperty('--voiceTop',(T+topH+2)+'px');
  app.style.setProperty('--qtopPad',(T+6)+'px');
  app.style.setProperty('--menuTop',(T+topH+4)+'px');
  const pbar=$('#personBtn');
- if(pbar)pbar.style.top=(T+topH)+'px';
+ if(pbar)pbar.style.top=(T+topH+downShift)+'px';
  const n=DOCS.length,narrow=W<360;
  const cardW=W-(narrow?20:32),natH=Math.round(cardW/1.5);
  const remH=$('#reminders').offsetHeight;
@@ -91,13 +94,16 @@ function layout(){
  const bnavH=(bnavEl&&getComputedStyle(bnavEl).display!=='none'&&!chatting)?(bnavEl.offsetHeight||58):0;
  const compH=chatting?comp:0;
  const pbarH=(!chatting&&pbar)?(pbar.offsetHeight+(H<680?6:8)):0;
- const stackTop=chatting?(T+topH+2):(T+topH+4+pbarH);
+ const stackTop=(chatting?(T+topH+2):(T+topH+4+pbarH))+downShift;
  let remTop=H-bnavH-compH-remH-(H<680?4:8);
  const avail=Math.max(120,remTop-(H<680?6:10)-stackTop);
- let cardH=natH,off=Math.min(58,(avail-natH)/Math.max(1,n-1));
- const minOff=H<680?22:30;
+
+ // Większe odstępy między nazwami kart
+ let cardH=natH,off=Math.min(110,(avail-natH)/Math.max(1,n-1));
+ const minOff=H<680?56:72;
+ 
  if(!chatting&&off<minOff){
-  off=Math.max(H<650?18:22,Math.min(minOff,Math.floor((avail-(H<650?100:114))/Math.max(1,n-1))));
+  off=Math.max(H<650?42:52,Math.min(minOff,Math.floor((avail-(H<650?100:114))/Math.max(1,n-1))));
   cardH=Math.max(H<650?96:108,Math.min(natH,avail-off*Math.max(1,n-1)));
  }
  const stNode=$('#stack');
@@ -118,7 +124,9 @@ function layout(){
  }
  let used=(n-1)*off+cardH;
  if(!chatting&&typeof layoutAlt==='function'&&VARIANT!=='stos')used=layoutAlt(stackTop,avail,W);
- remTop=Math.max(stackTop+used+(H<680?4:6), remTop);
+ 
+ // Przesunięcie dolnego bloku (wyszukiwarka, kafelki, przypomnienia) niżej
+ remTop=Math.max(stackTop+used+(H<680?4:6), remTop) + 25;
  $('#reminders').style.top=remTop+'px';
 }
 window.addEventListener('resize',layout);

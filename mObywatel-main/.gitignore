@@ -1,7 +1,0 @@
-.vscode
-__pycache__/
-*.pyc
-.env
-agent.log
-serwer/agent.log
-scratch/
