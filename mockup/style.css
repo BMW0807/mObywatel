@@ -64,7 +64,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--red);outline-of
 .stackwrap{position:absolute;left:0;right:0;transition:height .5s var(--ease),top .5s var(--ease);z-index:5}
 .stack{position:relative;margin:0 16px;height:100%}
 .card{position:absolute;left:0;right:0;width:100%;aspect-ratio:3/2;border-radius:18px;overflow:hidden;cursor:pointer;
-  background:#ccc center/cover no-repeat;box-shadow:0 -1px 0 rgba(255,255,255,.25) inset,0 6px 18px -6px rgba(15,25,60,.28);
+  background:#ccc center top/cover no-repeat;box-shadow:0 -1px 0 rgba(255,255,255,.25) inset,0 6px 18px -6px rgba(15,25,60,.28);
   transition:top .5s var(--ease),transform .5s var(--ease),filter .3s}
 .card:active{filter:brightness(.96)}
 .phone.chatting .card{cursor:default}
@@ -549,11 +549,12 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--red);outline-of
 .person b{display:block;font-size:20px;font-weight:700;letter-spacing:-.01em}.person small{font-size:13px;color:var(--ink2)}
 
 /* znak mObywatela na mDowodzie (prawdziwy, skanowalny) */
-.face .live{position:absolute;left:89.2cqw;top:9.9cqw;width:17cqw;height:17cqw;transform:translate(-50%,-50%);pointer-events:auto;cursor:pointer;filter:drop-shadow(0 1px 3px rgba(0,0,0,.25));border-radius:50%}
+.face .live{position:absolute;left:89.2cqw;top:10cqw;width:13.5cqw;height:13.5cqw;transform:translate(-50%,-50%);pointer-events:auto;cursor:pointer;filter:drop-shadow(0 1.5px 3.5px rgba(0,0,0,.22));border-radius:50%}
+.face .live:focus-visible{outline:2px solid var(--red);outline-offset:2px}
 .face .live svg{display:block;width:100%;height:100%}
 .card .face::after,.ccard .face::after,.vcard .face::after{content:"";position:absolute;inset:0;background:linear-gradient(105deg,transparent 35%,rgba(255,255,255,.16) 48%,rgba(255,255,255,0) 60%);background-size:250% 100%;animation:sheen 6s ease-in-out infinite;pointer-events:none}
 @keyframes sheen{0%,55%{background-position:120% 0}100%{background-position:-60% 0}}
-@container (max-width:240px){.face .live{width:22cqw;height:22cqw}}
+@container (max-width:240px){.face .live{width:15cqw;height:15cqw}}
 /* sprawdzanie ekranu drugiej osoby */
 .frame.phone-frame{width:min(46%,170px);aspect-ratio:9/17.5;border-radius:30px}
 .ghostphone{position:absolute;inset:8%;border-radius:22px;border:2px solid rgba(255,255,255,.18)}

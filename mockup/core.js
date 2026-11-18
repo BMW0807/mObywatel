@@ -1,7 +1,7 @@
 function cardImgUrl(u) {
   if (!u) return '';
   if (u.startsWith('data:')) return u;
-  return u + (u.indexOf('?') !== -1 ? '&' : '?') + 'v=41';
+  return u + (u.indexOf('?') !== -1 ? '&' : '?') + 'v=46';
 }
 const $=s=>document.querySelector(s);
 const app=$('#app'),input=$('#prompt');app.classList.add('ukryte');let msgs=$('#msgs'),inflight=0;
