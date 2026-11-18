@@ -1,0 +1,2571 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Zarządzanie ZUS • mObywatel 2.0 / PUE ZUS</title>
+  <link rel="icon" href="assets/icon-mobywatel.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f3f5f8;
+      --surface: #ffffff;
+      --surface-2: #f8fafc;
+      --surface-3: #eef2f6;
+      --ink: #0f172a;
+      --ink-muted: #64748b;
+      --ink-subtle: #94a3b8;
+      --hairline: #e2e8f0;
+      --zus-green: #007834;
+      --zus-green-dark: #005a26;
+      --zus-green-wash: #e8f5e9;
+      --zus-green-light: #c8e6c9;
+      --mob-red: #dc143c;
+      --mob-red-wash: #fdecef;
+      --mob-blue: #0e5bd8;
+      --mob-blue-wash: #eaf1ff;
+      --warn: #b45309;
+      --warn-wash: #fef3c7;
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 20px;
+      --radius-xl: 28px;
+      --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.06);
+      --shadow-md: 0 4px 16px -2px rgba(15, 23, 42, 0.08);
+      --shadow-lg: 0 12px 32px -4px rgba(15, 23, 42, 0.12);
+      --sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body {
+      margin: 0;
+      padding: 0;
+      background: var(--bg);
+      font-family: var(--sans);
+      color: var(--ink);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* GŁÓWNY UKŁAD STRONY */
+    .app-wrap {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 16px 20px 80px;
+    }
+
+    /* BELKA GÓRNA (NAVBAR) */
+    .top-nav {
+      background: #ffffff;
+      border-bottom: 1px solid var(--hairline);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.03);
+    }
+    .top-nav-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 10px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: inherit;
+    }
+    .brand-logo-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .brand-logo-wrap img {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+    }
+    .zus-badge-logo {
+      background: var(--zus-green);
+      color: #fff;
+      font-weight: 800;
+      font-size: 13px;
+      padding: 4px 8px;
+      border-radius: 6px;
+      letter-spacing: 0.5px;
+    }
+    .brand-text h1 {
+      margin: 0;
+      font-size: 17px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      line-height: 1.2;
+    }
+    .brand-text small {
+      color: var(--ink-muted);
+      font-size: 12px;
+      display: block;
+    }
+
+    /* KONTROLKI GÓRNE: STATUS API I ZMIANA PROFILU */
+    .top-controls {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .api-status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 12.5px;
+      font-weight: 600;
+      background: var(--surface-3);
+      color: var(--ink-muted);
+      border: 1px solid var(--hairline);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .api-status-pill:hover {
+      background: #e2e8f0;
+    }
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #94a3b8;
+    }
+    .api-status-pill.online {
+      background: var(--zus-green-wash);
+      color: var(--zus-green-dark);
+      border-color: var(--zus-green-light);
+    }
+    .api-status-pill.online .status-dot {
+      background: #10b981;
+      box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.25);
+      animation: pulse-dot 2s infinite;
+    }
+    .api-status-pill.mock {
+      background: var(--warn-wash);
+      color: var(--warn);
+      border-color: #fde68a;
+    }
+    .api-status-pill.mock .status-dot {
+      background: #f59e0b;
+    }
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.7; transform: scale(1.15); }
+    }
+
+    .user-select-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--surface-2);
+      padding: 4px 10px 4px 6px;
+      border-radius: 24px;
+      border: 1px solid var(--hairline);
+    }
+    .user-avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: #e2e8f0;
+      display: grid;
+      place-items: center;
+      font-weight: 700;
+      font-size: 12px;
+      color: var(--ink);
+    }
+    .user-select {
+      border: 0;
+      background: transparent;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--ink);
+      cursor: pointer;
+      outline: none;
+    }
+    .back-mob-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: transparent;
+      color: var(--mob-blue);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 6px 12px;
+      border-radius: 8px;
+      border: 1px solid rgba(14, 91, 216, 0.2);
+      transition: background 0.15s;
+    }
+    .back-mob-btn:hover {
+      background: var(--mob-blue-wash);
+    }
+
+    /* BANER INFORMACYJNY SERWERA */
+    .server-banner {
+      background: linear-gradient(90deg, #094024 0%, #007834 100%);
+      color: #fff;
+      padding: 12px 20px;
+      font-size: 13px;
+    }
+    .server-banner-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .server-banner code {
+      background: rgba(255,255,255,0.15);
+      padding: 2px 7px;
+      border-radius: 4px;
+      font-family: Consolas, monospace;
+    }
+    .server-banner-btns {
+      display: flex;
+      gap: 8px;
+    }
+    .btn-banner {
+      background: rgba(255,255,255,0.2);
+      border: 1px solid rgba(255,255,255,0.4);
+      color: #fff;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .btn-banner:hover {
+      background: rgba(255,255,255,0.35);
+    }
+
+    /* ZAKŁADKI GŁÓWNE (TABS) */
+    .tabs-nav {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding: 20px 0 16px;
+      border-bottom: 2px solid var(--hairline);
+      margin-bottom: 24px;
+      scrollbar-width: none;
+    }
+    .tabs-nav::-webkit-scrollbar { display: none; }
+    .tab-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 18px;
+      border-radius: 12px;
+      border: 0;
+      background: #ffffff;
+      color: var(--ink-muted);
+      font-size: 14.5px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s;
+      box-shadow: var(--shadow-sm);
+    }
+    .tab-btn:hover {
+      color: var(--ink);
+      background: #f1f5f9;
+    }
+    .tab-btn.active {
+      background: var(--zus-green);
+      color: #ffffff;
+      box-shadow: 0 4px 12px rgba(0, 120, 52, 0.28);
+    }
+    .tab-btn .badge-count {
+      background: rgba(255,255,255,0.25);
+      padding: 2px 7px;
+      border-radius: 10px;
+      font-size: 11px;
+    }
+    .tab-btn:not(.active) .badge-count {
+      background: var(--surface-3);
+      color: var(--ink);
+    }
+
+    /* SEKCJE ZAWARTOSCI ZAKŁADEK */
+    .tab-content {
+      display: none;
+    }
+    .tab-content.active {
+      display: block;
+      animation: fadeIn 0.25s ease-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* SIATKI I KARTY */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+    @media (max-width: 900px) {
+      .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    }
+
+    .card {
+      background: var(--surface);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      border: 1px solid var(--hairline);
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 20px;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 18px;
+      gap: 12px;
+    }
+    .card-title {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .card-subtitle {
+      margin: 4px 0 0;
+      font-size: 13px;
+      color: var(--ink-muted);
+    }
+
+    /* HERO KAPITAŁ ZUS */
+    .hero-kapital {
+      background: linear-gradient(135deg, #094024 0%, #007834 60%, #04883e 100%);
+      color: #fff;
+      border-radius: var(--radius-xl);
+      padding: 30px;
+      box-shadow: var(--shadow-md);
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 24px;
+    }
+    .hero-kapital::after {
+      content: "ZUS";
+      position: absolute;
+      right: 20px;
+      bottom: -15px;
+      font-size: 110px;
+      font-weight: 900;
+      color: rgba(255,255,255,0.06);
+      pointer-events: none;
+    }
+    .hero-top-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .hero-user-name {
+      font-size: 15px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      opacity: 0.9;
+    }
+    .hero-badge-val {
+      background: rgba(255,255,255,0.2);
+      backdrop-filter: blur(8px);
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .hero-total-label {
+      font-size: 14px;
+      opacity: 0.9;
+      margin: 0;
+    }
+    .hero-total-amount {
+      font-size: clamp(32px, 5vw, 44px);
+      font-weight: 800;
+      margin: 4px 0 16px;
+      letter-spacing: -0.02em;
+    }
+    .hero-pillars-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 16px;
+      padding-top: 18px;
+      border-top: 1px solid rgba(255,255,255,0.18);
+    }
+    @media (max-width: 640px) {
+      .hero-pillars-grid { grid-template-columns: 1fr; }
+    }
+    .pillar-box small {
+      display: block;
+      opacity: 0.8;
+      font-size: 12px;
+    }
+    .pillar-box b {
+      font-size: 19px;
+      font-weight: 700;
+      display: block;
+      margin-top: 3px;
+    }
+
+    /* INDYWIDUALNY RACHUNEK SKŁADKOWY (NRS) */
+    .nrs-banner {
+      background: #ffffff;
+      border: 1px solid var(--hairline);
+      border-radius: var(--radius-lg);
+      padding: 20px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+      box-shadow: var(--shadow-sm);
+    }
+    .nrs-number {
+      font-family: Consolas, monospace;
+      font-size: 17px;
+      font-weight: 700;
+      background: var(--surface-3);
+      padding: 8px 14px;
+      border-radius: 8px;
+      letter-spacing: 1px;
+      display: inline-block;
+      margin: 6px 0;
+    }
+    .saldo-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-weight: 700;
+      font-size: 13.5px;
+    }
+    .saldo-ok {
+      background: var(--zus-green-wash);
+      color: var(--zus-green-dark);
+      border: 1px solid var(--zus-green-light);
+    }
+    .saldo-debt {
+      background: var(--mob-red-wash);
+      color: var(--mob-red);
+      border: 1px solid #fecdd3;
+    }
+
+    /* PRZYCISKI I FORMULARZE */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 20px;
+      border-radius: 12px;
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      border: 0;
+      transition: all 0.2s;
+      text-decoration: none;
+    }
+    .btn-primary {
+      background: var(--zus-green);
+      color: #fff;
+    }
+    .btn-primary:hover {
+      background: var(--zus-green-dark);
+      box-shadow: 0 4px 12px rgba(0, 120, 52, 0.25);
+    }
+    .btn-danger {
+      background: var(--mob-red);
+      color: #fff;
+    }
+    .btn-danger:hover {
+      background: #b91033;
+    }
+    .btn-secondary {
+      background: var(--surface-3);
+      color: var(--ink);
+    }
+    .btn-secondary:hover {
+      background: #e2e8f0;
+    }
+    .btn-outline {
+      background: transparent;
+      border: 1px solid var(--hairline);
+      color: var(--ink);
+    }
+    .btn-outline:hover {
+      background: var(--surface-2);
+      border-color: #cbd5e1;
+    }
+    .btn-sm {
+      padding: 6px 12px;
+      font-size: 12.5px;
+      border-radius: 8px;
+    }
+
+    /* FORMULARZE */
+    .form-group {
+      margin-bottom: 16px;
+    }
+    .form-label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--ink);
+      margin-bottom: 6px;
+    }
+    .form-input, .form-select, .form-textarea {
+      width: 100%;
+      padding: 10px 14px;
+      border-radius: 10px;
+      border: 1px solid var(--hairline);
+      background: #ffffff;
+      font-family: inherit;
+      font-size: 14px;
+      color: var(--ink);
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .form-input:focus, .form-select:focus, .form-textarea:focus {
+      border-color: var(--zus-green);
+      box-shadow: 0 0 0 3px rgba(0, 120, 52, 0.15);
+    }
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+    @media (max-width: 600px) {
+      .form-row { grid-template-columns: 1fr; }
+    }
+
+    /* TABELE */
+    .table-responsive {
+      overflow-x: auto;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--hairline);
+    }
+    table.data-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 13.5px;
+    }
+    table.data-table th {
+      background: var(--surface-2);
+      padding: 12px 16px;
+      font-weight: 600;
+      color: var(--ink-muted);
+      border-bottom: 1px solid var(--hairline);
+      white-space: nowrap;
+    }
+    table.data-table td {
+      padding: 13px 16px;
+      border-bottom: 1px solid var(--hairline);
+      color: var(--ink);
+      vertical-align: middle;
+    }
+    table.data-table tr:last-child td {
+      border-bottom: none;
+    }
+    table.data-table tr:hover td {
+      background: #f8fafc;
+    }
+
+    /* BADGE STATUSÓW */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 9px;
+      border-radius: 20px;
+      font-size: 11.5px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .badge-success { background: var(--zus-green-wash); color: var(--zus-green-dark); }
+    .badge-danger { background: var(--mob-red-wash); color: var(--mob-red); }
+    .badge-info { background: var(--mob-blue-wash); color: var(--mob-blue); }
+    .badge-warning { background: var(--warn-wash); color: var(--warn); }
+    .badge-gray { background: #f1f5f9; color: #475569; }
+
+    /* KARTY ZWOLNIEŃ LEKARSKICH (L4) */
+    .l4-card {
+      border: 1px solid var(--hairline);
+      border-radius: var(--radius-md);
+      padding: 18px;
+      margin-bottom: 14px;
+      background: #ffffff;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      transition: all 0.2s;
+    }
+    .l4-card:hover {
+      border-color: #cbd5e1;
+      box-shadow: var(--shadow-sm);
+    }
+    .l4-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .l4-number {
+      font-weight: 700;
+      font-size: 15px;
+      color: var(--ink);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .l4-body-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      background: var(--surface-2);
+      padding: 12px 14px;
+      border-radius: 10px;
+      font-size: 13px;
+    }
+    .l4-body-grid small {
+      color: var(--ink-muted);
+      display: block;
+      font-size: 11.5px;
+    }
+    .l4-body-grid b {
+      font-weight: 600;
+      color: var(--ink);
+    }
+    .l4-icd-box {
+      border-left: 3px solid var(--mob-blue);
+      padding-left: 10px;
+      font-size: 13px;
+    }
+    .l4-icd-hidden {
+      border-left-color: #94a3b8;
+      background: #f8fafc;
+      padding: 8px 12px;
+      border-radius: 6px;
+      color: var(--ink-muted);
+      font-style: italic;
+    }
+
+    /* KAFELKI KALKULATORA */
+    .calc-result-box {
+      background: linear-gradient(135deg, #094024 0%, #007834 100%);
+      color: #fff;
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      margin-top: 20px;
+    }
+    .calc-result-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      border-bottom: 1px solid rgba(255,255,255,0.2);
+      padding-bottom: 12px;
+      margin-bottom: 16px;
+    }
+    .calc-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 14px;
+    }
+    .calc-item small {
+      display: block;
+      font-size: 12px;
+      opacity: 0.85;
+    }
+    .calc-item b {
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    /* MODAL */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.55);
+      backdrop-filter: blur(4px);
+      z-index: 200;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    .modal-backdrop.open {
+      display: flex;
+      animation: modalFade 0.2s ease-out;
+    }
+    @keyframes modalFade {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    .modal-card {
+      background: #ffffff;
+      border-radius: var(--radius-xl);
+      max-width: 580px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 28px;
+      box-shadow: var(--shadow-lg);
+      position: relative;
+    }
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 18px;
+    }
+    .modal-title {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 700;
+    }
+    .close-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--surface-3);
+      display: grid;
+      place-items: center;
+      font-size: 16px;
+      cursor: pointer;
+      border: 0;
+    }
+    .close-btn:hover {
+      background: #e2e8f0;
+    }
+
+    /* TOAST ALERT */
+    .toast-box {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 300;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      pointer-events: none;
+    }
+    .toast {
+      pointer-events: auto;
+      background: #0f172a;
+      color: #fff;
+      padding: 12px 20px;
+      border-radius: 12px;
+      font-size: 13.5px;
+      font-weight: 500;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      animation: toastIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .toast.success { background: #007834; }
+    .toast.error { background: #dc143c; }
+    @keyframes toastIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAWIGACJA GÓRNA -->
+  <header class="top-nav">
+    <div class="top-nav-inner">
+      <div class="brand-group">
+        <a href="index.html" class="brand-logo-wrap" title="Wróć do mObywatela">
+          <img src="assets/icon-mobywatel.svg" alt="mObywatel" onerror="this.src='https://raw.githubusercontent.com/google/material-design-icons/master/png/action/account_balance/materialicons/24dp/1x/baseline_account_balance_black_24dp.png'">
+        </a>
+        <span class="zus-badge-logo">ZUS</span>
+        <div class="brand-text">
+          <h1>Zarządzanie ZUS & e-ZLA</h1>
+          <small>Platforma Usług Elektronicznych • eZUS / mObywatel 2.0</small>
+        </div>
+      </div>
+
+      <div class="top-controls">
+        <!-- Status połączenia z backendem -->
+        <button type="button" class="api-status-pill" id="apiStatusPill" onclick="openBackendModal()" title="Kliknij, aby skonfigurować połączenie REST API">
+          <span class="status-dot"></span>
+          <span id="apiStatusText">Łączenie z API...</span>
+        </button>
+
+        <!-- Wybór tożsamości demonstracyjnej -->
+        <div class="user-select-wrap">
+          <div class="user-avatar" id="userAvatar">M</div>
+          <select class="user-select" id="userSelect" onchange="onUserChange(this.value)">
+            <option value="marta">Marta Kowalska (Etat)</option>
+            <option value="jan">Jan Wiśniewski (JDG / Firma)</option>
+            <option value="tomasz">dr n. med. Tomasz Zieliński (Lekarz)</option>
+            <option value="techpolska">TechPolska Sp. z o.o. (Pracodawca / Kadry)</option>
+            <option value="zus_admin">Anna Nowak (Inspektor ZUS)</option>
+          </select>
+        </div>
+
+        <a href="index.html" class="back-mob-btn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+          Portfel mObywatel
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- BANER INFORMACYJNY SERWERA -->
+  <div class="server-banner" id="serverBanner">
+    <div class="server-banner-inner">
+      <div>
+        <strong>Status usługi REST API ZUS:</strong>
+        <span id="serverBannerMsg">Sprawdzanie dostępności backendu na <code>http://localhost:8795</code>...</span>
+      </div>
+      <div class="server-banner-btns">
+        <button class="btn-banner" onclick="testBackendConnection()">Sprawdź połączenie</button>
+        <button class="btn-banner" onclick="openBackendModal()">Konfiguracja portu</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- GŁÓWNA ZAWARTOŚĆ -->
+  <main class="app-wrap">
+
+    <!-- ZAKŁADKI -->
+    <nav class="tabs-nav" role="tablist">
+      <button type="button" class="tab-btn active" data-tab="konto" onclick="switchTab('konto')">
+        🏛️ Moje Konto i Składki
+      </button>
+      <button type="button" class="tab-btn" data-tab="ezla" onclick="switchTab('ezla')">
+        🩺 Zwolnienia Lekarskie e-ZLA
+        <span class="badge-count" id="ezlaCountBadge">0</span>
+      </button>
+      <button type="button" class="tab-btn" data-tab="kalkulatory" onclick="switchTab('kalkulatory')">
+        🧮 Kalkulatory ZUS & L4
+      </button>
+      <button type="button" class="tab-btn" data-tab="ewizyty" onclick="switchTab('ewizyty')">
+        📅 e-Wizyty w ZUS
+        <span class="badge-count" id="ewizytyCountBadge">0</span>
+      </button>
+      <button type="button" class="tab-btn" data-tab="wnioski" onclick="switchTab('wnioski')">
+        📑 Wnioski i Pisma
+        <span class="badge-count" id="wnioskiCountBadge">0</span>
+      </button>
+    </nav>
+
+    <!-- ==================== ZAKŁADKA 1: KONTO I SKŁADKI ==================== -->
+    <section class="tab-content active" id="tab-konto">
+      
+      <!-- HERO: Stan Kapitału -->
+      <div class="hero-kapital">
+        <div class="hero-top-row">
+          <span class="hero-user-name" id="heroUserName">MARTA KOWALSKA</span>
+          <span class="hero-badge-val" id="heroWaloryzacja">Ostatnia waloryzacja: +14.87%</span>
+        </div>
+        <p class="hero-total-label">Łączny zgromadzony kapitał emerytalny w ZUS (I i II filar)</p>
+        <div class="hero-total-amount" id="heroTotalAmount">0,00 zł</div>
+
+        <div class="hero-pillars-grid">
+          <div class="pillar-box">
+            <small>Konto emerytalne (I Filar)</small>
+            <b id="pillar1Amount">0,00 zł</b>
+          </div>
+          <div class="pillar-box">
+            <small>Subkonto ZUS (II Filar)</small>
+            <b id="pillar2Amount">0,00 zł</b>
+          </div>
+          <div class="pillar-box">
+            <small>Prognoza emerytury w wieku emerytalnym</small>
+            <b id="pillarPrognoza">0,00 zł / mies.</b>
+          </div>
+        </div>
+      </div>
+
+      <!-- PASEK NRS (Indywidualny Rachunek Składkowy) -->
+      <div class="nrs-banner">
+        <div>
+          <span style="font-size:12px; font-weight:700; color:var(--ink-muted); text-transform:uppercase; letter-spacing:0.5px">Indywidualny Rachunek Składkowy (NRS)</span>
+          <div class="nrs-number" id="nrsNumberText">81 1010 0000 0000 9003 1501 2450</div>
+          <div style="font-size:12.5px; color:var(--ink-muted)">Unikalny rachunek płatnika do opłacania wszystkich składek ZUS jednym przelewem.</div>
+        </div>
+        <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap">
+          <div id="saldoRozliczenBadge" class="saldo-badge saldo-ok">Saldo rozliczeń: 0,00 zł</div>
+          <button class="btn btn-outline btn-sm" onclick="kopiujNRS()">📋 Kopiuj numer</button>
+          <button class="btn btn-primary btn-sm" onclick="openWplataModal()">💳 Wpłać na NRS</button>
+        </div>
+      </div>
+
+      <!-- SIATKA: Zgłoszenia do ubezpieczeń oraz dane płatnika -->
+      <div class="grid-2">
+        <!-- Zgłoszenia do ubezpieczeń -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title">🛡️ Zgłoszenia do ubezpieczeń</h2>
+              <p class="card-subtitle">Formularze ZUS ZUA / ZZA zarejestrowane przez płatników</p>
+            </div>
+          </div>
+          <div id="zgloszeniaContainer">
+            <p style="color:var(--ink-muted)">Ładowanie danych zgłoszeń...</p>
+          </div>
+        </div>
+
+        <!-- Staż i parametry emerytalne -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title">⏱️ Staż i parametry ubezpieczenia</h2>
+              <p class="card-subtitle">Wiek emerytalny i udokumentowane lata składkowe</p>
+            </div>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:12px;">
+            <div style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid var(--hairline)">
+              <span style="color:var(--ink-muted)">Aktualny wiek:</span>
+              <b id="stazWiek">-</b>
+            </div>
+            <div style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid var(--hairline)">
+              <span style="color:var(--ink-muted)">Powszechny wiek emerytalny:</span>
+              <b id="stazWiekEmerytalny">-</b>
+            </div>
+            <div style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid var(--hairline)">
+              <span style="color:var(--ink-muted)">Udokumentowany staż składkowy:</span>
+              <b id="stazLata">-</b>
+            </div>
+            <div style="display:flex; justify-content:space-between; padding:10px 0">
+              <span style="color:var(--ink-muted)">Lata pozostałe do emerytury:</span>
+              <b id="stazPozostalo" style="color:var(--zus-green)">-</b>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- HISTORIA WPŁACONYCH SKŁADEK -->
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h2 class="card-title">📊 Historia rozliczonych składek miesięcznych</h2>
+            <p class="card-subtitle">Raporty imienne ZUS RCA przekazane przez płatnika składek</p>
+          </div>
+          <button class="btn btn-outline btn-sm" onclick="odswiezKonto()">Odśwież dane</button>
+        </div>
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Miesiąc</th>
+                <th>Podstawa wymiaru</th>
+                <th>Emerytalna (19.52%)</th>
+                <th>Rentowa (8.00%)</th>
+                <th>Chorobowa (2.45%)</th>
+                <th>Zdrowotna (9.00%)</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="historiaSkladekBody">
+              <tr><td colspan="7" style="text-align:center; padding:20px; color:var(--ink-muted)">Wczytywanie historii składek...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ==================== ZAKŁADKA 2: ZWOLNIENIA LEKARSKIE e-ZLA ==================== -->
+    <section class="tab-content" id="tab-ezla">
+      
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h2 class="card-title">🩺 Elektroniczne Zwolnienia Lekarskie (e-ZLA / L4)</h2>
+            <p class="card-subtitle">Rejestr wystawionych zaświadczeń lekarskich o czasowej niezdolności do pracy</p>
+          </div>
+          <div style="display:flex; gap:10px; flex-wrap:wrap">
+            <button class="btn btn-outline btn-sm" id="btnTogglePlatnikView" onclick="togglePlatnikView()">
+              👁️ Przełącz widok pracodawcy (RODO)
+            </button>
+            <button class="btn btn-primary btn-sm" id="btnWystawEzlaModal" onclick="openWystawEzlaModal()">
+              ➕ Wystaw nowe e-ZLA (Lekarz)
+            </button>
+          </div>
+        </div>
+
+        <!-- Ostrzeżenie / informacja o trybie RODO -->
+        <div id="rodoAlertBox" style="display:none; background:#f1f5f9; border-left:4px solid var(--mob-blue); padding:12px 16px; border-radius:6px; margin-bottom:16px; font-size:13px; color:var(--ink)">
+          🔒 <strong>Ochrona danych medycznych (RODO / tajemnica lekarska):</strong> W widoku płatnika składek (pracodawcy / kadr) kody jednostki chorobowej ICD-10 oraz opis diagnozy są z mocy prawa <strong>automatycznie ukrywane</strong>.
+        </div>
+
+        <div id="ezlaListContainer">
+          <p style="color:var(--ink-muted)">Ładowanie zwolnień lekarskich...</p>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ==================== ZAKŁADKA 3: KALKULATORY ZUS ==================== -->
+    <section class="tab-content" id="tab-kalkulatory">
+      
+      <div class="grid-2">
+        <!-- KALKULATOR ZASIŁKU CHOROBOWEGO L4 -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title">🤒 Kalkulator Zasiłku Chorobowego (L4)</h2>
+              <p class="card-subtitle">Wyliczenie zgodnie z art. 92 Kodeksu Pracy i ustawą zasiłkową</p>
+            </div>
+          </div>
+
+          <form id="calcL4Form" onsubmit="obliczZasilekL4(event)">
+            <div class="form-group">
+              <label class="form-label">Średnie miesięczne wynagrodzenie brutto (z 12 m-cy):</label>
+              <input type="number" step="100" class="form-input" id="calcL4Wynagrodzenie" value="9500" required>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Liczba dni zwolnienia (L4):</label>
+                <input type="number" min="1" max="182" class="form-input" id="calcL4Dni" value="10" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Dni choroby w tym roku wcześniej:</label>
+                <input type="number" min="0" max="182" class="form-input" id="calcL4DniWczesniej" value="0" title="Próg 33 dni (lub 14 dni dla wieku 50+) płatnych przez pracodawcę">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Okoliczności szczególne (100% świadczenia):</label>
+              <div style="display:flex; flex-direction:column; gap:8px; font-size:13.5px">
+                <label style="display:flex; align-items:center; gap:8px; cursor:pointer">
+                  <input type="checkbox" id="calcL4Ciaza"> Kobieta w ciąży (Kod literowy B – 100% płatne)
+                </label>
+                <label style="display:flex; align-items:center; gap:8px; cursor:pointer">
+                  <input type="checkbox" id="calcL4Wypadek"> Wypadek przy pracy / w drodze do pracy (100% płatne)
+                </label>
+                <label style="display:flex; align-items:center; gap:8px; cursor:pointer">
+                  <input type="checkbox" id="calcL4Szpital"> Pobyt w szpitalu
+                </label>
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width:100%">Oblicz świadczenie chorobowe</button>
+          </form>
+
+          <div id="calcL4ResultBox" class="calc-result-box" style="display:none">
+            <div class="calc-result-header">
+              <span style="font-size:14px; opacity:0.9">Szacunkowe świadczenie do wypłaty (netto)</span>
+              <strong style="font-size:26px" id="calcL4Netto">0,00 zł</strong>
+            </div>
+            <div class="calc-grid">
+              <div class="calc-item">
+                <small>Stawka dzienna brutto:</small>
+                <b id="calcL4StawkaDzienna">0,00 zł</b>
+              </div>
+              <div class="calc-item">
+                <small>Kwota brutto ogółem:</small>
+                <b id="calcL4Brutto">0,00 zł</b>
+              </div>
+              <div class="calc-item">
+                <small>Dni pracodawcy (art. 92 KP):</small>
+                <b id="calcL4DniPracodawcy">0 dni</b>
+              </div>
+              <div class="calc-item">
+                <small>Dni ZUS (zasiłek):</small>
+                <b id="calcL4DniZus">0 dni</b>
+              </div>
+              <div class="calc-item">
+                <small>Zaliczka na podatek PIT:</small>
+                <b id="calcL4Pit">0,00 zł</b>
+              </div>
+              <div class="calc-item">
+                <small>Podstawa wymiaru (pomn. o 13.71%):</small>
+                <b id="calcL4Podstawa">0,00 zł</b>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- KALKULATOR SKŁADEK PRZEDSIĘBIORCY (JDG 2026) -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title">💼 Składki ZUS dla Firm (JDG 2026)</h2>
+              <p class="card-subtitle">Kalkulator obciążeń ZUS na rok 2026 w oparciu o formę rozliczenia</p>
+            </div>
+          </div>
+
+          <form id="calcJdgForm" onsubmit="obliczSkladkiJdg(event)">
+            <div class="form-group">
+              <label class="form-label">Forma rozliczania składek:</label>
+              <select class="form-select" id="calcJdgForma">
+                <option value="pelny">Duży ZUS (Pełne składki od 60% prognozowanego wynagrodzenia)</option>
+                <option value="preferencyjny">Preferencyjny ZUS (30% minimalnego wynagrodzenia)</option>
+                <option value="start">Ulga na start (Tylko składka zdrowotna)</option>
+                <option value="maly_plus">Mały ZUS Plus (Uzależniony od dochodu)</option>
+              </select>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Miesięczny dochód z działalności (zł):</label>
+                <input type="number" step="500" class="form-input" id="calcJdgDochod" value="12000">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Dobrowolne chorobowe:</label>
+                <select class="form-select" id="calcJdgChorobowe">
+                  <option value="true">Tak (prawo do płatnego L4)</option>
+                  <option value="false">Nie (bez składki chorobowej)</option>
+                </select>
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width:100%">Przelicz składki ZUS 2026</button>
+          </form>
+
+          <div id="calcJdgResultBox" class="calc-result-box" style="display:none">
+            <div class="calc-result-header">
+              <span style="font-size:14px; opacity:0.9">Łączne miesięczne składki ZUS</span>
+              <strong style="font-size:26px" id="calcJdgSuma">0,00 zł</strong>
+            </div>
+            <div class="calc-grid">
+              <div class="calc-item">
+                <small>Emerytalna:</small>
+                <b id="calcJdgEmerytalna">0,00 zł</b>
+              </div>
+              <div class="calc-item">
+                <small>Rentowa:</small>
+                <b id="calcJdgRentowa">0,00 zł</b>
+              </div>
+              <div class="calc-item">
+                <small>Chorobowa:</small>
+                <b id="calcJdgChorobowa">0,00 zł</b>
+              </div>
+              <div class="calc-item">
+                <small>Wypadkowa:</small>
+                <b id="calcJdgWypadkowa">0,00 zł</b>
+              </div>
+              <div class="calc-item">
+                <small>FP i Solidarnościowy:</small>
+                <b id="calcJdgFp">0,00 zł</b>
+              </div>
+              <div class="calc-item">
+                <small>Zdrowotna (szac.):</small>
+                <b id="calcJdgZdrowotna">0,00 zł</b>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SYMULATOR EMERYTALNY -->
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h2 class="card-title">📈 Symulator Emerytalny ZUS</h2>
+            <p class="card-subtitle">Prognoza wysokości przyszłego świadczenia w oparciu o tablice dalszego trwania życia GUS</p>
+          </div>
+          <button class="btn btn-outline btn-sm" onclick="obliczSymulacjeEmerytury()">Przelicz symulację</button>
+        </div>
+
+        <div class="grid-3" style="margin-bottom:16px">
+          <div class="form-group">
+            <label class="form-label">Kapitał I filar (Konto ZUS):</label>
+            <input type="number" class="form-input" id="simKonto" value="184320">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Kapitał II filar (Subkonto):</label>
+            <input type="number" class="form-input" id="simSubkonto" value="72150">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Średnia miesięczna składka:</label>
+            <input type="number" class="form-input" id="simSkladka" value="1850">
+          </div>
+        </div>
+
+        <div class="form-row" style="margin-bottom:16px">
+          <div class="form-group">
+            <label class="form-label">Aktualny wiek ubezpieczonego:</label>
+            <input type="number" class="form-input" id="simWiekAkt" value="36">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Planowany wiek przejścia na emeryturę:</label>
+            <select class="form-select" id="simWiekEm">
+              <option value="60">60 lat (kobiety)</option>
+              <option value="65" selected>65 lat (mężczyźni)</option>
+              <option value="67">67 lat (dłuższa praca = znacznie wyższe świadczenie)</option>
+              <option value="70">70 lat</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="simResultBox" class="calc-result-box" style="display:none">
+          <div class="calc-result-header">
+            <span style="font-size:14px; opacity:0.9">Prognozowana emerytura w wybranym wieku:</span>
+            <strong style="font-size:28px" id="simEmeryturaMies">0,00 zł / mies.</strong>
+          </div>
+          <div class="calc-grid">
+            <div class="calc-item">
+              <small>Prognozowany kapitał końcowy:</small>
+              <b id="simKapitalKoncowy">0,00 zł</b>
+            </div>
+            <div class="calc-item">
+              <small>Lata opłacania składek do emerytury:</small>
+              <b id="simLataDoEmerytury">0 lat</b>
+            </div>
+            <div class="calc-item">
+              <small>Miesiące trwania życia wg GUS:</small>
+              <b id="simMiesiaceGus">0 m-cy</b>
+            </div>
+            <div class="calc-item">
+              <small>Zysk z pracy o 1 rok dłużej:</small>
+              <b id="simZysk1Rok" style="color:#a7f3d0">+380 zł / mies.</b>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ==================== ZAKŁADKA 4: e-WIZYTY ==================== -->
+    <section class="tab-content" id="tab-ewizyty">
+      
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h2 class="card-title">📅 Zarezerwowane e-Wizyty w ZUS</h2>
+            <p class="card-subtitle">Twoje zaplanowane wideorozmowy online z ekspertem Zakładu Ubezpieczeń Społecznych</p>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="scrollToTerminy()">
+            ➕ Umów nową e-Wizytę
+          </button>
+        </div>
+
+        <div id="mojeEwizytyContainer">
+          <p style="color:var(--ink-muted)">Wczytywanie Twoich e-wizyt...</p>
+        </div>
+      </div>
+
+      <!-- DOSTĘPNE TERMINY DO REZERWACJI -->
+      <div class="card" id="terminyEwizytCard">
+        <div class="card-header">
+          <div>
+            <h2 class="card-title">🔍 Wolne terminy na wideorozmowę z ekspertem ZUS</h2>
+            <p class="card-subtitle">Wybierz interesujący Cię obszar spraw i zarezerwuj dogodny termin</p>
+          </div>
+          <div style="display:flex; gap:10px; align-items:center">
+            <label style="font-size:13px; font-weight:600">Temat:</label>
+            <select class="form-select" id="ewizytyFiltrTemat" style="width:auto" onchange="wczytajTerminyEwizyt()">
+              <option value="">Wszystkie tematy</option>
+              <option value="Zasiłki">Zasiłki i L4</option>
+              <option value="Emerytury i Renty">Emerytury i Renty</option>
+              <option value="Konto Płatnika">Składki i Prowadzenie Firmy</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="terminyEwizytContainer">
+          <p style="color:var(--ink-muted)">Pobieranie wolnych terminów z serwera...</p>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ==================== ZAKŁADKA 5: WNIOSKI I PISMA ==================== -->
+    <section class="tab-content" id="tab-wnioski">
+      
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h2 class="card-title">📑 Wnioski i Pisma elektroniczne (PUE ZUS)</h2>
+            <p class="card-subtitle">Złożone formularze, zaświadczenia urzędowe oraz statusy spraw</p>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="openNowyWniosekModal()">
+            ✍️ Złóż nowy wniosek do ZUS
+          </button>
+        </div>
+
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Numer sprawy</th>
+                <th>Typ wniosku</th>
+                <th>Data złożenia</th>
+                <th>Opis / Uwagi</th>
+                <th>Status urzędowy</th>
+              </tr>
+            </thead>
+            <tbody id="wnioskiTableBody">
+              <tr><td colspan="5" style="text-align:center; padding:20px; color:var(--ink-muted)">Ładowanie wniosków...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- ==================== MODALE ==================== -->
+
+  <!-- MODAL: WPŁATA NA INDYWIDUALNY RACHUNEK SKŁADKOWY (NRS) -->
+  <div class="modal-backdrop" id="modalWplata">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 class="modal-title">💳 Wpłata na rachunek NRS</h2>
+        <button class="close-btn" onclick="closeModal('modalWplata')">✕</button>
+      </div>
+      <p style="font-size:13px; color:var(--ink-muted); margin-top:-8px; margin-bottom:16px">
+        Wpłata trafia bezpośrednio do Zakładu Ubezpieczeń Społecznych i automatycznie pokrywa najstarsze zaległości lub bieżące składki.
+      </p>
+
+      <form id="formWplataNRS" onsubmit="wykonajWplateNRS(event)">
+        <div class="form-group">
+          <label class="form-label">Rachunek docelowy (NRS):</label>
+          <input type="text" class="form-input" id="wplataNrsInput" readonly style="background:#f1f5f9; font-family:monospace">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Kwota wpłaty (PLN):</label>
+          <input type="number" step="0.01" min="1" class="form-input" id="wplataKwotaInput" value="1762.67" required>
+        </div>
+
+        <div style="display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap">
+          <button type="button" class="btn btn-secondary btn-sm" onclick="setWplataKwota(100)">100 zł</button>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="setWplataKwota(500)">500 zł</button>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="setWplataKwota(1762.67)">1 762,67 zł (Zaległość)</button>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Tytuł przelewu:</label>
+          <input type="text" class="form-input" id="wplataTytulInput" value="Opłata składek ZUS za bieżący miesiąc">
+        </div>
+
+        <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:20px">
+          <button type="button" class="btn btn-outline" onclick="closeModal('modalWplata')">Anuluj</button>
+          <button type="submit" class="btn btn-primary">Potwierdź i zarejestruj wpłatę</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: WYSTAWIENIE NOWEGO e-ZLA (Dla lekarza) -->
+  <div class="modal-backdrop" id="modalWystawEzla">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 class="modal-title">🩺 Wystawianie nowego e-ZLA (L4)</h2>
+        <button class="close-btn" onclick="closeModal('modalWystawEzla')">✕</button>
+      </div>
+      <p style="font-size:13px; color:var(--ink-muted); margin-top:-8px; margin-bottom:16px">
+        Wystawienie zaświadczenia lekarskiego z numerem PWZ lekarza z natychmiastowym przekazaniem do ZUS i pracodawcy.
+      </p>
+
+      <form id="formWystawEzla" onsubmit="wykonajWystawienieEzla(event)">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">PESEL pacjenta:</label>
+            <input type="text" class="form-input" id="ezlaPesel" value="90031501245" maxlength="11" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Imię i nazwisko pacjenta:</label>
+            <input type="text" class="form-input" id="ezlaImieNazwisko" value="Marta Kowalska" required>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">NIP płatnika składek (pracodawcy):</label>
+            <input type="text" class="form-input" id="ezlaNipPlatnika" value="5252525259" maxlength="10" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Nazwa płatnika składek:</label>
+            <input type="text" class="form-input" id="ezlaNazwaPlatnika" value="TechPolska Sp. z o.o." required>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Data początkowa (od):</label>
+            <input type="date" class="form-input" id="ezlaDataOd" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Data końcowa (do):</label>
+            <input type="date" class="form-input" id="ezlaDataDo" required>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Wskazania lekarskie:</label>
+            <select class="form-select" id="ezlaWskazania">
+              <option value="1">1 - Chory powinien leżeć</option>
+              <option value="2" selected>2 - Chory może chodzić</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Kod rozpoznania ICD-10:</label>
+            <select class="form-select" id="ezlaIcd10" onchange="onIcdChange(this)">
+              <option value="J06.9" data-desc="Ostre zakażenie górnych dróg oddechowych">J06.9 - Infekcja górnych dróg oddechowych</option>
+              <option value="M54.5" data-desc="Ból w dolnym odcinku kręgosłupa (lumbago)">M54.5 - Ból dolnego odcinka kręgosłupa</option>
+              <option value="K29.7" data-desc="Zapalenie żołądka nieokreślone">K29.7 - Zapalenie błony śluzowej żołądka</option>
+              <option value="J20.9" data-desc="Ostre zapalenie oskrzeli">J20.9 - Ostre zapalenie oskrzeli</option>
+              <option value="O26.8" data-desc="Inne stany związane z ciążą (kod B)">O26.8 - Stany związane z ciążą</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Numer PWZ lekarza wystawiającego:</label>
+          <input type="text" class="form-input" id="ezlaPwzLekarza" value="7891234" required>
+        </div>
+
+        <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:20px">
+          <button type="button" class="btn btn-outline" onclick="closeModal('modalWystawEzla')">Anuluj</button>
+          <button type="submit" class="btn btn-primary">Wystaw i podpisz certyfikatem e-ZLA</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: ANULOWANIE e-ZLA -->
+  <div class="modal-backdrop" id="modalAnulujEzla">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 class="modal-title">⚠️ Anulowanie zwolnienia e-ZLA</h2>
+        <button class="close-btn" onclick="closeModal('modalAnulujEzla')">✕</button>
+      </div>
+      <p style="font-size:13px; color:var(--ink-muted); margin-top:-8px; margin-bottom:16px">
+        Anulowanie jest prawnie wiążące i informuje natychmiast ubezpieczonego, płatnika oraz inspektorat ZUS.
+      </p>
+
+      <form id="formAnulujEzla" onsubmit="wykonajAnulowanieEzla(event)">
+        <input type="hidden" id="anulujEzlaId">
+        
+        <div class="form-group">
+          <label class="form-label">Identyfikator zwolnienia:</label>
+          <input type="text" class="form-input" id="anulujEzlaIdDisplay" readonly style="background:#f1f5f9; font-weight:700">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Powód anulowania zaświadczenia lekarskiego:</label>
+          <select class="form-select" id="anulujEzlaPowod">
+            <option value="Pomyłka w dacie powrotu do pracy">Pomyłka w dacie powrotu do pracy</option>
+            <option value="Błędny NIP pracodawcy">Błędny NIP pracodawcy</option>
+            <option value="Wystawienie zwolnienia korygującego">Wystawienie zwolnienia korygującego</option>
+            <option value="Cofnięcie niezdolności do pracy po badaniu">Cofnięcie niezdolności do pracy po badaniu</option>
+          </select>
+        </div>
+
+        <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:20px">
+          <button type="button" class="btn btn-outline" onclick="closeModal('modalAnulujEzla')">Wróć</button>
+          <button type="submit" class="btn btn-danger">Anuluj zaświadczenie e-ZLA</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: NOWY WNIOSEK DO ZUS -->
+  <div class="modal-backdrop" id="modalNowyWniosek">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 class="modal-title">✍️ Nowy wniosek do ZUS</h2>
+        <button class="close-btn" onclick="closeModal('modalNowyWniosek')">✕</button>
+      </div>
+      <p style="font-size:13px; color:var(--ink-muted); margin-top:-8px; margin-bottom:16px">
+        Elektroniczne złożenie wniosku z urzędowym poświadczeniem odbioru (UPO) w systemie PUE ZUS / eZUS.
+      </p>
+
+      <form id="formNowyWniosek" onsubmit="wykonajZlozenieWniosku(event)">
+        <div class="form-group">
+          <label class="form-label">Wybierz formularz wniosku:</label>
+          <select class="form-select" id="wniosekTypSelect">
+            <option value="Wniosek o zasiłek chorobowy po ustaniu zatrudnienia (ZAS-12)">ZAS-12 • Wniosek o zasiłek chorobowy po ustaniu zatrudnienia</option>
+            <option value="Zaświadczenie płatnika składek o okresie niezdolności (ZUS Z-3)">ZUS Z-3 • Zaświadczenie płatnika składek do wypłaty zasiłku</option>
+            <option value="Wniosek o wydanie zaświadczenia o niezaleganiu w składkach (ZAS-36)">ZAS-36 • Zaświadczenie o niezaleganiu w opłacaniu składek</option>
+            <option value="Wniosek o rozłożenie spłaty zadłużenia na raty (RSR)">RSR • Wniosek o układ ratalny zadłużenia składkowego</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Uzasadnienie lub uwagi wnioskodawcy:</label>
+          <textarea class="form-textarea" id="wniosekUwagiInput" rows="3" placeholder="Wpisz dodatkowe informacje dla inspektora ZUS..."></textarea>
+        </div>
+
+        <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:20px">
+          <button type="button" class="btn btn-outline" onclick="closeModal('modalNowyWniosek')">Anuluj</button>
+          <button type="submit" class="btn btn-primary">Wyślij wniosek do ZUS</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: KONFIGURACJA BACKENDU -->
+  <div class="modal-backdrop" id="modalBackend">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 class="modal-title">⚙️ Konfiguracja połączenia z Backendem REST API</h2>
+        <button class="close-btn" onclick="closeModal('modalBackend')">✕</button>
+      </div>
+
+      <div style="font-size:13.5px; margin-bottom:16px">
+        <p>Aplikacja łączy się z autonomicznym serwerem REST API ZUS & e-ZLA.</p>
+        <div style="background:#f8fafc; border:1px solid var(--hairline); padding:12px; border-radius:8px; margin:10px 0">
+          <strong>Uruchomienie serwera w terminalu:</strong><br>
+          <code style="display:block; margin-top:6px; background:#e2e8f0; padding:6px 10px; border-radius:4px; font-family:Consolas,monospace">
+            python -m zus_backend.server 8795
+          </code>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Adres URL Backend API:</label>
+        <input type="url" class="form-input" id="backendUrlInput" value="http://localhost:8795" required>
+      </div>
+
+      <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:20px">
+        <button type="button" class="btn btn-outline" onclick="closeModal('modalBackend')">Zamknij</button>
+        <button type="button" class="btn btn-primary" onclick="zapiszBackendUrl()">Zapisz i Połącz</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST CONTAINER -->
+  <div class="toast-box" id="toastBox"></div>
+
+  <!-- JAVASCRIPT: LOGIKA BIZNESOWA I PODŁĄCZENIE BACKENDU -->
+  <script>
+    /* ==========================================================================
+       KLIENT REST API ZUS & AUTONOMICZNA INTEGRACJA Z MOCK/FALLBACK
+       ========================================================================== */
+
+    const STATE = {
+      backendUrl: localStorage.getItem('zus_backend_url') || 'http://localhost:8795',
+      isLiveBackend: false,
+      activeUserKey: 'marta',
+      activeTab: 'konto',
+      isPlatnikView: false,
+      kontoData: null,
+      ezlaList: [],
+      terminyEwizyt: [],
+      mojeEwizyty: [],
+      wnioskiList: []
+    };
+
+    // Definicje kont demonstracyjnych
+    const DEMO_USERS = {
+      marta: {
+        pesel: '90031501245',
+        token: 'token-marta-90031501245',
+        imie: 'Marta',
+        nazwisko: 'Kowalska',
+        opis: 'Ubezpieczony (Etat)',
+        avatar: 'M',
+        nipPlatnika: '5252525259'
+      },
+      jan: {
+        pesel: '82041203471',
+        token: 'token-jan-82041203471',
+        imie: 'Jan',
+        nazwisko: 'Wiśniewski',
+        opis: 'Ubezpieczony (JDG / Firma)',
+        avatar: 'J',
+        nip: '6762451299'
+      },
+      tomasz: {
+        pesel: '75081204918',
+        token: 'token-lekarz-pwz-7891234',
+        pwz: '7891234',
+        imie: 'Tomasz',
+        nazwisko: 'Zieliński',
+        opis: 'Lekarz uprawniony (PWZ)',
+        avatar: 'dr'
+      },
+      techpolska: {
+        nip: '5252525259',
+        token: 'token-platnik-techpolska',
+        nazwa: 'TechPolska Sp. z o.o.',
+        opis: 'Płatnik składek / Pracodawca',
+        avatar: 'TP'
+      },
+      zus_admin: {
+        token: 'token-urzednik-zus-admin',
+        nazwa: 'Anna Nowak',
+        opis: 'Inspektor ZUS (Oddział I)',
+        avatar: 'ZUS'
+      }
+    };
+
+    // --- Narzędzia pomocnicze ---
+    function formatPLN(num) {
+      if (num === undefined || num === null || isNaN(num)) return '0,00 zł';
+      return Number(num).toLocaleString('pl-PL', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' zł';
+    }
+
+    function showToast(msg, type = 'success') {
+      const box = document.getElementById('toastBox');
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      toast.innerHTML = (type === 'success' ? '✓ ' : '⚠️ ') + msg;
+      box.appendChild(toast);
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(10px)';
+        setTimeout(() => toast.remove(), 300);
+      }, 3500);
+    }
+
+    function openModal(id) {
+      const el = document.getElementById(id);
+      if (el) el.classList.add('open');
+    }
+
+    function closeModal(id) {
+      const el = document.getElementById(id);
+      if (el) el.classList.remove('open');
+    }
+
+    function openBackendModal() {
+      document.getElementById('backendUrlInput').value = STATE.backendUrl;
+      openModal('modalBackend');
+    }
+
+    function zapiszBackendUrl() {
+      const val = document.getElementById('backendUrlInput').value.trim().replace(/\/$/, '');
+      if (val) {
+        STATE.backendUrl = val;
+        localStorage.setItem('zus_backend_url', val);
+        closeModal('modalBackend');
+        showToast('Zapisano adres URL backendu. Ponowne sprawdzanie połączenia...');
+        testBackendConnection();
+      }
+    }
+
+    // --- KLIENT REST API ---
+    async function apiRequest(endpoint, method = 'GET', body = null) {
+      const user = DEMO_USERS[STATE.activeUserKey];
+      const url = `${STATE.backendUrl}${endpoint}`;
+      const headers = {
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${user.token}`
+      };
+      if (body) {
+        headers['Content-Type'] = 'application/json';
+      }
+
+      try {
+        const ctrl = new AbortController();
+        const timeoutId = setTimeout(() => ctrl.abort(), 3500);
+
+        const resp = await fetch(url, {
+          method,
+          headers,
+          body: body ? JSON.stringify(body) : undefined,
+          signal: ctrl.signal
+        });
+        clearTimeout(timeoutId);
+
+        if (!resp.ok) {
+          const errData = await resp.json().catch(() => ({}));
+          throw new Error(errData.blad || `HTTP ${resp.status}`);
+        }
+
+        STATE.isLiveBackend = true;
+        updateApiStatusUI(true);
+        return await resp.json();
+      } catch (err) {
+        console.warn(`[ZUS REST API] Połączenie nieudane (${endpoint}):`, err.message);
+        STATE.isLiveBackend = false;
+        updateApiStatusUI(false);
+        // Przełączenie na inteligentny silnik mock/fallback
+        return handleMockFallback(endpoint, method, body);
+      }
+    }
+
+    function updateApiStatusUI(isLive) {
+      const pill = document.getElementById('apiStatusPill');
+      const text = document.getElementById('apiStatusText');
+      const banner = document.getElementById('serverBannerMsg');
+
+      if (isLive) {
+        pill.className = 'api-status-pill online';
+        text.textContent = 'REST API ZUS: Połączono';
+        banner.innerHTML = `Serwer działa na żywo pod adresem <code>${STATE.backendUrl}</code>. Wszystkie operacje są zapisywane w backendzie.`;
+      } else {
+        pill.className = 'api-status-pill mock';
+        text.textContent = 'Tryb Symulacji (uruchom backend)';
+        banner.innerHTML = `Serwer offline. Aby podłączyć API na żywo, wpisz w konsoli: <code>python -m zus_backend.server 8795</code>`;
+      }
+    }
+
+    async function testBackendConnection() {
+      try {
+        const resp = await fetch(`${STATE.backendUrl}/api/health`, { method: 'GET' });
+        if (resp.ok) {
+          const d = await resp.json();
+          STATE.isLiveBackend = true;
+          updateApiStatusUI(true);
+          showToast(`Połączono pomyślnie z ${d.service || 'ZUS Backend'}!`);
+          zaladujWszystko();
+        } else {
+          throw new Error(`HTTP ${resp.status}`);
+        }
+      } catch (e) {
+        STATE.isLiveBackend = false;
+        updateApiStatusUI(false);
+        showToast('Nie udało się nawiązać połączenia z serwerem. Aktywowano tryb symulacji.', 'error');
+      }
+    }
+
+    // --- ZMIANA UŻYTKOWNIKA DEMONSTRACYJNEGO ---
+    function onUserChange(key) {
+      STATE.activeUserKey = key;
+      const u = DEMO_USERS[key];
+      document.getElementById('userAvatar').textContent = u.avatar;
+      showToast(`Przełączono tożsamość na: ${u.imie ? u.imie + ' ' + u.nazwisko : u.nazwa} (${u.opis})`);
+
+      // Dostosowanie widoków i uprawnień dla roli
+      if (key === 'techpolska') {
+        STATE.isPlatnikView = true;
+      } else {
+        STATE.isPlatnikView = false;
+      }
+
+      zaladujWszystko();
+    }
+
+    // --- PRZEŁĄCZANIE ZAKŁADEK ---
+    function switchTab(tabId) {
+      STATE.activeTab = tabId;
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.tab === tabId);
+      });
+      document.querySelectorAll('.tab-content').forEach(sec => {
+        sec.classList.toggle('active', sec.id === `tab-${tabId}`);
+      });
+    }
+
+    // ==========================================================================
+    // SEKCJA 1: KONTO I SKŁADKI
+    // ==========================================================================
+
+    async function odswiezKonto() {
+      const user = DEMO_USERS[STATE.activeUserKey];
+      const pesel = user.pesel || '90031501245';
+      const data = await apiRequest(`/api/zus/konto?pesel=${pesel}`, 'GET');
+      STATE.kontoData = data;
+      renderKonto(data);
+    }
+
+    function renderKonto(k) {
+      if (!k) return;
+      document.getElementById('heroUserName').textContent = `${k.imie || ''} ${k.nazwisko || ''}`.toUpperCase();
+      document.getElementById('heroWaloryzacja').textContent = `Ostatnia waloryzacja: ${k.ostatnia_waloryzacja || '+14.87%'}`;
+
+      const laczny = (Number(k.stan_konta_emerytalnego) || 0) + (Number(k.stan_subkonta) || 0);
+      document.getElementById('heroTotalAmount').textContent = formatPLN(laczny);
+      document.getElementById('pillar1Amount').textContent = formatPLN(k.stan_konta_emerytalnego);
+      document.getElementById('pillar2Amount').textContent = formatPLN(k.stan_subkonta);
+      document.getElementById('pillarPrognoza').textContent = formatPLN(k.prognozowana_emerytura_w_wieku_emerytalnym) + ' / mies.';
+
+      // NRS
+      const nrs = k.numer_rachunku_skladkowego_nrs || '81 1010 0000 0000 9003 1501 2450';
+      document.getElementById('nrsNumberText').textContent = nrs.replace(/(.{2})(.{4})(.{4})(.{4})(.{4})(.{4})(.{4})/, '$1 $2 $3 $4 $5 $6 $7');
+      document.getElementById('wplataNrsInput').value = nrs;
+
+      // Saldo rozliczeń
+      const saldo = Number(k.saldo_rozliczen) || 0;
+      const saldoEl = document.getElementById('saldoRozliczenBadge');
+      if (saldo < 0) {
+        saldoEl.className = 'saldo-badge saldo-debt';
+        saldoEl.textContent = `Zaległość w składkach: ${formatPLN(Math.abs(saldo))}`;
+      } else {
+        saldoEl.className = 'saldo-badge saldo-ok';
+        saldoEl.textContent = `Brak zaległości (saldo: ${formatPLN(saldo)})`;
+      }
+
+      // Staż i wiek
+      document.getElementById('stazWiek').textContent = `${k.aktualny_wiek_lata || 36} lat`;
+      document.getElementById('stazWiekEmerytalny').textContent = `${k.wiek_emerytalny_lata || 60} lat`;
+      document.getElementById('stazLata').textContent = `${k.lata_skladkowe || 14} lat składkowych`;
+      const pozostalo = Math.max(0, (k.wiek_emerytalny_lata || 60) - (k.aktualny_wiek_lata || 36));
+      document.getElementById('stazPozostalo').textContent = `${pozostalo} lat do osiągnięcia wieku`;
+
+      // Zgłoszenia do ubezpieczeń
+      const zgloszenia = k.zgloszenia_ubezpieczen || [];
+      const zglContainer = document.getElementById('zgloszeniaContainer');
+      if (zgloszenia.length === 0) {
+        zglContainer.innerHTML = `<p style="color:var(--ink-muted)">Brak aktywnych zgłoszeń.</p>`;
+      } else {
+        zglContainer.innerHTML = zgloszenia.map(z => `
+          <div style="padding:10px 14px; background:var(--surface-2); border-radius:10px; margin-bottom:10px; border:1px solid var(--hairline)">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px">
+              <strong>${z.platnik_nazwa || 'Pracodawca'}</strong>
+              <span class="badge badge-success">${z.status || 'aktywne'}</span>
+            </div>
+            <div style="font-size:12.5px; color:var(--ink-muted)">
+              NIP: ${z.platnik_nip || '-'} • Kod: <b>${z.kod_tytulu || '01 10 00'}</b>
+            </div>
+            <div style="font-size:12px; color:var(--ink-muted); margin-top:2px">
+              ${z.opis_tytulu || 'Pracownik podlegający ubezpieczeniom'} (od: ${z.data_od || '-'})
+            </div>
+          </div>
+        `).join('');
+      }
+
+      // Tabela historii składek
+      const hist = k.historia_skladek || [];
+      const tbody = document.getElementById('historiaSkladekBody');
+      if (hist.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:16px; color:var(--ink-muted)">Brak zarejestrowanych składek.</td></tr>`;
+      } else {
+        tbody.innerHTML = hist.map(h => `
+          <tr>
+            <td><strong>${h.miesiac}</strong></td>
+            <td>${formatPLN(h.podstawa)}</td>
+            <td>${formatPLN(h.emerytalna)}</td>
+            <td>${formatPLN(h.rentowa)}</td>
+            <td>${formatPLN(h.chorobowa)}</td>
+            <td>${formatPLN(h.zdrowotna)}</td>
+            <td><span class="badge badge-success">${h.status || 'rozliczona'}</span></td>
+          </tr>
+        `).join('');
+      }
+    }
+
+    function kopiujNRS() {
+      const nr = document.getElementById('nrsNumberText').textContent.replace(/\s+/g, '');
+      navigator.clipboard.writeText(nr).then(() => {
+        showToast('Skopiowano numer NRS do schowka!');
+      }).catch(() => {
+        showToast('Numer NRS: ' + nr);
+      });
+    }
+
+    function openWplataModal() {
+      const saldo = (STATE.kontoData && STATE.kontoData.saldo_rozliczen) || 0;
+      if (saldo < 0) {
+        document.getElementById('wplataKwotaInput').value = Math.abs(saldo).toFixed(2);
+      }
+      openModal('modalWplata');
+    }
+
+    function setWplataKwota(val) {
+      document.getElementById('wplataKwotaInput').value = val.toFixed(2);
+    }
+
+    async function wykonajWplateNRS(e) {
+      e.preventDefault();
+      const user = DEMO_USERS[STATE.activeUserKey];
+      const pesel = user.pesel || '82041203471';
+      const kwota = parseFloat(document.getElementById('wplataKwotaInput').value);
+      const tytul = document.getElementById('wplataTytulInput').value;
+
+      try {
+        const odp = await apiRequest('/api/zus/wplata-nrs', 'POST', {
+          pesel,
+          kwota,
+          tytul
+        });
+        closeModal('modalWplata');
+        showToast(`Wpłata ${formatPLN(kwota)} zaksięgowana pomyślnie! Nowe saldo: ${formatPLN(odp.nowe_saldo)}`);
+        odswiezKonto();
+      } catch (err) {
+        showToast('Błąd rejestracji wpłaty: ' + err.message, 'error');
+      }
+    }
+
+    // ==========================================================================
+    // SEKCJA 2: ZWOLNIENIA LEKARSKIE e-ZLA (L4)
+    // ==========================================================================
+
+    async function wczytajEzla() {
+      const user = DEMO_USERS[STATE.activeUserKey];
+      let data;
+
+      if (STATE.isPlatnikView) {
+        const nip = user.nip || '5252525259';
+        data = await apiRequest(`/api/l4/platnik?nip=${nip}`, 'GET');
+        renderEzla(data.zwolnienia || [], true);
+      } else {
+        const pesel = user.pesel || '90031501245';
+        data = await apiRequest(`/api/l4/moje?pesel=${pesel}`, 'GET');
+        renderEzla(data.zwolnienia || [], false);
+      }
+    }
+
+    function togglePlatnikView() {
+      STATE.isPlatnikView = !STATE.isPlatnikView;
+      const btn = document.getElementById('btnTogglePlatnikView');
+      btn.textContent = STATE.isPlatnikView ? '👤 Przełącz na widok pacjenta' : '👁️ Przełącz widok pracodawcy (RODO)';
+      document.getElementById('rodoAlertBox').style.display = STATE.isPlatnikView ? 'block' : 'none';
+      wczytajEzla();
+    }
+
+    function renderEzla(lista, isPlatnik) {
+      STATE.ezlaList = lista;
+      document.getElementById('ezlaCountBadge').textContent = lista.length;
+      const c = document.getElementById('ezlaListContainer');
+
+      if (!lista || lista.length === 0) {
+        c.innerHTML = `<div style="text-align:center; padding:30px; color:var(--ink-muted)">
+          <div style="font-size:32px; margin-bottom:8px">🩺</div>
+          Brak zarejestrowanych zwolnień lekarskich e-ZLA.
+        </div>`;
+        return;
+      }
+
+      c.innerHTML = lista.map(z => {
+        const isAnulowane = (z.status === 'anulowane');
+        const badgeClass = isAnulowane ? 'badge-danger' : 'badge-success';
+        const wskazanieText = (z.wskazania_lekarskie === 1) ? '1 - Chory powinien leżeć' : '2 - Chory może chodzić';
+
+        return `
+          <div class="l4-card">
+            <div class="l4-header">
+              <div class="l4-number">
+                <span>📄 ${z.id_ezla}</span>
+                <span class="badge ${badgeClass}">${z.status ? z.status.toUpperCase() : 'AKTYWNE'}</span>
+                ${z.kody_literowe && z.kody_literowe.includes('B') ? '<span class="badge badge-warning" title="Ciąża: płatne 100%">KOD B (Ciąża)</span>' : ''}
+              </div>
+              <div>
+                ${!isAnulowane ? `<button class="btn btn-outline btn-sm" onclick="openAnulujEzlaModal('${z.id_ezla}')">⚠️ Anuluj e-ZLA</button>` : `<span style="font-size:12px; color:var(--mob-red)">Powód anulowania: ${z.powod_anulowania || 'Pomyłka'}</span>`}
+              </div>
+            </div>
+
+            <div class="l4-body-grid">
+              <div>
+                <small>Okres zwolnienia:</small>
+                <b>${z.okres_od} do ${z.okres_do} (${z.liczba_dni || '-'} dni)</b>
+              </div>
+              <div>
+                <small>Pacjent:</small>
+                <b>${z.imie_pacjenta || ''} ${z.nazwisko_pacjenta || ''} (PESEL: ${z.pesel_pacjenta || '-'})</b>
+              </div>
+              <div>
+                <small>Lekarz wystawiający:</small>
+                <b>${z.imie_nazwisko_lekarza || 'dr n. med. Tomasz Zieliński'} (PWZ: ${z.pwz_lekarza || '-'})</b>
+              </div>
+              <div>
+                <small>Wskazania lekarskie:</small>
+                <b>${wskazanieText}</b>
+              </div>
+            </div>
+
+            ${isPlatnik
+              ? `<div class="l4-icd-hidden">🔒 Dane medyczne ukryte przed pracodawcą (RODO / tajemnica lekarska)</div>`
+              : `<div class="l4-icd-box">
+                  <strong>Rozpoznanie ICD-10:</strong> <code style="font-weight:700">${z.kod_icd10 || 'J06.9'}</code> — ${z.opis_rozpoznania || 'Infekcja'}
+                </div>`
+            }
+          </div>
+        `;
+      }).join('');
+    }
+
+    function openWystawEzlaModal() {
+      // Ustawienie domyślnych dat (od dzisiaj na 7 dni)
+      const dOd = new Date();
+      const dDo = new Date();
+      dDo.setDate(dDo.getDate() + 7);
+
+      document.getElementById('ezlaDataOd').value = dOd.toISOString().split('T')[0];
+      document.getElementById('ezlaDataDo').value = dDo.toISOString().split('T')[0];
+
+      const user = DEMO_USERS[STATE.activeUserKey];
+      if (user.pwz) {
+        document.getElementById('ezlaPwzLekarza').value = user.pwz;
+      }
+      openModal('modalWystawEzla');
+    }
+
+    function onIcdChange(sel) {
+      const opt = sel.options[sel.selectedIndex];
+      // Automatyczne podpowiedzi
+    }
+
+    async function wykonajWystawienieEzla(e) {
+      e.preventDefault();
+      const selIcd = document.getElementById('ezlaIcd10');
+      const opt = selIcd.options[selIcd.selectedIndex];
+
+      const body = {
+        pesel_pacjenta: document.getElementById('ezlaPesel').value.trim(),
+        imie_pacjenta: document.getElementById('ezlaImieNazwisko').value.trim().split(' ')[0] || 'Marta',
+        nazwisko_pacjenta: document.getElementById('ezlaImieNazwisko').value.trim().split(' ').slice(1).join(' ') || 'Kowalska',
+        nip_platnika: document.getElementById('ezlaNipPlatnika').value.trim(),
+        nazwa_platnika: document.getElementById('ezlaNazwaPlatnika').value.trim(),
+        okres_od: document.getElementById('ezlaDataOd').value,
+        okres_do: document.getElementById('ezlaDataDo').value,
+        wskazania_lekarskie: parseInt(document.getElementById('ezlaWskazania').value),
+        kod_icd10: selIcd.value,
+        opis_rozpoznania: opt.dataset.desc || opt.text,
+        pwz_lekarza: document.getElementById('ezlaPwzLekarza').value.trim(),
+        kody_literowe: selIcd.value === 'O26.8' ? ['B'] : []
+      };
+
+      try {
+        const odp = await apiRequest('/api/l4/wystaw', 'POST', body);
+        closeModal('modalWystawEzla');
+        showToast('Zwolnienie e-ZLA zostało pomyślnie wystawione i wysłane do ZUS!');
+        wczytajEzla();
+      } catch (err) {
+        showToast('Błąd wystawiania e-ZLA: ' + err.message, 'error');
+      }
+    }
+
+    function openAnulujEzlaModal(id) {
+      document.getElementById('anulujEzlaId').value = id;
+      document.getElementById('anulujEzlaIdDisplay').value = id;
+      openModal('modalAnulujEzla');
+    }
+
+    async function wykonajAnulowanieEzla(e) {
+      e.preventDefault();
+      const id = document.getElementById('anulujEzlaId').value;
+      const powod = document.getElementById('anulujEzlaPowod').value;
+
+      try {
+        await apiRequest('/api/l4/anuluj', 'POST', { id_ezla: id, powod });
+        closeModal('modalAnulujEzla');
+        showToast(`Zwolnienie ${id} zostało anulowane.`);
+        wczytajEzla();
+      } catch (err) {
+        showToast('Błąd anulowania e-ZLA: ' + err.message, 'error');
+      }
+    }
+
+    // ==========================================================================
+    // SEKCJA 3: KALKULATORY ZUS
+    // ==========================================================================
+
+    async function obliczZasilekL4(e) {
+      e.preventDefault();
+      const wynagrodzenie = parseFloat(document.getElementById('calcL4Wynagrodzenie').value);
+      const dni = parseInt(document.getElementById('calcL4Dni').value);
+      const dniWczesniej = parseInt(document.getElementById('calcL4DniWczesniej').value) || 0;
+      const ciaza = document.getElementById('calcL4Ciaza').checked;
+      const wypadek = document.getElementById('calcL4Wypadek').checked;
+      const szpital = document.getElementById('calcL4Szpital').checked;
+
+      const kody = [];
+      if (ciaza) kody.push('B');
+
+      const body = {
+        srednie_wynagrodzenie_brutto: wynagrodzenie,
+        dni_zwolnienia: dni,
+        dni_choroby_w_tym_roku_wczesniej: dniWczesniej,
+        kody_literowe: kody,
+        jest_szpital: szpital,
+        jest_wypadek: wypadek
+      };
+
+      try {
+        const r = await apiRequest('/api/l4/kalkulator-zasilku', 'POST', body);
+        document.getElementById('calcL4ResultBox').style.display = 'block';
+        document.getElementById('calcL4Netto').textContent = formatPLN(r.kwota_netto_do_wyplaty);
+        document.getElementById('calcL4Brutto').textContent = formatPLN(r.kwota_brutto_ogolem);
+        document.getElementById('calcL4StawkaDzienna').textContent = formatPLN(r.stawka_dzienna_brutto) + ' / dzień';
+        document.getElementById('calcL4DniPracodawcy').textContent = `${r.dni_wynagrodzenia_pracodawcy || 0} dni (${formatPLN(r.kwota_wynagrodzenia_pracodawcy)})`;
+        document.getElementById('calcL4DniZus').textContent = `${r.dni_zasilku_zus || 0} dni (${formatPLN(r.kwota_zasilku_zus)})`;
+        document.getElementById('calcL4Pit').textContent = formatPLN(r.zaliczka_pit);
+        document.getElementById('calcL4Podstawa').textContent = formatPLN(r.podstawa_wymiaru_miesieczna);
+        showToast('Pomyślnie przeliczono świadczenie chorobowe!');
+      } catch (err) {
+        showToast('Błąd obliczeń zasiłku: ' + err.message, 'error');
+      }
+    }
+
+    async function obliczSkladkiJdg(e) {
+      if (e) e.preventDefault();
+      const forma = document.getElementById('calcJdgForma').value;
+      const dochod = parseFloat(document.getElementById('calcJdgDochod').value) || 10000;
+      const chorobowe = document.getElementById('calcJdgChorobowe').value;
+
+      try {
+        const r = await apiRequest(`/api/zus/skladki/symulacja?forma=${forma}&dochod=${dochod}&chorobowe=${chorobowe}`, 'GET');
+        document.getElementById('calcJdgResultBox').style.display = 'block';
+        document.getElementById('calcJdgSuma').textContent = formatPLN(r.lacznie_do_zaplaty || r.suma_skladki_spoleczne_i_zdrowotna);
+        document.getElementById('calcJdgEmerytalna').textContent = formatPLN(r.skladka_emerytalna);
+        document.getElementById('calcJdgRentowa').textContent = formatPLN(r.skladka_rentowa);
+        document.getElementById('calcJdgChorobowa').textContent = formatPLN(r.skladka_chorobowa);
+        document.getElementById('calcJdgWypadkowa').textContent = formatPLN(r.skladka_wypadkowa);
+        document.getElementById('calcJdgFp').textContent = formatPLN((r.fundusz_pracy || 0) + (r.fundusz_solidarnosciowy || 0));
+        document.getElementById('calcJdgZdrowotna').textContent = formatPLN(r.skladka_zdrowotna);
+        showToast('Składki JDG 2026 przeliczone!');
+      } catch (err) {
+        showToast('Błąd kalkulatora JDG: ' + err.message, 'error');
+      }
+    }
+
+    async function obliczSymulacjeEmerytury() {
+      const stanK = parseFloat(document.getElementById('simKonto').value) || 184320;
+      const stanSub = parseFloat(document.getElementById('simSubkonto').value) || 72150;
+      const skladka = parseFloat(document.getElementById('simSkladka').value) || 1850;
+      const wiek = parseInt(document.getElementById('simWiekAkt').value) || 36;
+      const wiekEm = parseInt(document.getElementById('simWiekEm').value) || 65;
+
+      const q = `stan_konta=${stanK}&stan_subkonta=${stanSub}&srednia_skladka=${skladka}&wiek=${wiek}&wiek_emerytalny=${wiekEm}`;
+      try {
+        const r = await apiRequest(`/api/zus/emerytura/symulacja?${q}`, 'GET');
+        document.getElementById('simResultBox').style.display = 'block';
+        document.getElementById('simEmeryturaMies').textContent = formatPLN(r.prognozowana_emerytura_miesieczna) + ' / mies.';
+        document.getElementById('simKapitalKoncowy').textContent = formatPLN(r.kapital_koncowy_ogolem);
+        document.getElementById('simLataDoEmerytury').textContent = `${r.lata_do_emerytury} lat (${r.miesiace_do_emerytury} m-cy)`;
+        document.getElementById('simMiesiaceGus').textContent = `${r.srednie_dalsze_trwanie_zycia_miesiace} m-cy`;
+        document.getElementById('simZysk1Rok').textContent = `+${formatPLN(r.korzysc_z_pracy_o_rok_dluzej || 380)} / mies.`;
+        showToast('Zaktualizowano symulację emerytalną!');
+      } catch (err) {
+        showToast('Błąd symulacji emerytalnej: ' + err.message, 'error');
+      }
+    }
+
+    // ==========================================================================
+    // SEKCJA 4: e-WIZYTY W ZUS
+    // ==========================================================================
+
+    async function wczytajTerminyEwizyt() {
+      const temat = document.getElementById('ewizytyFiltrTemat').value;
+      const q = temat ? `?temat=${encodeURIComponent(temat)}` : '';
+      const data = await apiRequest(`/api/zus/ewizyty/terminy${q}`, 'GET');
+      renderTerminyEwizyt(data.terminy || []);
+    }
+
+    function renderTerminyEwizyt(terminy) {
+      STATE.terminyEwizyt = terminy;
+      const c = document.getElementById('terminyEwizytContainer');
+      if (!terminy || terminy.length === 0) {
+        c.innerHTML = `<p style="color:var(--ink-muted); padding:20px; text-align:center">Brak wolnych terminów na wybrany temat.</p>`;
+        return;
+      }
+
+      c.innerHTML = `
+        <div class="grid-3">
+          ${terminy.map(t => `
+            <div style="border:1px solid var(--hairline); padding:16px; border-radius:12px; background:var(--surface-2); display:flex; flex-direction:column; justify-content:space-between; gap:12px">
+              <div>
+                <span class="badge badge-info" style="margin-bottom:6px">${t.temat}</span>
+                <div style="font-size:16px; font-weight:700">${t.data} o godz. ${t.godzina}</div>
+                <div style="font-size:12px; color:var(--ink-muted); margin-top:2px">Oddział: ${t.oddzial_zus || 'Oddział I w Warszawie'}</div>
+              </div>
+              <button class="btn btn-primary btn-sm" onclick="rezerwujEwizyte('${t.id_terminu}', '${t.data}', '${t.godzina}')">
+                🗓️ Zarezerwuj termin
+              </button>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    async function wczytajMojeEwizyty() {
+      const data = await apiRequest('/api/zus/ewizyty/moje', 'GET');
+      const wizyty = data.ewizyty || [];
+      STATE.mojeEwizyty = wizyty;
+      document.getElementById('ewizytyCountBadge').textContent = wizyty.length;
+
+      const c = document.getElementById('mojeEwizytyContainer');
+      if (wizyty.length === 0) {
+        c.innerHTML = `<div style="text-align:center; padding:24px; color:var(--ink-muted)">Nie masz zaplanowanych e-wizyt w ZUS.</div>`;
+        return;
+      }
+
+      c.innerHTML = wizyty.map(w => `
+        <div style="border:1px solid var(--hairline); border-radius:14px; padding:18px; margin-bottom:12px; background:#fff; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:14px">
+          <div>
+            <div style="display:flex; align-items:center; gap:8px">
+              <span class="badge badge-success">ZAPLANOWANA</span>
+              <strong style="font-size:16px">Wideorozmowa: ${w.temat || 'Sprawy ogólne'}</strong>
+            </div>
+            <div style="font-size:14px; margin-top:4px; color:var(--ink)">
+              🗓️ <b>${w.data}</b> o godzinie <b>${w.godzina}</b>
+            </div>
+            <div style="font-size:12px; color:var(--ink-muted)">
+              Link do pokoju ZUS: <a href="${w.link_do_wideorozmowy || '#'}" target="_blank" style="color:var(--zus-green)">${w.link_do_wideorozmowy || 'https://ewizyta.zus.pl/pokoj/' + w.id_wizyty}</a>
+            </div>
+          </div>
+          <div style="display:flex; gap:8px">
+            <a href="${w.link_do_wideorozmowy || '#'}" target="_blank" class="btn btn-primary btn-sm">📹 Dołącz do e-Wizyty</a>
+            <button class="btn btn-outline btn-sm" onclick="anulujEwizyte('${w.id_wizyty}')">Odwołaj</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function scrollToTerminy() {
+      document.getElementById('terminyEwizytCard').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    async function rezerwujEwizyte(idTerminu, data, godzina) {
+      const user = DEMO_USERS[STATE.activeUserKey];
+      try {
+        await apiRequest('/api/zus/ewizyty/rezerwuj', 'POST', {
+          id_terminu: idTerminu,
+          pesel: user.pesel || '90031501245',
+          imie_nazwisko: `${user.imie || 'Marta'} ${user.nazwisko || 'Kowalska'}`
+        });
+        showToast(`Zarezerwowano e-Wizytę na dzień ${data} godz. ${godzina}!`);
+        wczytajMojeEwizyty();
+        wczytajTerminyEwizyt();
+      } catch (err) {
+        showToast('Błąd rezerwacji e-wizyty: ' + err.message, 'error');
+      }
+    }
+
+    async function anulujEwizyte(idWizyty) {
+      if (!confirm('Czy na pewno chcesz odwołać tę e-Wizytę?')) return;
+      try {
+        await apiRequest('/api/zus/ewizyty/anuluj', 'POST', { id_wizyty: idWizyty });
+        showToast('e-Wizyta została odwołana.');
+        wczytajMojeEwizyty();
+        wczytajTerminyEwizyt();
+      } catch (err) {
+        showToast('Błąd anulowania wizyty: ' + err.message, 'error');
+      }
+    }
+
+    // ==========================================================================
+    // SEKCJA 5: WNIOSKI I PISMA PUE
+    // ==========================================================================
+
+    async function wczytajWnioski() {
+      const data = await apiRequest('/api/zus/wnioski/moje', 'GET');
+      const wnioski = data.wnioski || [];
+      STATE.wnioskiList = wnioski;
+      document.getElementById('wnioskiCountBadge').textContent = wnioski.length;
+
+      const tbody = document.getElementById('wnioskiTableBody');
+      if (wnioski.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:20px; color:var(--ink-muted)">Brak złożonych wniosków.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = wnioski.map(w => `
+        <tr>
+          <td><code style="font-weight:700">${w.id_wniosku}</code></td>
+          <td><b>${w.typ_wniosku}</b></td>
+          <td>${w.data_zlozenia}</td>
+          <td><small style="color:var(--ink-muted)">${w.opis || 'Wniosek złożony elektronicznie przez mObywatel/PUE'}</small></td>
+          <td><span class="badge ${w.status === 'rozpatrzony_pozytywnie' ? 'badge-success' : 'badge-warning'}">${w.status || 'w_trakcie_rozpatrywania'}</span></td>
+        </tr>
+      `).join('');
+    }
+
+    function openNowyWniosekModal() {
+      openModal('modalNowyWniosek');
+    }
+
+    async function wykonajZlozenieWniosku(e) {
+      e.preventDefault();
+      const user = DEMO_USERS[STATE.activeUserKey];
+      const typ = document.getElementById('wniosekTypSelect').value;
+      const uwagi = document.getElementById('wniosekUwagiInput').value;
+
+      try {
+        const odp = await apiRequest('/api/zus/wnioski', 'POST', {
+          pesel: user.pesel || '90031501245',
+          typ_wniosku: typ,
+          dane: { uwagi, wnioskodawca: user.imie ? `${user.imie} ${user.nazwisko}` : user.nazwa }
+        });
+        closeModal('modalNowyWniosek');
+        showToast(`Wniosek zarejestrowany! Nr sprawy: ${odp.id_wniosku}`);
+        wczytajWnioski();
+      } catch (err) {
+        showToast('Błąd składania wniosku: ' + err.message, 'error');
+      }
+    }
+
+    // ==========================================================================
+    // INTELIGENTNY MOCK / FALLBACK (Gdy serwer REST API jest jeszcze wyłączony)
+    // ==========================================================================
+
+    const MOCK_DB = {
+      konta: {
+        '90031501245': {
+          pesel: '90031501245',
+          imie: 'Marta',
+          nazwisko: 'Kowalska',
+          numer_rachunku_skladkowego_nrs: '81101000000000900315012450',
+          saldo_rozliczen: 0.0,
+          stan_konta_emerytalnego: 184320.50,
+          stan_subkonta: 72150.80,
+          ostatnia_waloryzacja: 'Czerwiec 2025: wskaźnik 114.87%',
+          prognozowana_emerytura_w_wieku_emerytalnym: 4850.00,
+          wiek_emerytalny_lata: 60,
+          aktualny_wiek_lata: 36,
+          lata_skladkowe: 14,
+          zgloszenia_ubezpieczen: [
+            { platnik_nazwa: 'TechPolska Sp. z o.o.', platnik_nip: '5252525259', kod_tytulu: '01 10 00', opis_tytulu: 'Pracownik podlegający ubezpieczeniom', data_od: '2018-05-01', status: 'aktywne' }
+          ],
+          historia_skladek: [
+            { miesiac: '2026-01', podstawa: 9500.0, emerytalna: 1854.40, rentowa: 760.00, chorobowa: 232.75, zdrowotna: 732.18, status: 'rozliczona' },
+            { miesiac: '2025-12', podstawa: 9500.0, emerytalna: 1854.40, rentowa: 760.00, chorobowa: 232.75, zdrowotna: 732.18, status: 'rozliczona' }
+          ]
+        },
+        '82041203471': {
+          pesel: '82041203471',
+          imie: 'Jan',
+          nazwisko: 'Wiśniewski',
+          numer_rachunku_skladkowego_nrs: '81101000000000820412034710',
+          saldo_rozliczen: -1762.67,
+          stan_konta_emerytalnego: 241500.00,
+          stan_subkonta: 94200.00,
+          ostatnia_waloryzacja: 'Czerwiec 2025: wskaźnik 114.87%',
+          prognozowana_emerytura_w_wieku_emerytalnym: 5320.00,
+          wiek_emerytalny_lata: 65,
+          aktualny_wiek_lata: 44,
+          lata_skladkowe: 20,
+          zgloszenia_ubezpieczen: [
+            { platnik_nazwa: 'Jan Wiśniewski Usługi IT', platnik_nip: '6762451299', kod_tytulu: '05 10 00', opis_tytulu: 'Osoba prowadząca pozarolniczą działalność gospodarczą', data_od: '2015-02-01', status: 'aktywne' }
+          ],
+          historia_skladek: [
+            { miesiac: '2026-01', podstawa: 5104.20, emerytalna: 996.34, rentowa: 408.34, chorobowa: 125.05, zdrowotna: 414.85, status: 'do_opłacenia' }
+          ]
+        }
+      },
+      zwolnienia: [
+        {
+          id_ezla: 'EZLA/2026/02/8912',
+          pesel_pacjenta: '90031501245',
+          imie_pacjenta: 'Marta',
+          nazwisko_pacjenta: 'Kowalska',
+          nip_platnika: '5252525259',
+          nazwa_platnika: 'TechPolska Sp. z o.o.',
+          okres_od: '2026-02-14',
+          okres_do: '2026-02-21',
+          liczba_dni: 8,
+          wskazania_lekarskie: 2,
+          kod_icd10: 'J06.9',
+          opis_rozpoznania: 'Ostre zakażenie górnych dróg oddechowych',
+          kody_literowe: [],
+          imie_nazwisko_lekarza: 'dr n. med. Tomasz Zieliński',
+          pwz_lekarza: '7891234',
+          status: 'aktywne'
+        },
+        {
+          id_ezla: 'EZLA/2025/11/4019',
+          pesel_pacjenta: '90031501245',
+          imie_pacjenta: 'Marta',
+          nazwisko_pacjenta: 'Kowalska',
+          nip_platnika: '5252525259',
+          nazwa_platnika: 'TechPolska Sp. z o.o.',
+          okres_od: '2025-11-03',
+          okres_do: '2025-11-07',
+          liczba_dni: 5,
+          wskazania_lekarskie: 1,
+          kod_icd10: 'M54.5',
+          opis_rozpoznania: 'Ból w dolnym odcinku kręgosłupa (lumbago)',
+          kody_literowe: [],
+          imie_nazwisko_lekarza: 'dr n. med. Tomasz Zieliński',
+          pwz_lekarza: '7891234',
+          status: 'zakonczone'
+        }
+      ],
+      ewizytyTerminy: [
+        { id_terminu: 'TERM_1', temat: 'Zasiłki', data: '2026-11-20', godzina: '10:00', oddzial_zus: 'Oddział I w Warszawie' },
+        { id_terminu: 'TERM_2', temat: 'Emerytury i Renty', data: '2026-11-20', godzina: '11:30', oddzial_zus: 'Oddział I w Warszawie' },
+        { id_terminu: 'TERM_3', temat: 'Konto Płatnika', data: '2026-11-21', godzina: '09:00', oddzial_zus: 'Oddział w Krakowie' },
+        { id_terminu: 'TERM_4', temat: 'Zasiłki', data: '2026-11-21', godzina: '13:00', oddzial_zus: 'Centrala ZUS' }
+      ],
+      mojeEwizyty: [],
+      wnioski: [
+        { id_wniosku: 'WNZ/2026/01/0084', typ_wniosku: 'ZAS-12 • Wniosek o zasiłek chorobowy', data_zlozenia: '2026-01-15', opis: 'Zaświadczenie lekarskie e-ZLA', status: 'rozpatrzony_pozytywnie' }
+      ]
+    };
+
+    function handleMockFallback(endpoint, method, body) {
+      const u = DEMO_USERS[STATE.activeUserKey];
+
+      // GET /api/zus/konto
+      if (endpoint.startsWith('/api/zus/konto')) {
+        const p = u.pesel || '90031501245';
+        return MOCK_DB.konta[p] || MOCK_DB.konta['90031501245'];
+      }
+
+      // POST /api/zus/wplata-nrs
+      if (endpoint === '/api/zus/wplata-nrs') {
+        const p = body.pesel || u.pesel || '82041203471';
+        const konto = MOCK_DB.konta[p] || MOCK_DB.konta['90031501245'];
+        konto.saldo_rozliczen = (konto.saldo_rozliczen || 0) + Number(body.kwota);
+        return { sukces: true, nowe_saldo: konto.saldo_rozliczen };
+      }
+
+      // GET /api/l4/moje lub /api/l4/platnik
+      if (endpoint.startsWith('/api/l4/moje') || endpoint.startsWith('/api/l4/platnik')) {
+        return { zwolnienia: MOCK_DB.zwolnienia };
+      }
+
+      // POST /api/l4/wystaw
+      if (endpoint === '/api/l4/wystaw') {
+        const dOd = new Date(body.okres_od);
+        const dDo = new Date(body.okres_do);
+        const dni = Math.max(1, Math.round((dDo - dOd)/(1000*60*60*24)) + 1);
+        const nowe = {
+          id_ezla: `EZLA/2026/${String(new Date().getMonth()+1).padStart(2,'0')}/${Math.floor(1000+Math.random()*9000)}`,
+          ...body,
+          liczba_dni: dni,
+          status: 'aktywne'
+        };
+        MOCK_DB.zwolnienia.unshift(nowe);
+        return { komunikat: 'Wystawiono e-ZLA', ezla: nowe };
+      }
+
+      // POST /api/l4/anuluj
+      if (endpoint === '/api/l4/anuluj') {
+        const z = MOCK_DB.zwolnienia.find(x => x.id_ezla === body.id_ezla);
+        if (z) {
+          z.status = 'anulowane';
+          z.powod_anulowania = body.powod;
+        }
+        return { komunikat: 'Anulowano', ezla: z };
+      }
+
+      // POST /api/l4/kalkulator-zasilku
+      if (endpoint === '/api/l4/kalkulator-zasilku') {
+        const wyn = Number(body.srednie_wynagrodzenie_brutto) || 9500;
+        const dni = Number(body.dni_zwolnienia) || 10;
+        const dniWczesniej = Number(body.dni_choroby_w_tym_roku_wczesniej) || 0;
+        const proc = (body.kody_literowe && body.kody_literowe.includes('B')) || body.jest_wypadek ? 1.0 : 0.8;
+        const podstawa = wyn * (1 - 0.1371);
+        const dzienna = (podstawa / 30) * proc;
+        const brutto = dzienna * dni;
+        const pit = brutto * 0.12;
+        const netto = brutto - pit;
+        const dniPracodawcy = Math.min(dni, Math.max(0, 33 - dniWczesniej));
+        const dniZus = dni - dniPracodawcy;
+
+        return {
+          podstawa_wymiaru_miesieczna: podstawa,
+          stawka_dzienna_brutto: dzienna,
+          kwota_brutto_ogolem: brutto,
+          kwota_netto_do_wyplaty: netto,
+          zaliczka_pit: pit,
+          dni_wynagrodzenia_pracodawcy: dniPracodawcy,
+          kwota_wynagrodzenia_pracodawcy: dzienna * dniPracodawcy,
+          dni_zasilku_zus: dniZus,
+          kwota_zasilku_zus: dzienna * dniZus
+        };
+      }
+
+      // GET /api/zus/skladki/symulacja
+      if (endpoint.startsWith('/api/zus/skladki/symulacja')) {
+        return {
+          skladka_emerytalna: 996.34,
+          skladka_rentowa: 408.34,
+          skladka_chorobowa: 125.05,
+          skladka_wypadkowa: 85.24,
+          fundusz_pracy: 125.05,
+          skladka_zdrowotna: 414.85,
+          lacznie_do_zaplaty: 2154.87
+        };
+      }
+
+      // GET /api/zus/emerytura/symulacja
+      if (endpoint.startsWith('/api/zus/emerytura/symulacja')) {
+        return {
+          prognozowana_emerytura_miesieczna: 5420.00,
+          kapital_koncowy_ogolem: 1184200.00,
+          lata_do_emerytury: 29,
+          miesiace_do_emerytury: 348,
+          srednie_dalsze_trwanie_zycia_miesiace: 218.4,
+          korzysc_z_pracy_o_rok_dluzej: 460.00
+        };
+      }
+
+      // e-Wizyty terminy
+      if (endpoint.startsWith('/api/zus/ewizyty/terminy')) {
+        return { terminy: MOCK_DB.ewizytyTerminy };
+      }
+      if (endpoint.startsWith('/api/zus/ewizyty/moje')) {
+        return { ewizyty: MOCK_DB.mojeEwizyty };
+      }
+      if (endpoint === '/api/zus/ewizyty/rezerwuj') {
+        const t = MOCK_DB.ewizytyTerminy.find(x => x.id_terminu === body.id_terminu);
+        const w = {
+          id_wizyty: 'WIZ_' + Math.floor(1000 + Math.random()*9000),
+          temat: t ? t.temat : 'Sprawa ogólna',
+          data: t ? t.data : '2026-11-20',
+          godzina: t ? t.godzina : '10:00',
+          link_do_wideorozmowy: 'https://ewizyta.zus.pl/pokoj/' + Math.floor(1000+Math.random()*9000)
+        };
+        MOCK_DB.mojeEwizyty.unshift(w);
+        return w;
+      }
+      if (endpoint === '/api/zus/ewizyty/anuluj') {
+        MOCK_DB.mojeEwizyty = MOCK_DB.mojeEwizyty.filter(x => x.id_wizyty !== body.id_wizyty);
+        return { sukces: true };
+      }
+
+      // Wnioski
+      if (endpoint.startsWith('/api/zus/wnioski/moje')) {
+        return { wnioski: MOCK_DB.wnioski };
+      }
+      if (endpoint === '/api/zus/wnioski') {
+        const nw = {
+          id_wniosku: `WNZ/2026/${String(new Date().getMonth()+1).padStart(2,'0')}/${Math.floor(1000+Math.random()*9000)}`,
+          typ_wniosku: body.typ_wniosku,
+          data_zlozenia: new Date().toISOString().split('T')[0],
+          opis: (body.dane && body.dane.uwagi) || 'Złożono przez mObywatel/PUE',
+          status: 'w_trakcie_rozpatrywania'
+        };
+        MOCK_DB.wnioski.unshift(nw);
+        return nw;
+      }
+
+      return {};
+    }
+
+    // ==========================================================================
+    // INICJALIZACJA STRONY
+    // ==========================================================================
+
+    function zaladujWszystko() {
+      odswiezKonto();
+      wczytajEzla();
+      wczytajTerminyEwizyt();
+      wczytajMojeEwizyty();
+      wczytajWnioski();
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      // Inicjalizacja domyślnego użytkownika
+      const u = DEMO_USERS[STATE.activeUserKey];
+      document.getElementById('userSelect').value = STATE.activeUserKey;
+      document.getElementById('userAvatar').textContent = u.avatar;
+
+      // Sprawdzenie dostępności backendu na żywo
+      testBackendConnection();
+    });
+  </script>
+</body>
+</html>

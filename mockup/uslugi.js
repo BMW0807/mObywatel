@@ -1868,6 +1868,15 @@ function renderUslugiTab() {
     <div class="services-cat-block">
       <h3 class="services-cat-title">👨‍👩‍👧‍👦 Rodzina i Świadczenia ZUS</h3>
       <div class="services-grid">
+        <button type="button" class="service-card highlight" onclick="window.location.href='ZUS.html'">
+          <div class="sc-icon" style="background:rgba(0,120,52,.12);color:#007834">🏛️</div>
+          <div class="sc-content">
+            <b>Zarządzanie ZUS & e-ZLA (PUE)</b>
+            <small>Konto ZUS, rachunek NRS, zwolnienia lekarskie L4, e-wizyty</small>
+          </div>
+          <span class="sc-arrow">→</span>
+        </button>
+
         <button type="button" class="service-card highlight" onclick="openRodzinaModal()">
           <div class="sc-icon" style="background:rgba(236,72,153,.1);color:#ec4899">👶</div>
           <div class="sc-content">
