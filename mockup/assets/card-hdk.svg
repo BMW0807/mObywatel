@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400" width="600" height="400">
+  <defs>
+    <linearGradient id="gHdk" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4c0519"/>
+      <stop offset="45%" stop-color="#9f1239"/>
+      <stop offset="80%" stop-color="#be123c"/>
+      <stop offset="100%" stop-color="#881337"/>
+    </linearGradient>
+    <radialGradient id="glHdk" cx="80%" cy="20%" r="65%">
+      <stop offset="0%" stop-color="rgba(244,63,94,0.4)"/>
+      <stop offset="60%" stop-color="rgba(190,18,60,0.1)"/>
+      <stop offset="100%" stop-color="rgba(76,5,25,0)"/>
+    </radialGradient>
+    <pattern id="patHdk" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M20 14 C20 14 26 21 26 25 C26 28.3 23.3 31 20 31 C16.7 31 14 28.3 14 25 C14 21 20 14 20 14 Z" fill="none" stroke="rgba(255,255,255,0.03)" stroke-width="1"/>
+      <circle cx="20" cy="20" r="18" fill="none" stroke="rgba(255,255,255,0.02)" stroke-width="0.8"/>
+    </pattern>
+  </defs>
+  <rect width="600" height="400" rx="36" fill="url(#gHdk)"/>
+  <rect width="600" height="400" rx="36" fill="url(#patHdk)"/>
+  <rect width="600" height="400" rx="36" fill="url(#glHdk)"/>
+  
+  <!-- Fale zabezpieczające i motyw tętna -->
+  <path d="M0 110 Q300 150 600 100" fill="none" stroke="rgba(255,255,255,0.16)" stroke-width="2"/>
+  <path d="M0 118 Q300 158 600 108" fill="none" stroke="rgba(255,255,255,0.07)" stroke-width="1.5"/>
+  <path d="M0 310 L180 310 L195 290 L210 330 L225 285 L240 325 L255 310 L600 310" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="1.8"/>
+  <path d="M0 320 Q300 280 600 330" fill="none" stroke="rgba(251,113,133,0.18)" stroke-width="2"/>
+
+  <!-- Watermark: Kropla krwi i krzyż medyczny -->
+  <g transform="translate(440, 220)" stroke="rgba(255,255,255,0.10)" stroke-width="3" fill="none">
+    <path d="M0 -65 C0 -65 42 -12 42 22 C42 45 23 64 0 64 C-23 64 -42 45 -42 22 C-42 -12 0 -65 0 -65 Z" stroke-width="3"/>
+    <path d="M0 -45 C0 -45 28 -8 28 18 C28 34 15 48 0 48 C-15 48 -28 34 -28 18 C-28 -8 0 -45 0 -45 Z" stroke-width="1.5" stroke-dasharray="3 3"/>
+    <path d="M -9 18 H 9 M 0 9 V 27" stroke-width="3.5" stroke-linecap="round"/>
+    <circle cx="0" cy="22" r="58" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+  </g>
+
+  <!-- Ptaszek / Odznaka HDK -->
+  <rect x="496" y="34" width="68" height="26" rx="6" fill="rgba(255,255,255,0.15)" stroke="rgba(255,255,255,0.3)" stroke-width="1.5"/>
+  <text x="530" y="52" font-family="'Inter', -apple-system, sans-serif" font-size="11" font-weight="700" fill="#ffffff" letter-spacing="0.5" text-anchor="middle">HDK</text>
+</svg>

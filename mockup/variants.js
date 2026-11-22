@@ -11,6 +11,56 @@ app.dataset.v=VARIANT;
 const ALT=$('#alt');
 let carIdx=0;
 
+/* Rejestr szablonów i pól dla kart tożsamości i uprawnień (mObywatel 2.0) */
+const CARD_TEMPLATES = {
+  hdk: {
+    id: 'hdk',
+    name: 'Książeczka Krwiodawcy (HDK / ZHDK)',
+    badge: 'HDK / RCKiK',
+    kategoria: 'zdrowie',
+    img: 'assets/card-hdk.svg',
+    strip: 'assets/strip-hdk.svg',
+    fields: [
+      { key: 'Grupa krwi', label: 'Grupa krwi', sample: '0 Rh+ (dodatnia)' },
+      { key: 'Oddana krew', label: 'Oddana krew', sample: '18,5 L' },
+      { key: 'Ostatnia donacja', label: 'Ostatnia donacja', sample: '14.10.2026' },
+      { key: 'Kolejna donacja', label: 'Kolejna donacja', sample: 'od 09.12.2026' }
+    ],
+    uprawnienia: ['2 dni wolnego od pracy/szkoły', 'Bezpłatne leki z listy Zasłużonych', 'Ulgi na komunikację miejską', 'Pierwszeństwo w aptece i POZ']
+  },
+  osp: {
+    id: 'osp',
+    name: 'Legitymacja Członka OSP',
+    badge: 'ZOSP RP',
+    kategoria: 'zawodowe',
+    img: 'assets/card-osp.svg',
+    strip: 'assets/strip-osp.svg',
+    fields: [
+      { key: 'Stopień', label: 'Stopień służbowy', sample: 'Ratownik OSP / Dowódca Sekcji' },
+      { key: 'Jednostka', label: 'Jednostka OSP', sample: 'OSP Kraków-Kościelniki' },
+      { key: 'Nr legitymacji', label: 'Numer legitymacji', sample: 'OSP/MP/2019/084' },
+      { key: 'Badania lekarskie', label: 'Badania lekarskie', sample: 'ważne do 14.04.2027' }
+    ],
+    certyfikaty: ['KPP (Kwalifikowana Pierwsza Pomoc)', 'Aparaty Dróg Oddechowych (AODO)', 'Szkolenie Podstawowe Strażaka-Ratownika OSP']
+  },
+  pz: {
+    id: 'pz',
+    name: 'Profil Zaufany (PZ)',
+    badge: 'PZ / MC',
+    kategoria: 'tozsamosc',
+    img: 'assets/card-pz.svg',
+    strip: 'assets/strip-pz.svg',
+    fields: [
+      { key: 'Status', label: 'Status profilu', sample: 'Aktywny (Węzeł Krajowy)' },
+      { key: 'Ważny do', label: 'Data ważności', sample: '12.05.2028' },
+      { key: 'Weryfikacja', label: 'Metoda weryfikacji', sample: 'Bankowość elektroniczna' },
+      { key: 'Powiązany tel.', label: 'Numer telefonu', sample: '+48 602 ••• 312' }
+    ],
+    uprawnienia: ['Podpis Zaufany na gov.pl i ePUAP', 'Logowanie do portali administracji publicznej (Węzeł Krajowy)', 'Ważność certyfikatu przez 3 lata']
+  }
+};
+window.CARD_TEMPLATES = CARD_TEMPLATES;
+
 function openDocQR(id){qrFlow({doc:id})}
 function docActions(d){
  const base=[['scan','Potwierdź dane',()=>openDocQR(d.id)],['doc','Szczegóły',()=>openDoc(d.id)]];
@@ -18,9 +68,12 @@ function docActions(d){
   kdr:['coin','Partnerzy KDR',()=>startTopic('Gdzie mogę użyć Karty Dużej Rodziny?')],
   leg:['coin','Ulgi studenta',()=>startTopic(OS.ask.leg)],
   pj:['clock','Punkty karne',()=>startTopic('Ile mam punktów karnych?')],
-  auto:['car','OC i badanie',()=>startTopic(OS.ask.auto)]}[d.id];
+  auto:['car','OC i badanie',()=>startTopic(OS.ask.auto)],
+  hdk:['clock','Termin donacji',()=>startTopic('Kiedy mogę znowu oddać krew?')],
+  osp:['shield','Uprawnienia OSP',()=>startTopic('Jakie mam certyfikaty i uprawnienia w OSP?')],
+  pz:['shield','Ważność PZ',()=>startTopic('Jak przedłużyć ważność Profilu Zaufanego?')]}[d.id];
  if(d.id==='dowod')base[0]=['scan','Potwierdź dane',()=>openDocQR(d.id)];
- const ask=['dots','Zapytaj',()=>startTopic(OS.ask[d.id]||'Opowiedz mi o tym dokumencie')];
+ const ask=['dots','Zapytaj',()=>startTopic((OS.ask&&OS.ask[d.id])||'Opowiedz mi o tym dokumencie')];
  return [...base,ctx,ask].filter(Boolean);   // IKP i Moja Firma nie mają akcji kontekstowej: bez filtra renderActs wywraca się na undefined
 }
 const statusH=d=>d.alert?`<span class="bad">${svg('alert')}${d.alert}</span>`:`<span class="good">${svg('check')}${d.sub}</span>`;

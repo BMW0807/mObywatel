@@ -144,7 +144,7 @@ function qrSVG(seed=7){
  for(let y=0;y<n;y++)for(let x=0;x<n;x++){if((x<8&&y<8)||(x>16&&y<8)||(x<8&&y>16))continue;if(r()>.52)p+=`<rect x="${x}" y="${y}" width="1" height="1"/>`}
  return `<svg viewBox="-1 -1 27 27" fill="currentColor" shape-rendering="crispEdges">${p}${fin(0.5,0.5)}${fin(18.5,0.5)}${fin(0.5,18.5)}</svg>`;
 }
-function rowsH(rows){return rows.map(([k,v])=>{const s=(k&&k.length>22)||(v&&v.length>30);return `<div class="row${s?' row-stack':''}"><span>${k}</span><b>${v}</b></div>`}).join('')}
+function rowsH(rows){return rows.map(([k,v])=>{const kl=(k||'').length,vl=(v||'').length;const s=kl>18||vl>22||(kl+vl>34);return `<div class="row${s?' row-stack':''}"><span>${k}</span><b>${v}</b></div>`}).join('')}
 function closeDoc(){const det=$('#detail');if(!det||!det.classList.contains('on'))return;det.classList.remove('on');if(typeof restoreDialogFocus==='function')restoreDialogFocus('detail')}
 function openDoc(id){
  const d=DOCS.find(x=>x.id===id),det=$('#detail');
@@ -162,6 +162,18 @@ function openDoc(id){
   q=[['scan','Poświadcz za firmę','firma_poswiadcz'],['shield','Podpisz e-dowodem','firma_podpis'],['doc','Odpis CEIDG (PDF)','cert_ceidg'],['clock','Biała Lista VAT','firma_vat'],['dots','Zapytaj asystenta','ask']];
  }else if(id==='pj'){
   q=[['scan','Potwierdź dane','qr'],['clock','Punkty CEPiK','mandaty'],['doc','Szczegóły','data'],['doc','Zaświadczenie PDF','cert'],['dots','Zapytaj asystenta','ask']];
+  }else if(id==='hdk'){
+   q=[['scan','Kod dawcy QR','qr'],['doc','Szczegóły donacji','data'],['clock','Termin donacji','cal'],['shield','Uprawnienia dawcy','data'],['dots','Zapytaj asystenta','ask']];
+  }else if(id==='osp'){
+   q=[['scan','Potwierdź dane OSP','qr'],['doc','Szczegóły służby','data'],['clock','Badania bojowe','cal'],['shield','Certyfikaty KPP','data'],['dots','Zapytaj asystenta','ask']];
+  }else if(id==='pz'){
+   q=[['scan','Podpisz zaufanym','qr'],['doc','Szczegóły certyfikatu','data'],['shield','Status PZ','data'],['doc','Zaświadczenie PDF','cert'],['dots','Zapytaj asystenta','ask']];
+  }else if(id==='hdk'){
+   q=[['scan','Kod dawcy QR','qr'],['doc','Szczegóły donacji','data'],['clock','Termin donacji','cal'],['shield','Uprawnienia dawcy','data'],['dots','Zapytaj asystenta','ask']];
+  }else if(id==='osp'){
+   q=[['scan','Potwierdź tożsamość OSP','qr'],['doc','Szczegóły służby','data'],['clock','Badania bojowe','cal'],['shield','Certyfikaty KPP','data'],['dots','Zapytaj asystenta','ask']];
+  }else if(id==='pz'){
+   q=[['scan','Podpisz zaufanym','qr'],['doc','Szczegóły certyfikatu','data'],['shield','Status PZ','data'],['doc','Zaświadczenie PDF','cert'],['dots','Zapytaj asystenta','ask']];
  }else{
   q=[['scan','Potwierdź dane','qr'],['doc','Szczegóły','data'],['clock','Kalendarz','cal'],['doc','Zaświadczenie PDF','cert'],['dots','Zapytaj asystenta','ask']];
  }

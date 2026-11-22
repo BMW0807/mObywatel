@@ -127,11 +127,12 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--red);outline-of
 .ui.warn .ic{background:var(--warn-wash);color:var(--warn-ink)}
 .ui .tt{font-weight:600;font-size:16px;line-height:21px;letter-spacing:-.01em}
 .ui .rows{padding:0 16px 4px}
-.ui .row{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:3px 12px;padding:9px 0;border-top:1px solid var(--hair);font-size:14px;line-height:20px}
-.ui .row span{color:var(--ink2);flex:1 1 auto;min-width:90px;max-width:100%;word-break:normal;overflow-wrap:break-word}
-.ui .row b{font-weight:500;text-align:right;flex:1 1 auto;min-width:100px;max-width:100%;word-break:normal;overflow-wrap:break-word}
-.ui .row.row-stack{flex-direction:column;align-items:flex-start;gap:3px}
-.ui .row.row-stack b{text-align:left;width:100%}
+.ui .row{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:4px 12px;padding:9px 0;border-top:1px solid var(--hair);font-size:14px;line-height:20px}
+.ui .row span{color:var(--ink2);flex:1 1 auto;min-width:110px;max-width:100%;word-break:normal;overflow-wrap:break-word}
+.ui .row b{font-weight:500;text-align:right;flex:1 1 auto;min-width:130px;max-width:100%;word-break:normal;overflow-wrap:break-word}
+.ui .row.row-stack{display:flex!important;flex-direction:column!important;align-items:flex-start!important;gap:4px!important}
+.ui .row.row-stack span{width:100%!important;max-width:100%!important;text-align:left!important}
+.ui .row.row-stack b{text-align:left!important;width:100%!important;max-width:100%!important}
 .ui .body{padding:0 16px 12px;font-size:14.5px;line-height:21px}
 .ui .note{margin:0 16px 12px;font-size:13px;line-height:18px;color:var(--ink2)}
 .ui .flag{margin:4px 16px 12px;padding:10px 12px;border-radius:12px;background:var(--warn-wash);color:var(--warn-ink);font-size:13.5px;line-height:19px}
@@ -5145,5 +5146,309 @@ a.btn.primary { color: var(--on-accent); }
 .high-contrast .ew-amount,
 .high-contrast .khb-phone,
 .high-contrast .kvb-big-status {
+  color: #ffd700 !important;
+}
+
+
+/* ==========================================================================
+   NOWE MODUŁY: ZUS e-ZLA, SZCZEPIENIA, TWÓJ e-PIT, USC ODPISY, PZ, HDK, OSP
+   ========================================================================== */
+
+/* --- 8. ZUS i e-ZLA (ZWOLNIENIA LEKARSKIE) --- */
+.zus-box { padding-bottom: 24px; }
+.zla-hero-banner {
+  background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
+  border: 1px solid #a5d6a7;
+  border-radius: 14px;
+  padding: 14px;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.zhb-ic { font-size: 32px; flex: none; }
+.zhb-title { font-size: 15px; font-weight: 800; color: #1b5e20; display: block; }
+.zhb-sub { font-size: 12px; color: #2e7d32; line-height: 1.4; }
+
+.zla-active-card {
+  background: #fff;
+  border: 1.5px solid #81c784;
+  border-radius: 14px;
+  padding: 14px;
+  margin-bottom: 14px;
+  box-shadow: 0 4px 12px rgba(0,120,52,.08);
+}
+.zac-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.zac-badge { background: #e8f5e9; color: #1b5e20; font-size: 11px; font-weight: 800; padding: 3px 8px; border-radius: 12px; }
+.zac-days { font-size: 13px; font-weight: 700; color: #007834; }
+.zac-dates { font-size: 17px; font-weight: 800; color: var(--ink); margin-bottom: 8px; display: block; }
+.zac-grid { display: flex; flex-direction: column; gap: 6px; font-size: 12px; border-top: 1px solid var(--hair); padding-top: 8px; margin-bottom: 10px; }
+.zag-row { display: flex; justify-content: space-between; }
+.zag-row span { color: var(--ink2); }
+.zag-row b { color: var(--ink); }
+
+.zla-benefit-box {
+  background: #f8fafc;
+  border: 1px solid var(--hair);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 12px;
+  margin-bottom: 14px;
+}
+.zbb-title { font-weight: 700; color: var(--ink); display: block; margin-bottom: 4px; }
+.zbb-row { display: flex; justify-content: space-between; margin-top: 2px; }
+
+.zla-hist-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+.zhi-item {
+  background: #fff;
+  border: 1px solid var(--hair);
+  border-radius: 10px;
+  padding: 10px 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+}
+.zhi-left b { display: block; font-size: 13px; color: var(--ink); }
+.zhi-left small { color: var(--ink2); }
+
+.zus-actions-grid { display: flex; gap: 8px; }
+.zus-actions-grid .btn { flex: 1; }
+
+/* --- 9. KARTA SZCZEPIEŃ (IKP) --- */
+.szczep-box { padding-bottom: 24px; }
+.szczep-tabs { display: flex; gap: 6px; margin-bottom: 14px; }
+.st-btn {
+  flex: 1;
+  padding: 8px 12px;
+  border-radius: 20px;
+  border: 1px solid var(--hair);
+  background: #f1f5f9;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink2);
+  cursor: pointer;
+}
+.st-btn.active { background: #007834; color: #fff; border-color: #007834; }
+
+.szczep-card {
+  background: #fff;
+  border: 1px solid var(--hair);
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-bottom: 10px;
+  box-shadow: 0 2px 6px rgba(0,0,0,.03);
+}
+.sc-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+.sc-name { font-size: 14px; font-weight: 700; color: var(--ink); display: block; }
+.sc-badge { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 10px; }
+.sc-badge.ok { background: #d1fae5; color: #065f46; }
+.sc-badge.due { background: #fef3c7; color: #92400e; }
+.sc-details { display: flex; flex-direction: column; gap: 4px; font-size: 12px; }
+.scd-row { display: flex; justify-content: space-between; }
+.scd-row span { color: var(--ink2); }
+
+.ucc-banner-btn {
+  background: linear-gradient(135deg, #0e5bd8, #094098);
+  color: #fff;
+  border: none;
+  border-radius: 14px;
+  padding: 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  margin-bottom: 16px;
+  box-shadow: 0 4px 14px rgba(14,91,216,.25);
+}
+.ubb-ic { font-size: 28px; flex: none; }
+.ubb-tx b { font-size: 14px; display: block; margin-bottom: 2px; }
+.ubb-tx small { font-size: 11px; opacity: .88; }
+
+/* UCC QR MODAL */
+.ucc-box { text-align: center; padding-bottom: 24px; }
+.ucc-qr-frame {
+  width: 220px;
+  height: 220px;
+  margin: 16px auto;
+  background: #fff;
+  border: 2px solid #0e5bd8;
+  border-radius: 16px;
+  padding: 12px;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 6px 20px rgba(14,91,216,.15);
+}
+.ucc-qr-svg { width: 100%; height: 100%; }
+
+/* --- 10. TWÓJ e-PIT (URZĄD SKARBOWY) --- */
+.pit-box { padding-bottom: 24px; }
+.pit-hero-card {
+  background: linear-gradient(135deg, #eff6ff, #dbeafe);
+  border: 1px solid #bfdbfe;
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 14px;
+  text-align: center;
+}
+.phc-type { font-size: 12px; font-weight: 700; color: #1e40af; letter-spacing: .5px; display: block; margin-bottom: 4px; }
+.phc-status { display: inline-flex; align-items: center; gap: 6px; background: #d1fae5; color: #065f46; font-size: 11px; font-weight: 700; padding: 2px 10px; border-radius: 12px; margin-bottom: 8px; }
+.phc-amount { font-size: 28px; font-weight: 900; color: #1e3a8a; display: block; }
+.phc-amount.refund { color: #059669; }
+.phc-lbl { font-size: 11px; color: #475569; display: block; margin-top: 2px; }
+
+.pit-breakdown {
+  background: #fff;
+  border: 1px solid var(--hair);
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-bottom: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12px;
+}
+.pbd-row { display: flex; justify-content: space-between; }
+.pbd-row span { color: var(--ink2); }
+.pbd-row b { color: var(--ink); }
+.pbd-row.highlight { font-weight: 700; border-top: 1px solid var(--hair); padding-top: 6px; margin-top: 2px; }
+
+.pit-microacc-box {
+  background: #f8fafc;
+  border: 1px solid var(--hair);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 12px;
+  margin-bottom: 14px;
+}
+.pmb-lbl { color: var(--ink2); font-size: 11px; display: block; margin-bottom: 2px; }
+.pmb-acc { font-family: monospace; font-size: 12px; font-weight: 700; color: var(--ink); word-break: break-all; }
+
+.pit-actions-row { display: flex; gap: 8px; }
+.pit-actions-row .btn { flex: 1; }
+
+/* --- 11. ZAŚWIADCZENIA Z USC --- */
+.usc-box { padding-bottom: 24px; }
+.usc-hero {
+  background: linear-gradient(135deg, #fdf4ff, #fae8ff);
+  border: 1px solid #f5d0fe;
+  border-radius: 14px;
+  padding: 14px;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.uh-icon { font-size: 32px; flex: none; }
+.uh-tx b { font-size: 14px; color: #86198f; display: block; margin-bottom: 2px; }
+.uh-tx small { font-size: 11px; color: #a21caf; }
+
+.usc-acts-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
+.uact-card {
+  background: #fff;
+  border: 1px solid var(--hair);
+  border-radius: 12px;
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.uac-info b { font-size: 13px; color: var(--ink); display: block; margin-bottom: 2px; }
+.uac-info small { font-size: 11px; color: var(--ink2); }
+
+/* --- 12. PROFIL ZAUFANY (PZ) --- */
+.pz-box { padding-bottom: 24px; }
+.pz-hero-card {
+  background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+  border: 1.5px solid #86efac;
+  border-radius: 14px;
+  padding: 16px;
+  text-align: center;
+  margin-bottom: 14px;
+}
+.pzc-icon { font-size: 36px; margin-bottom: 6px; }
+.pzc-title { font-size: 18px; font-weight: 800; color: #166534; display: block; }
+.pzc-status { font-size: 12px; color: #15803d; margin-top: 4px; font-weight: 600; }
+.pz-details-grid {
+  background: #fff;
+  border: 1px solid var(--hair);
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-bottom: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 12px;
+}
+.pzd-row { display: flex; justify-content: space-between; }
+.pzd-row span { color: var(--ink2); }
+.pzd-row b { color: var(--ink); }
+
+/* ==========================================================================
+   TRYB CIEMNY (.phone.dark-mode) - DLA WSZYSTKICH 7 NOWYCH MODUŁÓW
+   ========================================================================== */
+.phone.dark-mode .zla-active-card,
+.phone.dark-mode .zla-benefit-box,
+.phone.dark-mode .zhi-item,
+.phone.dark-mode .szczep-card,
+.phone.dark-mode .pit-breakdown,
+.phone.dark-mode .pit-microacc-box,
+.phone.dark-mode .uact-card,
+.phone.dark-mode .pz-details-grid {
+  background: #1e2430 !important;
+  border-color: rgba(255,255,255,0.12) !important;
+  color: #f1f5f9 !important;
+}
+.phone.dark-mode .zla-hero-banner {
+  background: rgba(0,120,52,0.18) !important;
+  border-color: rgba(0,120,52,0.35) !important;
+}
+.phone.dark-mode .zhb-title,
+.phone.dark-mode .zac-days { color: #4ade80 !important; }
+.phone.dark-mode .pit-hero-card {
+  background: rgba(30,58,138,0.25) !important;
+  border-color: rgba(59,130,246,0.3) !important;
+}
+.phone.dark-mode .phc-amount { color: #93c5fd !important; }
+.phone.dark-mode .phc-amount.refund { color: #34d399 !important; }
+.phone.dark-mode .usc-hero {
+  background: rgba(134,25,143,0.18) !important;
+  border-color: rgba(162,28,175,0.35) !important;
+}
+.phone.dark-mode .uh-tx b { color: #f0abfc !important; }
+.phone.dark-mode .pz-hero-card {
+  background: rgba(22,101,52,0.2) !important;
+  border-color: rgba(34,197,94,0.35) !important;
+}
+.phone.dark-mode .pzc-title { color: #4ade80 !important; }
+
+/* ==========================================================================
+   WYSOKI KONTRAST (.high-contrast)
+   ========================================================================== */
+.high-contrast .zla-hero-banner,
+.high-contrast .zla-active-card,
+.high-contrast .zla-benefit-box,
+.high-contrast .zhi-item,
+.high-contrast .szczep-card,
+.high-contrast .ucc-banner-btn,
+.high-contrast .pit-hero-card,
+.high-contrast .pit-breakdown,
+.high-contrast .pit-microacc-box,
+.high-contrast .usc-hero,
+.high-contrast .uact-card,
+.high-contrast .pz-hero-card,
+.high-contrast .pz-details-grid {
+  background: #000000 !important;
+  border: 2px solid #ffd700 !important;
+  color: #ffffff !important;
+}
+.high-contrast .zhb-title,
+.high-contrast .zac-days,
+.high-contrast .phc-amount,
+.high-contrast .uh-tx b,
+.high-contrast .pzc-title {
   color: #ffd700 !important;
 }

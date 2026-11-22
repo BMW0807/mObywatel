@@ -1789,7 +1789,7 @@ function renderUslugiTab() {
       <p class="services-sub">Oficjalne usługi administracji rządowej, samorządowej i sądownictwa</p>
     </div>
 
-    <!-- 1. KATEGORIA: BEZPIECZEŃSTWO I ZDROWIE -->
+    <!-- 1. KATEGORIA: BEZPIECZEŃSTWO I TOŻSAMOŚĆ -->
     <div class="services-cat-block">
       <h3 class="services-cat-title">🛡️ Bezpieczeństwo i Tożsamość</h3>
       <div class="services-grid">
@@ -1798,6 +1798,15 @@ function renderUslugiTab() {
           <div class="sc-content">
             <b>Zastrzeż PESEL</b>
             <small>Status: <span style="color:${isPeselBlocked ? '#10b981' : '#dc143c'};font-weight:700">${isPeselBlocked ? 'Zastrzeżony (Bezpieczny)' : 'Niezastrzeżony'}</span></small>
+          </div>
+          <span class="sc-arrow">→</span>
+        </button>
+
+        <button type="button" class="service-card highlight" onclick="openPzModal()">
+          <div class="sc-icon" style="background:rgba(16,185,129,.1);color:#059669">🛡️</div>
+          <div class="sc-content">
+            <b>Profil Zaufany (PZ)</b>
+            <small>Certyfikat tożsamości gov.pl, ważność do 2028 r. i przedłużenie</small>
           </div>
           <span class="sc-arrow">→</span>
         </button>
@@ -1831,15 +1840,42 @@ function renderUslugiTab() {
       </div>
     </div>
 
-    <!-- 2. KATEGORIA: ZDROWIE I ŚRODOWISKO -->
+    <!-- 2. KATEGORIA: ZDROWIE I SPOŁECZEŃSTWO -->
     <div class="services-cat-block">
-      <h3 class="services-cat-title">🌿 Zdrowie i Środowisko</h3>
+      <h3 class="services-cat-title">🌿 Zdrowie, Krew i Środowisko</h3>
       <div class="services-grid">
         <button type="button" class="service-card highlight" onclick="openIkpModal('recepty')">
           <div class="sc-icon" style="background:rgba(16,185,129,.12);color:#059669">🏥</div>
           <div class="sc-content">
             <b>Zdrowie i e-Recepty (IKP)</b>
             <small>Recepty z kodem kreskowym, skierowania, eWUŚ i leki</small>
+          </div>
+          <span class="sc-arrow">→</span>
+        </button>
+
+        <button type="button" class="service-card highlight" onclick="openZusZlaModal()">
+          <div class="sc-icon" style="background:rgba(0,120,52,.12);color:#007834">🩺</div>
+          <div class="sc-content">
+            <b>ZUS i Zwolnienia lekarskie (e-ZLA)</b>
+            <small>Aktywne L4, okres niezdolności, zasiłek i historia</small>
+          </div>
+          <span class="sc-arrow">→</span>
+        </button>
+
+        <button type="button" class="service-card" onclick="openKartaSzczepienModal()">
+          <div class="sc-icon" style="background:rgba(14,91,216,.1);color:#0e5bd8">💉</div>
+          <div class="sc-content">
+            <b>Elektroniczna Karta Szczepień</b>
+            <small>Szczepienia obowiązkowe i zalecane, certyfikat UCC (QR)</small>
+          </div>
+          <span class="sc-arrow">→</span>
+        </button>
+
+        <button type="button" class="service-card" onclick="openDoc('hdk')">
+          <div class="sc-icon" style="background:rgba(220,38,38,.1);color:#dc2626">🩸</div>
+          <div class="sc-content">
+            <b>Książeczka krwiodawcy (HDK)</b>
+            <small>Grupa krwi, litry oddanej krwi, data kolejnej donacji i ulgi</small>
           </div>
           <span class="sc-arrow">→</span>
         </button>
@@ -1864,20 +1900,29 @@ function renderUslugiTab() {
       </div>
     </div>
 
-    <!-- 3. KATEGORIA: RODZINA I EMERYTURA -->
+    <!-- 3. KATEGORIA: PODATKI, URZĄD I RODZINA -->
     <div class="services-cat-block">
-      <h3 class="services-cat-title">👨‍👩‍👧‍👦 Rodzina i Świadczenia ZUS</h3>
+      <h3 class="services-cat-title">🏛️ Podatki, Urząd Stanu Cywilnego i Rodzina</h3>
       <div class="services-grid">
-        <button type="button" class="service-card highlight" onclick="window.location.href='ZUS.html'">
-          <div class="sc-icon" style="background:rgba(0,120,52,.12);color:#007834">🏛️</div>
+        <button type="button" class="service-card highlight" onclick="openPitSkarbowyModal()">
+          <div class="sc-icon" style="background:rgba(14,91,216,.1);color:#0e5bd8">💰</div>
           <div class="sc-content">
-            <b>Zarządzanie ZUS & e-ZLA (PUE)</b>
-            <small>Konto ZUS, rachunek NRS, zwolnienia lekarskie L4, e-wizyty</small>
+            <b>Twój e-PIT (Urząd Skarbowy)</b>
+            <small>Rozliczenie roczne PIT-37/36, zwrot podatku i UPO</small>
           </div>
           <span class="sc-arrow">→</span>
         </button>
 
-        <button type="button" class="service-card highlight" onclick="openRodzinaModal()">
+        <button type="button" class="service-card highlight" onclick="openUscModal()">
+          <div class="sc-icon" style="background:rgba(162,28,175,.1);color:#a21caf">📜</div>
+          <div class="sc-content">
+            <b>Zaświadczenia z USC (Odpisy aktów)</b>
+            <small>Elektroniczne odpisy aktów urodzenia i małżeństwa z pieczęcią</small>
+          </div>
+          <span class="sc-arrow">→</span>
+        </button>
+
+        <button type="button" class="service-card" onclick="openRodzinaModal()">
           <div class="sc-icon" style="background:rgba(236,72,153,.1);color:#ec4899">👶</div>
           <div class="sc-content">
             <b>Moja Rodzina i Dzieci</b>
@@ -1903,13 +1948,31 @@ function renderUslugiTab() {
           </div>
           <span class="sc-arrow">→</span>
         </button>
+
+        <button type="button" class="service-card" onclick="window.location.href='ZUS.html'">
+          <div class="sc-icon" style="background:rgba(0,120,52,.12);color:#007834">🏛️</div>
+          <div class="sc-content">
+            <b>Panel PUE ZUS (Pełne Zarządzanie)</b>
+            <small>Konto ubezpieczonego, rachunek składkowy NRS, e-wizyty</small>
+          </div>
+          <span class="sc-arrow">→</span>
+        </button>
       </div>
     </div>
 
-    <!-- 4. KATEGORIA: KIEROWCA I POJAZDY -->
+    <!-- 4. KATEGORIA: KIEROWCA, SŁUŻBY I OBYWATEL -->
     <div class="services-cat-block">
-      <h3 class="services-cat-title">🚗 Kierowca i Pojazdy</h3>
+      <h3 class="services-cat-title">🚗 Kierowca, Służby i Obywatel</h3>
       <div class="services-grid">
+        <button type="button" class="service-card highlight" onclick="openDoc('osp')">
+          <div class="sc-icon" style="background:rgba(234,88,12,.12);color:#c2410c">🚒</div>
+          <div class="sc-content">
+            <b>Legitymacja Strażaka OSP</b>
+            <small>Ochotnicza Straż Pożarna • Stopień, jednostka i uprawnienia KPP</small>
+          </div>
+          <span class="sc-arrow">→</span>
+        </button>
+
         <button type="button" class="service-card" onclick="openBezpiecznyAutobusModal('KR 12345')">
           <div class="sc-icon" style="background:rgba(245,158,11,.1);color:#f59e0b">🚌</div>
           <div class="sc-content">

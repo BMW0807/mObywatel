@@ -309,6 +309,9 @@ function route(t){
  if(/pokaz.*(prawo|prawk)/.test(n))return S.docShow('pj');
  if(/pokaz.*(auto|pojazd|samoch)/.test(n))return S.docShow('auto');
  if(/pokaz.*(kdr|duzej rodziny)/.test(n))return S.docShow('kdr');
+ if(/pokaz.*(krwiodaw|krew|hdk|zhdk)/.test(n))return S.docShow('hdk');
+ if(/pokaz.*(straz|osp|ogniow)/.test(n))return S.docShow('osp');
+ if(/pokaz.*(profil.*zaufan|zaufany|pz)/.test(n))return S.docShow('pz');
  if(/recept|skierowani|lekarz|ikp|pacjent|medycyn|ewus/.test(n))return S.ikp();
  if(/rejestracj|umow.*(lekarz|wizyt)|zapisz.*(lekarz|wizyt)/.test(n))return S.erejestracja();
  if(/dilo|onkolog|nowotwor|rak\b/.test(n))return S.dilo();

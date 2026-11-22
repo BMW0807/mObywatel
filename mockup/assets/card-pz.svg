@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400" width="600" height="400">
+  <defs>
+    <linearGradient id="gPz" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#081b33"/>
+      <stop offset="40%" stop-color="#0c2d58"/>
+      <stop offset="75%" stop-color="#154a8a"/>
+      <stop offset="100%" stop-color="#0a2040"/>
+    </linearGradient>
+    <radialGradient id="glPz" cx="80%" cy="20%" r="65%">
+      <stop offset="0%" stop-color="rgba(56,189,248,0.35)"/>
+      <stop offset="60%" stop-color="rgba(14,116,144,0.12)"/>
+      <stop offset="100%" stop-color="rgba(8,27,51,0)"/>
+    </radialGradient>
+    <pattern id="patPz" width="32" height="32" patternUnits="userSpaceOnUse">
+      <path d="M16 2 L28 8 L28 18 C28 24 22 28 16 30 C10 28 4 24 4 18 L4 8 Z" fill="none" stroke="rgba(255,255,255,0.025)" stroke-width="0.8"/>
+      <circle cx="16" cy="16" r="14" fill="none" stroke="rgba(56,189,248,0.02)" stroke-width="0.6"/>
+    </pattern>
+  </defs>
+  <rect width="600" height="400" rx="36" fill="url(#gPz)"/>
+  <rect width="600" height="400" rx="36" fill="url(#patPz)"/>
+  <rect width="600" height="400" rx="36" fill="url(#glPz)"/>
+
+  <!-- Rządowe linie giloszowe -->
+  <path d="M0 105 Q300 145 600 95" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="2"/>
+  <path d="M0 113 Q300 153 600 103" fill="none" stroke="rgba(56,189,248,0.22)" stroke-width="1.5"/>
+  <path d="M0 315 Q300 270 600 320" fill="none" stroke="rgba(56,189,248,0.18)" stroke-width="2"/>
+  <path d="M0 323 Q300 278 600 328" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="1.2"/>
+
+  <!-- Watermark: Tarcza zaufania i Orzeł RP -->
+  <g transform="translate(440, 220)" stroke="rgba(255,255,255,0.12)" stroke-width="2.5" fill="none">
+    <path d="M0 -62 C32 -62 52 -44 52 2 C52 38 22 58 0 68 C-22 58 -52 38 -52 2 C-52 -44 -32 -62 0 -62 Z" stroke-width="2.5"/>
+    <path d="M0 -50 C24 -50 40 -35 40 2 C40 30 18 46 0 54 C-18 46 -40 30 -40 2 C-40 -35 -24 -50 0 -50 Z" stroke-width="1.2" stroke-dasharray="3 3"/>
+    <path d="M-12 6 C-12 -2 -4 -8 0 -8 C4 -8 12 -2 12 6 L12 12 H-12 Z" stroke-width="2"/>
+    <rect x="-16" y="12" width="32" height="24" rx="4" stroke-width="2"/>
+    <circle cx="0" cy="22" r="3.5" fill="rgba(255,255,255,0.15)"/>
+    <line x1="0" y1="25" x2="0" y2="30" stroke-width="2"/>
+    <path d="M-18 -26 L-10 -36 L0 -28 L10 -36 L18 -26" stroke-width="2" stroke-linecap="round"/>
+  </g>
+
+  <!-- Top right badge -->
+  <rect x="496" y="34" width="68" height="26" rx="6" fill="rgba(56,189,248,0.18)" stroke="rgba(56,189,248,0.4)" stroke-width="1.5"/>
+  <text x="530" y="52" font-family="'Inter', -apple-system, sans-serif" font-size="11" font-weight="700" fill="#ffffff" letter-spacing="0.5" text-anchor="middle">PZ</text>
+</svg>

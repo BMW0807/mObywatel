@@ -14,7 +14,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=46">
+<link rel="stylesheet" href="style.css?v=48">
 </head>
 <body>
 <div class="phone" id="app">
@@ -420,6 +420,85 @@
     </div>
   </div>
 
+  
+  <!-- 8. ZUS i Zwolnienia Lekarskie (e-ZLA / L4) -->
+  <div class="sheet-modal" id="zusZlaModal" role="dialog" aria-modal="true" aria-labelledby="zusZlaTitle">
+    <div class="scrim" onclick="closeZusZlaModal()"></div>
+    <div class="modal-box zus-box">
+      <div class="modal-head">
+        <h2 id="zusZlaTitle">ZUS i Zwolnienia Lekarskie (e-ZLA)</h2>
+        <button class="tx-close" onclick="closeZusZlaModal()" aria-label="Zamknij"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></svg></button>
+      </div>
+      <p class="modal-sub">Elektroniczne zwolnienia lekarskie (L4) i zasiłki chorobowe ZUS</p>
+      <div class="zus-zla-content" id="zusZlaContent"></div>
+    </div>
+  </div>
+
+  <!-- 9. Karta Szczepień (IKP) -->
+  <div class="sheet-modal" id="kartaSzczepienModal" role="dialog" aria-modal="true" aria-labelledby="szczepTitle">
+    <div class="scrim" onclick="closeKartaSzczepienModal()"></div>
+    <div class="modal-box szczep-box">
+      <div class="modal-head">
+        <h2 id="szczepTitle">Elektroniczna Karta Szczepień</h2>
+        <button class="tx-close" onclick="closeKartaSzczepienModal()" aria-label="Zamknij"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></svg></button>
+      </div>
+      <p class="modal-sub">Internetowe Konto Pacjenta • Rejestr Szczepień Ochronnych</p>
+      <div class="szczep-content" id="szczepContent"></div>
+    </div>
+  </div>
+
+  <!-- 10. Unijny Certyfikat UCC / Kod QR szczepienia -->
+  <div class="sheet-modal" id="uccQrModal" role="dialog" aria-modal="true" aria-labelledby="uccTitle">
+    <div class="scrim" onclick="closeUccQrModal()"></div>
+    <div class="modal-box ucc-box">
+      <div class="modal-head">
+        <h2 id="uccTitle">Certyfikat Szczepienia (UCC)</h2>
+        <button class="tx-close" onclick="closeUccQrModal()" aria-label="Zamknij"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></svg></button>
+      </div>
+      <p class="modal-sub">Oficjalny Unijny Certyfikat z podpisem kryptograficznym</p>
+      <div class="ucc-content" id="uccContent"></div>
+    </div>
+  </div>
+
+  <!-- 11. PIT Urząd Skarbowy (Twój e-PIT) -->
+  <div class="sheet-modal" id="pitSkarbowyModal" role="dialog" aria-modal="true" aria-labelledby="pitTitle">
+    <div class="scrim" onclick="closePitSkarbowyModal()"></div>
+    <div class="modal-box pit-box">
+      <div class="modal-head">
+        <h2 id="pitTitle">Twój e-PIT • Urząd Skarbowy</h2>
+        <button class="tx-close" onclick="closePitSkarbowyModal()" aria-label="Zamknij"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></svg></button>
+      </div>
+      <p class="modal-sub">Krajowa Administracja Skarbowa (KAS) • Rozliczenie roczne</p>
+      <div class="pit-content" id="pitContent"></div>
+    </div>
+  </div>
+
+  <!-- 12. Zaświadczenia z Urzędu Stanu Cywilnego (USC) -->
+  <div class="sheet-modal" id="uscZaswiadczeniaModal" role="dialog" aria-modal="true" aria-labelledby="uscTitle">
+    <div class="scrim" onclick="closeUscModal()"></div>
+    <div class="modal-box usc-box">
+      <div class="modal-head">
+        <h2 id="uscTitle">Zaświadczenia i Odpisy z USC</h2>
+        <button class="tx-close" onclick="closeUscModal()" aria-label="Zamknij"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></svg></button>
+      </div>
+      <p class="modal-sub">Elektroniczne odpisy aktów stanu cywilnego z pieczęcią RP</p>
+      <div class="usc-content" id="uscContent"></div>
+    </div>
+  </div>
+
+  <!-- 13. Profil Zaufany (PZ) -->
+  <div class="sheet-modal" id="pzModal" role="dialog" aria-modal="true" aria-labelledby="pzTitle">
+    <div class="scrim" onclick="closePzModal()"></div>
+    <div class="modal-box pz-box">
+      <div class="modal-head">
+        <h2 id="pzTitle">Profil Zaufany (PZ)</h2>
+        <button class="tx-close" onclick="closePzModal()" aria-label="Zamknij"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></svg></button>
+      </div>
+      <p class="modal-sub">Krajowy Węzeł Identyfikacji Elektronicznej • Certyfikat tożsamości</p>
+      <div class="pz-content" id="pzContent"></div>
+    </div>
+  </div>
+
   <!-- Ekran Główny Usług (przełączany w nawigacji dolnej) -->
   <section class="view-services" id="viewServices" aria-label="Katalog e-usług" hidden></section>
 
@@ -456,23 +535,25 @@
   </div></div>
   <div class="homebar" aria-hidden="true"></div>
 </div>
-<script src="ikony.js?v=45"></script>
-<script src="osoby.js?v=45"></script>
-<script src="sylwetki.js?v=45"></script>
-<script src="core.js?v=47"></script>
-<script src="accessibility.js?v=45"></script>
-<script src="variants.js?v=45"></script>
-<script src="scenarios.js?v=45"></script>
-<script src="agent.js?v=45"></script>
-<script src="znak-kod.js?v=45"></script>
-<script src="znak.js?v=45"></script>
-<script src="uslugi.js?v=45"></script>
-<script src="weryfikacja.js?v=45"></script>
-<script src="poczta.js?v=45"></script>
-<script src="ikp-integracja.js?v=45"></script>
-<script src="mandaty.js?v=45"></script>
-<script src="powiadomienia-eksport.js?v=45"></script>
-<script src="katalog-kart.js?v=45"></script>
-<script src="spotlight.js?v=45"></script>
+<script src="ikony.js?v=48"></script>
+<script src="osoby.js?v=48"></script>
+<script src="sylwetki.js?v=48"></script>
+<script src="core.js?v=48"></script>
+<script src="accessibility.js?v=48"></script>
+<script src="variants.js?v=48"></script>
+<script src="scenarios.js?v=48"></script>
+<script src="agent.js?v=48"></script>
+<script src="znak-kod.js?v=48"></script>
+<script src="znak.js?v=48"></script>
+<script src="uslugi.js?v=48"></script>
+<script src="weryfikacja.js?v=48"></script>
+<script src="poczta.js?v=48"></script>
+<script src="ikp-integracja.js?v=48"></script>
+<script src="mandaty.js?v=48"></script>
+<script src="powiadomienia-eksport.js?v=48"></script>
+<script src="katalog-kart.js?v=48"></script>
+<script src="spotlight.js?v=48"></script>
+<script src="moduly-zdrowie.js?v=48"></script>
+<script src="moduly-urzad.js?v=48"></script>
 </body>
 </html>

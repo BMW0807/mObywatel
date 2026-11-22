@@ -652,6 +652,104 @@
       viewAction: function () {
         if (typeof openZastrzezKartyModal === 'function') openZastrzezKartyModal();
       }
+    },
+    {
+      id: 'uslugi-zus-zla',
+      title: 'ZUS i zwolnienia lekarskie (e-ZLA)',
+      category: 'Zdrowie',
+      catKey: 'zdrowie',
+      desc: 'Elektroniczne zwolnienia lekarskie L4, zasiłki chorobowe i e-wizyty w ZUS',
+      icon: '🩺',
+      badge: 'ZUS e-ZLA',
+      keywords: ['l4', 'zwolnienie lekarskie', 'e-zla', 'zus l4', 'chory', 'zasilek chorobowy', 'lekarz l4', 'niezdolnosc do pracy'],
+      query: 'Czy mam wystawione aktywne zwolnienie lekarskie e-ZLA (L4) w ZUS?',
+      viewAction: function () {
+        if (typeof openZusZlaModal === 'function') openZusZlaModal();
+      }
+    },
+    {
+      id: 'uslugi-karta-szczepien',
+      title: 'Elektroniczna Karta Szczepień',
+      category: 'Zdrowie',
+      catKey: 'zdrowie',
+      desc: 'Rejestr szczepień obowiązkowych i zalecanych, certyfikat UCC z kodem QR',
+      icon: '💉',
+      badge: 'IKP Szczepienia',
+      keywords: ['szczepienia', 'karta szczepien', 'covid', 'grypa', 'tezec', 'ucc', 'certyfikat szczepienia', 'dawka przypominajaca'],
+      query: 'Pokaż moją elektroniczną kartę szczepień ochronnych i certyfikat UCC',
+      viewAction: function () {
+        if (typeof openKartaSzczepienModal === 'function') openKartaSzczepienModal();
+      }
+    },
+    {
+      id: 'uslugi-pit-skarbowy',
+      title: 'Twój e-PIT • Urząd Skarbowy',
+      category: 'Finanse i podatki',
+      catKey: 'finanse',
+      desc: 'Rozliczenie roczne PIT-37/PIT-36, zwrot podatku, ulgi na dzieci i UPO',
+      icon: '💰',
+      badge: 'Twój e-PIT',
+      keywords: ['pit', 'twoj e-pit', 'rozliczenie roczne', 'zwrot podatku', 'urzad skarbowy', 'pit-37', 'ulga na dzieci', 'mikrorachunek'],
+      query: 'Jaki jest status mojego rozliczenia Twój e-PIT i kwota zwrotu podatku?',
+      viewAction: function () {
+        if (typeof openPitSkarbowyModal === 'function') openPitSkarbowyModal();
+      }
+    },
+    {
+      id: 'uslugi-usc-akty',
+      title: 'Zaświadczenia i Odpisy z USC',
+      category: 'Dokumenty',
+      catKey: 'dokumenty',
+      desc: 'Odpis aktu urodzenia, małżeństwa, zgonu z kwalifikowaną pieczęcią cyfrową RP',
+      icon: '📜',
+      badge: 'Urząd Stanu Cywilnego',
+      keywords: ['usc', 'akt urodzenia', 'odpis aktu', 'akt malzenstwa', 'stan cywilny', 'urzad stanu cywilnego', 'odpis zupelny'],
+      query: 'Jak pobrać urzędowy odpis aktu urodzenia lub małżeństwa z USC?',
+      viewAction: function () {
+        if (typeof openUscModal === 'function') openUscModal();
+      }
+    },
+    {
+      id: 'uslugi-profil-zaufany',
+      title: 'Profil Zaufany (PZ)',
+      category: 'Dokumenty',
+      catKey: 'dokumenty',
+      desc: 'Certyfikat tożsamości elektronicznej, przedłużenie ważności i historia logowań',
+      icon: '🛡️',
+      badge: 'Węzeł Krajowy',
+      keywords: ['profil zaufany', 'pz', 'login gov pl', 'waznosc profilu zaufanego', 'podpis zaufany', 'autoryzacja'],
+      query: 'Jaka jest ważność mojego Profilu Zaufanego i powiązany e-mail?',
+      viewAction: function () {
+        if (typeof openPzModal === 'function') openPzModal();
+      }
+    },
+    {
+      id: 'dok-hdk',
+      title: 'Książeczka krwiodawcy (HDK)',
+      category: 'Dokumenty',
+      catKey: 'dokumenty',
+      desc: 'Legitymacja Honorowego Dawcy Krwi, grupa krwi, litry oddanej krwi i ulgi',
+      icon: '🩸',
+      badge: 'Krwiodawstwo',
+      keywords: ['krwiodawca', 'hdk', 'zhdk', 'krew', 'oddawanie krwi', 'grupa krwi', 'legitymacja krwiodawcy', 'rckik'],
+      query: 'Pokaż moją legitymację Honorowego Dawcy Krwi i ilość oddanej krwi',
+      viewAction: function () {
+        if (typeof openDoc === 'function') openDoc('hdk');
+      }
+    },
+    {
+      id: 'dok-osp',
+      title: 'Legitymacja Strażaka OSP',
+      category: 'Dokumenty',
+      catKey: 'dokumenty',
+      desc: 'Ochotnicza Straż Pożarna • Stopień ratownika, numer jednostki i uprawnienia KPP',
+      icon: '🚒',
+      badge: 'Straż Pożarna',
+      keywords: ['osp', 'strazak', 'straz pozarna', 'ochotnicza straz pozarna', 'legitymacja osp', 'ratownik osp', 'kpp'],
+      query: 'Pokaż moją cyfrową legitymację członka Ochotniczej Straży Pożarnej',
+      viewAction: function () {
+        if (typeof openDoc === 'function') openDoc('osp');
+      }
     }
   ];
 

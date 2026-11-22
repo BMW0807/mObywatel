@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400" width="600" height="400">
+  <defs>
+    <linearGradient id="gOsp" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0a1128"/>
+      <stop offset="35%" stop-color="#1c1917"/>
+      <stop offset="70%" stop-color="#451a03"/>
+      <stop offset="100%" stop-color="#7c2d12"/>
+    </linearGradient>
+    <radialGradient id="glOsp" cx="82%" cy="22%" r="65%">
+      <stop offset="0%" stop-color="rgba(245,158,11,0.35)"/>
+      <stop offset="50%" stop-color="rgba(234,88,12,0.15)"/>
+      <stop offset="100%" stop-color="rgba(10,17,40,0)"/>
+    </radialGradient>
+    <pattern id="patOsp" width="36" height="36" patternUnits="userSpaceOnUse">
+      <path d="M18 6 L30 18 L18 30 L6 18 Z" fill="none" stroke="rgba(245,158,11,0.03)" stroke-width="0.8"/>
+      <circle cx="18" cy="18" r="10" fill="none" stroke="rgba(255,255,255,0.02)" stroke-width="0.6"/>
+    </pattern>
+  </defs>
+  <rect width="600" height="400" rx="36" fill="url(#gOsp)"/>
+  <rect width="600" height="400" rx="36" fill="url(#patOsp)"/>
+  <rect width="600" height="400" rx="36" fill="url(#glOsp)"/>
+
+  <!-- Złote i płomienne linie zabezpieczające -->
+  <path d="M0 105 Q300 145 600 95" fill="none" stroke="rgba(251,191,36,0.22)" stroke-width="2"/>
+  <path d="M0 113 Q300 153 600 103" fill="none" stroke="rgba(249,115,22,0.15)" stroke-width="1.5"/>
+  <path d="M0 320 Q300 270 600 325" fill="none" stroke="rgba(245,158,11,0.2)" stroke-width="2"/>
+  <path d="M0 328 Q300 278 600 333" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="1.2"/>
+
+  <!-- Watermark: Toporki strażackie, hełm i tarcza ZOSP RP -->
+  <g transform="translate(440, 220)" stroke="rgba(251,191,36,0.14)" stroke-width="2.5" fill="none">
+    <path d="M0 -62 C35 -62 55 -40 55 5 C55 42 22 62 0 72 C-22 62 -55 42 -55 5 C-55 -40 -35 -62 0 -62 Z"/>
+    <line x1="-36" y1="-36" x2="36" y2="36" stroke-width="2.5"/>
+    <line x1="36" y1="-36" x2="-36" y2="36" stroke-width="2.5"/>
+    <path d="M-36 -36 L-44 -28 L-38 -22 L-30 -30 Z" stroke-width="1.5"/>
+    <path d="M36 -36 L44 -28 L38 -22 L30 -30 Z" stroke-width="1.5"/>
+    <path d="M-22 8 C-22 -15 22 -15 22 8 C26 12 24 16 18 16 L-18 16 C-24 16 -26 12 -22 8 Z" stroke-width="2"/>
+    <path d="M-6 -14 L0 -24 L6 -14 Z" stroke-width="1.8"/>
+    <path d="M0 24 C-8 32 -10 38 -6 44 C-2 48 2 48 6 44 C10 38 8 32 0 24 Z" stroke-width="1.5"/>
+  </g>
+
+  <!-- Top right badge -->
+  <rect x="496" y="34" width="68" height="26" rx="6" fill="rgba(251,191,36,0.18)" stroke="rgba(251,191,36,0.4)" stroke-width="1.5"/>
+  <text x="530" y="52" font-family="'Inter', -apple-system, sans-serif" font-size="11" font-weight="700" fill="#fef3c7" letter-spacing="0.5" text-anchor="middle">OSP</text>
+</svg>

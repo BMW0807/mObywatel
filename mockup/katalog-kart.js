@@ -26,7 +26,13 @@
 
     pwz_pielegniarka: svgToUri(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400" width="600" height="400"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#4338ca"/><stop offset="50%" stop-color="#6366f1"/><stop offset="100%" stop-color="#312e81"/></linearGradient><radialGradient id="gl" cx="80%" cy="20%" r="60%"><stop offset="0%" stop-color="rgba(165,180,252,0.35)"/><stop offset="100%" stop-color="rgba(67,56,202,0)"/></radialGradient></defs><rect width="600" height="400" rx="36" fill="url(#g)"/><rect width="600" height="400" rx="36" fill="url(#gl)"/><path d="M0 105 Q300 140 600 100" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="2"/><g transform="translate(440,220)" stroke="rgba(255,255,255,0.09)" stroke-width="3" fill="none"><circle cx="0" cy="0" r="48"/><path d="M-18 0 H18 M0 -18 V18"/></g><rect x="490" y="34" width="74" height="26" rx="6" fill="rgba(255,255,255,0.15)" stroke="rgba(255,255,255,0.3)" stroke-width="1.5"/><text x="527" y="52" font-family="sans-serif" font-size="10" font-weight="700" fill="#fff" text-anchor="middle">NIPiP</text></svg>`),
 
-    legitymacja_szkolna: svgToUri(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400" width="600" height="400"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#9a3412"/><stop offset="50%" stop-color="#ea580c"/><stop offset="100%" stop-color="#7c2d12"/></linearGradient><radialGradient id="gl" cx="80%" cy="20%" r="60%"><stop offset="0%" stop-color="rgba(253,186,116,0.35)"/><stop offset="100%" stop-color="rgba(154,52,18,0)"/></radialGradient></defs><rect width="600" height="400" rx="36" fill="url(#g)"/><rect width="600" height="400" rx="36" fill="url(#gl)"/><path d="M0 110 Q300 145 600 105" fill="none" stroke="rgba(255,255,255,0.16)" stroke-width="2"/><g transform="translate(440,220)" stroke="rgba(255,255,255,0.08)" stroke-width="3" fill="none"><rect x="-35" y="-35" width="70" height="70" rx="14"/><path d="M-20 -5 L0 15 L20 -5"/></g><rect x="496" y="34" width="68" height="26" rx="6" fill="rgba(255,255,255,0.15)" stroke="rgba(255,255,255,0.3)" stroke-width="1.5"/><text x="530" y="52" font-family="sans-serif" font-size="11" font-weight="700" fill="#fff" text-anchor="middle">MEN</text></svg>`)
+    legitymacja_szkolna: svgToUri(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400" width="600" height="400"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#9a3412"/><stop offset="50%" stop-color="#ea580c"/><stop offset="100%" stop-color="#7c2d12"/></linearGradient><radialGradient id="gl" cx="80%" cy="20%" r="60%"><stop offset="0%" stop-color="rgba(253,186,116,0.35)"/><stop offset="100%" stop-color="rgba(154,52,18,0)"/></radialGradient></defs><rect width="600" height="400" rx="36" fill="url(#g)"/><rect width="600" height="400" rx="36" fill="url(#gl)"/><path d="M0 110 Q300 145 600 105" fill="none" stroke="rgba(255,255,255,0.16)" stroke-width="2"/><g transform="translate(440,220)" stroke="rgba(255,255,255,0.08)" stroke-width="3" fill="none"><rect x="-35" y="-35" width="70" height="70" rx="14"/><path d="M-20 -5 L0 15 L20 -5"/></g><rect x="496" y="34" width="68" height="26" rx="6" fill="rgba(255,255,255,0.15)" stroke="rgba(255,255,255,0.3)" stroke-width="1.5"/><text x="530" y="52" font-family="sans-serif" font-size="11" font-weight="700" fill="#fff" text-anchor="middle">MEN</text></svg>`),
+
+    hdk: svgToUri(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400" width="600" height="400"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#4c0519"/><stop offset="45%" stop-color="#9f1239"/><stop offset="80%" stop-color="#be123c"/><stop offset="100%" stop-color="#881337"/></linearGradient><radialGradient id="gl" cx="80%" cy="20%" r="65%"><stop offset="0%" stop-color="rgba(244,63,94,0.4)"/><stop offset="60%" stop-color="rgba(190,18,60,0.1)"/><stop offset="100%" stop-color="rgba(76,5,25,0)"/></radialGradient></defs><rect width="600" height="400" rx="36" fill="url(#g)"/><rect width="600" height="400" rx="36" fill="url(#gl)"/><path d="M0 110 Q300 150 600 100" fill="none" stroke="rgba(255,255,255,0.16)" stroke-width="2"/><path d="M0 310 L180 310 L195 290 L210 330 L225 285 L240 325 L255 310 L600 310" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="1.8"/><path d="M0 320 Q300 280 600 330" fill="none" stroke="rgba(251,113,133,0.18)" stroke-width="2"/><g transform="translate(440,220)" stroke="rgba(255,255,255,0.10)" stroke-width="3" fill="none"><path d="M0 -65 C0 -65 42 -12 42 22 C42 45 23 64 0 64 C-23 64 -42 45 -42 22 C-42 -12 0 -65 0 -65 Z"/><path d="M -9 18 H 9 M 0 9 V 27" stroke-width="3.5" stroke-linecap="round"/></g><rect x="496" y="34" width="68" height="26" rx="6" fill="rgba(255,255,255,0.15)" stroke="rgba(255,255,255,0.3)" stroke-width="1.5"/><text x="530" y="52" font-family="sans-serif" font-size="11" font-weight="700" fill="#fff" text-anchor="middle">HDK</text></svg>`),
+
+    osp: svgToUri(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400" width="600" height="400"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#0a1128"/><stop offset="35%" stop-color="#1c1917"/><stop offset="70%" stop-color="#451a03"/><stop offset="100%" stop-color="#7c2d12"/></linearGradient><radialGradient id="gl" cx="82%" cy="22%" r="65%"><stop offset="0%" stop-color="rgba(245,158,11,0.35)"/><stop offset="50%" stop-color="rgba(234,88,12,0.15)"/><stop offset="100%" stop-color="rgba(10,17,40,0)"/></radialGradient></defs><rect width="600" height="400" rx="36" fill="url(#g)"/><rect width="600" height="400" rx="36" fill="url(#gl)"/><path d="M0 105 Q300 145 600 95" fill="none" stroke="rgba(251,191,36,0.22)" stroke-width="2"/><path d="M0 320 Q300 270 600 325" fill="none" stroke="rgba(245,158,11,0.2)" stroke-width="2"/><g transform="translate(440,220)" stroke="rgba(251,191,36,0.14)" stroke-width="2.5" fill="none"><path d="M0 -62 C35 -62 55 -40 55 5 C55 42 22 62 0 72 C-22 62 -55 42 -55 5 C-55 -40 -35 -62 0 -62 Z"/><line x1="-36" y1="-36" x2="36" y2="36"/><line x1="36" y1="-36" x2="-36" y2="36"/><path d="M-22 8 C-22 -15 22 -15 22 8 C26 12 24 16 18 16 L-18 16 C-24 16 -26 12 -22 8 Z"/></g><rect x="496" y="34" width="68" height="26" rx="6" fill="rgba(251,191,36,0.18)" stroke="rgba(251,191,36,0.4)" stroke-width="1.5"/><text x="530" y="52" font-family="sans-serif" font-size="11" font-weight="700" fill="#fef3c7" text-anchor="middle">OSP</text></svg>`),
+
+    pz: svgToUri(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400" width="600" height="400"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#081b33"/><stop offset="40%" stop-color="#0c2d58"/><stop offset="75%" stop-color="#154a8a"/><stop offset="100%" stop-color="#0a2040"/></linearGradient><radialGradient id="gl" cx="80%" cy="20%" r="65%"><stop offset="0%" stop-color="rgba(56,189,248,0.35)"/><stop offset="60%" stop-color="rgba(14,116,144,0.12)"/><stop offset="100%" stop-color="rgba(8,27,51,0)"/></radialGradient></defs><rect width="600" height="400" rx="36" fill="url(#g)"/><rect width="600" height="400" rx="36" fill="url(#gl)"/><path d="M0 105 Q300 145 600 95" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="2"/><path d="M0 315 Q300 270 600 320" fill="none" stroke="rgba(56,189,248,0.18)" stroke-width="2"/><g transform="translate(440,220)" stroke="rgba(255,255,255,0.12)" stroke-width="2.5" fill="none"><path d="M0 -62 C32 -62 52 -44 52 2 C52 38 22 58 0 68 C-22 58 -52 38 -52 2 C-52 -44 -32 -62 0 -62 Z"/><path d="M-12 6 C-12 -2 -4 -8 0 -8 C4 -8 12 -2 12 6 L12 12 H-12 Z"/><rect x="-16" y="12" width="32" height="24" rx="4"/></g><rect x="496" y="34" width="68" height="26" rx="6" fill="rgba(56,189,248,0.18)" stroke="rgba(56,189,248,0.4)" stroke-width="1.5"/><text x="530" y="52" font-family="sans-serif" font-size="11" font-weight="700" fill="#fff" text-anchor="middle">PZ</text></svg>`)
   };
 
   // --- 2. Baza wzorcowa dokumentów do dodania (Katalog Państwowy) ---
@@ -329,6 +335,165 @@
           ]
         };
       }
+    },
+    {
+      id: 'hdk',
+      kategoria: 'zdrowie',
+      kategoriaLabel: 'Zdrowie i krwiodawstwo',
+      nazwa: 'Książeczka krwiodawcy (HDK / ZHDK)',
+      instytucja: 'Ministerstwo Zdrowia • RCKiK',
+      badge: 'HDK / RCKiK',
+      ikona: 'shield',
+      opis: 'Cyfrowa legitymacja Honorowego Dawcy Krwi: grupa krwi, litry oddanej krwi, data donacji, termin kolejnego oddania i uprawnienia (2 dni wolnego, ulgi na leki).',
+      build: function (os) {
+        const pesel = (os && os.moje && os.moje.pesel) || '83051203455';
+        const imieNazw = (os && os.moje && os.moje.imie_nazwisko) || 'Jan Wiśniewski';
+        const isJan = os && os.id === 'jan';
+        const isMarta = os && os.id === 'marta';
+        const grupa = isJan ? '0 Rh+' : (isMarta ? 'A Rh+' : '0 Rh-');
+        const litry = isJan ? '18,5 L' : (isMarta ? '4,5 L' : '2,25 L');
+        const tytul = isJan ? 'Zasłużony Honorowy Dawca Krwi I stopnia' : (isMarta ? 'Honorowy Dawca Krwi' : 'Honorowy Dawca Krwi');
+        const nrLeg = isJan ? 'ZHDK/KR/04192/2018' : (isMarta ? 'HDK/WA/11082/2021' : 'HDK/PL/08129/2023');
+        const dataOst = isJan ? '14.10.2026' : (isMarta ? '15.09.2026' : '10.08.2026');
+        const kolejna = isJan ? '09.12.2026' : (isMarta ? '15.12.2026' : '05.11.2026');
+        const centrum = isJan ? 'RCKiK w Krakowie, ul. Rzeźnicza 11' : (isMarta ? 'RCKiK w Warszawie, ul. Saska 63/75' : 'Regionalne Centrum Krwiodawstwa i Krwiolecznictwa');
+        const ulgi = isJan 
+          ? '2 dni wolnego od pracy, bezpłatne leki z listy Zasłużonych (ZHDK), 100% ulgi na komunikację miejską w Krakowie (>18L), ulga podatkowa PIT'
+          : '2 dni wolnego od pracy/szkoły za każdą donację, ulga podatkowa PIT (darowizna krwi), obsługa poza kolejnością w aptekach i przychodniach';
+
+        return {
+          id: 'hdk',
+          name: 'Książeczka krwiodawcy',
+          img: 'assets/card-hdk.svg',
+          strip: 'assets/strip-hdk.svg',
+          sub: `RCKiK • ${isJan ? 'ZHDK (18,5 L)' : 'HDK (' + litry + ')'}`,
+          photo: 1,
+          holder: imieNazw.toUpperCase(),
+          line: `Grupa krwi ${grupa}, ${litry} oddanej krwi`,
+          f: [
+            ['Grupa krwi', grupa],
+            ['Oddana krew', litry],
+            ['Ostatnia donacja', dataOst],
+            ['Kolejna donacja', `od ${kolejna}`]
+          ],
+          rows: [
+            ['Dawca', imieNazw],
+            ['PESEL', pesel],
+            ['Tytuł dawcy', tytul],
+            ['Grupa krwi', `${grupa} (potwierdzona laboratoryjnie)`],
+            ['Łącznie oddano', `${litry} krwi pełnej`],
+            ['Numer legitymacji', nrLeg],
+            ['Ostatnia donacja', `${dataOst} (RCKiK)`],
+            ['Termin kolejnej donacji', `${kolejna} (odstęp min. 8 tyg.)`],
+            ['Centrum Krwiodawstwa', centrum],
+            ['Przysługujące uprawnienia', ulgi]
+          ]
+        };
+      }
+    },
+    {
+      id: 'osp',
+      kategoria: 'zawodowe',
+      kategoriaLabel: 'Służby i uprawnienia',
+      nazwa: 'Legitymacja Członka OSP',
+      instytucja: 'Związek Ochotniczych Straży Pożarnych RP',
+      badge: 'ZOSP RP',
+      ikona: 'shield',
+      opis: 'Elektroniczna legitymacja strażaka Ochotniczej Straży Pożarnej: stopień funkcyjny, jednostka OSP, numer legitymacji, ważne badania lekarskie i certyfikaty KPP / AODO.',
+      build: function (os) {
+        const pesel = (os && os.moje && os.moje.pesel) || '83051203455';
+        const imieNazw = (os && os.moje && os.moje.imie_nazwisko) || 'Jan Wiśniewski';
+        const isJan = os && os.id === 'jan';
+        const stopien = isJan ? 'Dowódca Sekcji OSP / Ratownik' : 'Ratownik OSP';
+        const jednostka = isJan ? 'OSP Kraków-Kościelniki' : 'OSP Warszawa-Wesoła';
+        const nrLeg = isJan ? 'OSP/MP/2019/084' : 'OSP/MZ/2022/190';
+        const badania = isJan ? '14.04.2027' : '10.11.2027';
+        const certyfikaty = 'KPP (Kwalifikowana Pierwsza Pomoc, ważna do 2028), Aparaty Ochrony Dróg Oddechowych (AODO), Kurs Podstawowy Strażaka-Ratownika OSP';
+
+        return {
+          id: 'osp',
+          name: 'Legitymacja Członka OSP',
+          img: 'assets/card-osp.svg',
+          strip: 'assets/strip-osp.svg',
+          sub: `${jednostka} • ${stopien.split(' / ')[0]}`,
+          photo: 1,
+          holder: imieNazw.toUpperCase(),
+          line: `OSP nr ${nrLeg}, ${stopien.split(' / ')[0]}`,
+          f: [
+            ['Stopień', stopien.split(' / ')[0]],
+            ['Jednostka', isJan ? 'OSP Kościelniki' : 'OSP Wesoła'],
+            ['Nr legitymacji', nrLeg],
+            ['Badania lekarskie', `do ${badania}`]
+          ],
+          rows: [
+            ['Strażak-ratownik', imieNazw],
+            ['PESEL', pesel],
+            ['Stopień służbowy', stopien],
+            ['Jednostka OSP', jednostka],
+            ['Numer legitymacji', nrLeg],
+            ['Badania lekarskie', `Ważne do ${badania} (zdolność bojowa)`],
+            ['Certyfikaty i kwalifikacje', certyfikaty],
+            ['Organ wydający', 'Zarząd Oddziału Powiatowego Związku OSP RP'],
+            ['Status operacyjny', 'Uprawniony do bezpośredniego udziału w działaniach ratowniczo-gaśniczych']
+          ]
+        };
+      }
+    },
+    {
+      id: 'pz',
+      kategoria: 'tozsamosc',
+      kategoriaLabel: 'Tożsamość i status',
+      nazwa: 'Profil Zaufany (PZ)',
+      instytucja: 'Ministerstwo Cyfryzacji • Centralny Ośrodek Informatyki',
+      badge: 'PZ / MC',
+      ikona: 'shield',
+      opis: 'Karta i cyfrowy certyfikat Profilu Zaufanego (PZ): potwierdzona ważność do 2028 r., metoda weryfikacji tożsamości oraz powiązane dane kontaktowe (e-mail, telefon).',
+      build: function (os) {
+        const pesel = (os && os.moje && os.moje.pesel) || '83051203455';
+        const imieNazw = (os && os.moje && os.moje.imie_nazwisko) || 'Jan Wiśniewski';
+        const isJan = os && os.id === 'jan';
+        const isMarta = os && os.id === 'marta';
+        const isEwa = os && os.id === 'ewa';
+        const waznosc = isJan ? '12.05.2028' : (isMarta ? '14.07.2028' : (isEwa ? '03.02.2028' : '21.03.2028'));
+        const metoda = isJan 
+          ? 'Bankowość elektroniczna (mBank S.A.) + e-Dowód'
+          : (isMarta ? 'Bankowość elektroniczna (PKO Bank Polski) + mObywatel' : (isEwa ? 'Bank Pekao S.A. / Placówka ZUS' : 'Santander Bank Polska / e-Dowód'));
+        const metodaKrotka = isJan ? 'mBank / e-Dowód' : (isMarta ? 'PKO BP / mObywatel' : (isEwa ? 'Pekao S.A.' : 'Santander'));
+        const email = isJan 
+          ? 'jan.wisniewski@instalacje-krakow.pl'
+          : (isMarta ? 'marta.kowalska@gmail.com' : (isEwa ? 'ewa.nowak@szkola.lublin.pl' : 'kacper.zielinski@student.pg.edu.pl'));
+        const tel = isJan ? '+48 602 ••• 312' : (isMarta ? '+48 501 ••• 412' : (isEwa ? '+48 603 ••• 882' : '+48 791 ••• 119'));
+        const idPZ = isJan ? 'PZ-830512-WIŚN' : (isMarta ? 'PZ-910714-KOWA' : (isEwa ? 'PZ-690203-NOWA' : 'PZ-062321-ZIEL'));
+
+        return {
+          id: 'pz',
+          name: 'Profil Zaufany (PZ)',
+          img: 'assets/card-pz.svg',
+          strip: 'assets/strip-pz.svg',
+          sub: `Węzeł Krajowy • Ważny do ${waznosc.slice(-4)}`,
+          photo: 1,
+          holder: imieNazw.toUpperCase(),
+          line: `Profil Zaufany ważny do ${waznosc}`,
+          f: [
+            ['Status', 'Aktywny'],
+            ['Ważny do', waznosc],
+            ['Weryfikacja', metodaKrotka],
+            ['Powiązany tel.', tel]
+          ],
+          rows: [
+            ['Użytkownik', imieNazw],
+            ['PESEL', pesel],
+            ['Identyfikator profilu', idPZ],
+            ['Status Profilu Zaufanego', 'Aktywny i potwierdzony (login.gov.pl)'],
+            ['Data ważności', `${waznosc} (odnowienie online przed upływem terminu)`],
+            ['Metoda weryfikacji', metoda],
+            ['Powiązany adres e-mail', email],
+            ['Powiązany numer telefonu', tel],
+            ['Uprawnienia podpisu', 'Zdolność do składania Podpisu Zaufanego (ePUAP / gov.pl)'],
+            ['Poziom zaufania', 'Średni (Substantial) zgodnie z unijnym rozporządzeniem eIDAS']
+          ]
+        };
+      }
     }
   ];
 
@@ -368,11 +533,12 @@
 
         <div class="katalog-filters" role="tablist" aria-label="Kategorie dokumentów">
           <button type="button" class="chip-sm active" data-filter="wszystkie" onclick="setKatalogFilter('wszystkie')">Wszystkie</button>
+          <button type="button" class="chip-sm" data-filter="zdrowie" onclick="setKatalogFilter('zdrowie')">Zdrowie i krew</button>
+          <button type="button" class="chip-sm" data-filter="tozsamosc" onclick="setKatalogFilter('tozsamosc')">Tożsamość</button>
+          <button type="button" class="chip-sm" data-filter="zawodowe" onclick="setKatalogFilter('zawodowe')">Zawodowe i służby</button>
+          <button type="button" class="chip-sm" data-filter="rodzina" onclick="setKatalogFilter('rodzina')">Rodzina i KDR</button>
           <button type="button" class="chip-sm" data-filter="emerytura" onclick="setKatalogFilter('emerytura')">ZUS i emerytury</button>
           <button type="button" class="chip-sm" data-filter="edukacja" onclick="setKatalogFilter('edukacja')">Edukacja i nauka</button>
-          <button type="button" class="chip-sm" data-filter="zawodowe" onclick="setKatalogFilter('zawodowe')">Zawodowe</button>
-          <button type="button" class="chip-sm" data-filter="rodzina" onclick="setKatalogFilter('rodzina')">Rodzina i KDR</button>
-          <button type="button" class="chip-sm" data-filter="tozsamosc" onclick="setKatalogFilter('tozsamosc')">Tożsamość</button>
         </div>
 
         <!-- Lista dokumentów do wyboru -->
