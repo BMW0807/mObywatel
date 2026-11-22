@@ -535,15 +535,9 @@ POZA_APLIKACJA = [
     (r'zgon|zmarł|zmarl|pogrzeb', 'Zgłoszenie zgonu',
      'urząd stanu cywilnego właściwy dla miejsca zgonu, w 3 dni od wystawienia karty zgonu. Często załatwia to zakład pogrzebowy na podstawie pełnomocnictwa',
      'karta zgonu od lekarza, dowód osobisty zmarłego i Twój dokument. Bezpłatnie. Potem zasiłek pogrzebowy z ZUS: 7000 zł, wniosek do 12 miesięcy', 'osobiście'),
-    (r'\bl4\b|zwolnieni\w* lekarsk|zasiłek chorob|zasilek chorob|e-?zla', 'Zwolnienie lekarskie i zasiłek chorobowy',
-     'L4 wystawia lekarz, także podczas teleporady. Nie musisz go nikomu nosić, trafi samo do ZUS i pracodawcy. Zobaczysz je w eZUS i w IKP',
-     'jako pracownik nic nie składasz. Prowadzisz firmę: zasiłek dostaniesz, jeśli płacisz dobrowolną składkę chorobową i nie masz zaległości w ZUS', 'online'),
-    (r'zeznani\w* (roczn|podatk)|rozlicz\w* (się )?(z )?(pit|podat|roczn)|\bpit\b(?!-?\d)|e-?pit\b', 'Roczne zeznanie PIT',
-     'Twój e-PIT w e-Urzędzie Skarbowym (podatki.gov.pl lub aplikacja e-Urząd Skarbowy), zalogujesz się mObywatelem, profilem zaufanym albo przez bank',
-     'zeznanie za 2026 r. złożysz od 15.02 do 30.04.2027. PIT-37 i PIT-38 zaakceptują się same 30 kwietnia, PIT-36, PIT-36L i PIT-28 trzeba zaakceptować samodzielnie. Korektę złożysz tam w każdej chwili', 'online'),
-    (r'skierowan|wizyt\w* (u|do) lekarz|zapis\w* (się )?do lekarz|umów\w* (mnie )?(do|na) (lekarz|wizyt|badani)|szczepien|e-?rejestracj', 'Wizyty, skierowania, szczepienia',
+    (r'skierowan|wizyt\w* (u|do) lekarz|zapis\w* (się )?do lekarz|umów\w* (mnie )?(do|na) (lekarz|wizyt|badani)|e-?rejestracj', 'Wizyty, skierowania',
      'wizytę u lekarza rodzinnego umówisz w swojej przychodni. Przez centralną e-rejestrację w IKP umówisz mammografię, test HPV i pierwszą wizytę u kardiologa',
-     'skierowania, recepty i szczepienia zobaczysz w IKP', 'online lub osobiście'),
+     'skierowania i recepty zobaczysz w IKP, a kartę szczepień w mObywatelu', 'online lub osobiście'),
     (r'emerytur\w*.*(wnios|złoż|zloz|przejś|przejs)|wnios\w* o emeryt|przej\w* na emeryt', 'Wniosek o emeryturę',
      'eZUS (wniosek EMP) albo placówka ZUS, najwcześniej 30 dni przed osiągnięciem wieku emerytalnego',
      'świadectwa pracy, jeśli ZUS ich nie ma. Wniosek złożony wcześniej ZUS odrzuci. Jeśli pracujesz na etacie, rozwiąż umowę z obecnym pracodawcą, inaczej ZUS zawiesi wypłatę (potem możesz znów się zatrudnić)', 'online lub osobiście'),
@@ -576,5 +570,202 @@ def r_karta_uslugi(a, s):
         out.append(dict(usluga=k['usluga'], url=k['url'], aktualizacja=k['aktualizacja'], instytucja=k['instytucja'],
                         warianty=[dict(wariant=v['wariant'], sekcje={x['sekcja']: re.sub(r'\[([^\]]*)\]\([^)]*\)', r'\1', x['tresc']).replace('**', '') for x in v['sekcje']}) for v in k['warianty']]))
     return dict(znaleziono=True, karty=out), None
+
+def r_pokaz_modul(a, s):
+    mod = a.get('modul')
+    p = P()
+    o = p['osoba']
+    pid = p.get('id', 'marta')
+
+    if mod == 'zus_zla':
+        if pid == 'jan':
+            dane = dict(
+                modul='zus_zla',
+                nazwa='Zwolnienia lekarskie (e-ZLA / L4)',
+                status='aktywne zwolnienie',
+                seria_nr='e-ZLA/2026/PL-883190',
+                okres='18.11.2026 – 24.11.2026',
+                dni=7,
+                kod_choroby='J20.9',
+                opis_choroby='Ostre zapalenie oskrzeli',
+                lekarz='lek. med. Tomasz Lis',
+                placowka='NZOZ Przychodnia Rejonowa Kraków-Śródmieście, ul. Dietla 42',
+                zalecenia='Chory powinien leżeć (kod 1)',
+                chorobowe='Dobrowolne ubezpieczenie chorobowe aktywne',
+                status_zasilku='Zatwierdzony do wypłaty (80%)',
+                kwota_zasilku=998.27
+            )
+            rows = [
+                ['Seria i numer', 'e-ZLA/2026/PL-883190'],
+                ['Okres zwolnienia', '18.11.2026 – 24.11.2026 (7 dni)'],
+                ['Zalecenia lekarza', 'Chory powinien leżeć'],
+                ['Wystawiający', 'lek. med. Tomasz Lis'],
+                ['Status zasiłku', 'Wypłata bezpośrednia ZUS (80%, 998,27 zł)']
+            ]
+        else:
+            dane = dict(
+                modul='zus_zla',
+                nazwa='Zwolnienia lekarskie (e-ZLA / L4)',
+                status='aktywne zwolnienie',
+                seria_nr='e-ZLA/2026/PL-551920',
+                okres='19.11.2026 – 23.11.2026',
+                dni=5,
+                kod_choroby='H66.0',
+                opis_choroby='Ropne zapalenie ucha środkowego',
+                lekarz='lek. med. Tomasz Lis',
+                placowka='Przychodnia Rejonowa Warszawa-Mokotów',
+                zalecenia='Chory powinien leżeć (kod 1)',
+                chorobowe='Ubezpieczenie chorobowe aktywne',
+                status_zasilku='Zatwierdzony do wypłaty (80%)',
+                pracodawca='Urząd m.st. Warszawy'
+            )
+            rows = [
+                ['Seria i numer', 'e-ZLA/2026/PL-551920'],
+                ['Okres zwolnienia', '19.11.2026 – 23.11.2026 (5 dni)'],
+                ['Zalecenia lekarza', 'Chory powinien leżeć'],
+                ['Wystawiający', 'lek. med. Tomasz Lis'],
+                ['Status w ZUS', 'Przekazano automatycznie pracodawcy (zasiłek 80%)']
+            ]
+        karta = dict(icon='health', title='Zwolnienie lekarskie e-ZLA (L4)', source='ZUS / e-ZLA', rows=rows)
+        return dane, karta
+
+    elif mod == 'karta_szczepien':
+        dane = dict(
+            modul='karta_szczepien',
+            nazwa='Elektroniczna Karta Szczepień',
+            pacjent=imie_nazwisko(),
+            status='aktualna',
+            ostatnie_szczepienie='COVID-19 (dawka przypominająca, 2026 r.)',
+            kolejne_szczepienie='Tężec / Błonica (styczeń 2028 r.)',
+            szczepienia_obowiazkowe=['Błonica', 'Tężec', 'Krztusiec', 'Poliomyelitis', 'Odra, Świnka, Różyczka (MMR)'],
+            szczepienia_zalecane=['COVID-19', 'Grypa sezonowa', 'Kleszczowe Zapalenie Mózgu (KZM)']
+        )
+        rows = [
+            ['Pacjent', imie_nazwisko()],
+            ['Ostatnie szczepienie', 'COVID-19 (dawka przypominająca, 2026 r.)'],
+            ['Szczepienia obowiązkowe', 'Błonica, Tężec, Krztusiec, Polio (komplet)'],
+            ['Kolejne szczepienie', 'Dawka przypominająca Tężec/Błonica (styczeń 2028 r.)']
+        ]
+        karta = dict(icon='health', title='Elektroniczna Karta Szczepień', source='Internetowe Konto Pacjenta (IKP)', rows=rows)
+        return dane, karta
+
+    elif mod == 'ucc':
+        cert_nr = 'UCC/PL/2026/COVID-' + ('551920' if pid == 'marta' else '883190')
+        dane = dict(
+            modul='ucc',
+            nazwa='Unijny Certyfikat COVID (UCC)',
+            certyfikat=cert_nr,
+            typ='Szczepienie przeciw COVID-19 (dawka przypominająca)',
+            status='Ważny w całej Unii Europejskiej',
+            kod_qr='dostępny w aplikacji'
+        )
+        rows = [
+            ['Numer certyfikatu', cert_nr],
+            ['Typ certyfikatu', 'Szczepienie przeciw COVID-19 (dawka przypominająca)'],
+            ['Ważność', 'Ważny w całej Unii Europejskiej'],
+            ['Weryfikacja', 'Cyfrowy kod QR do kontroli granicznej']
+        ]
+        karta = dict(icon='shield', title='Unijny Certyfikat COVID (UCC)', source='Ministerstwo Zdrowia / IKP', rows=rows)
+        return dane, karta
+
+    elif mod == 'pit':
+        pesel_nr = o.get('pesel', '91071427765')
+        mikro = 'PL 1010 0071 2228 ' + pesel_nr[:4] + ' ' + pesel_nr[4:8] + ' ' + pesel_nr[8:] + '00'
+        urzad_skarbowy = 'Pierwszy Urząd Skarbowy w ' + ('Krakowie' if pid == 'jan' else 'Warszawie')
+        dane = dict(
+            modul='pit',
+            nazwa='Twój e-PIT / Krajowa Administracja Skarbowa',
+            deklaracja='PIT-37 (za rok 2025)',
+            status='Złożone i zaakceptowane w Urzędzie Skarbowym',
+            urzad_skarbowy=urzad_skarbowy,
+            upo='UPO-PIT-2026-98124',
+            mikrorachunek=mikro,
+            opp='1,5% przekazano na wybraną Organizację Pożytku Publicznego'
+        )
+        rows = [
+            ['Deklaracja', 'PIT-37 (za rok 2025)'],
+            ['Status zeznania', 'Złożone i zaakceptowane w US'],
+            ['Urzędowe Poświadczenie (UPO)', 'UPO-PIT-2026-98124 (pobrane)'],
+            ['Mikrorachunek podatkowy', mikro]
+        ]
+        karta = dict(icon='doc', title='Twój e-PIT (KAS)', source='Ministerstwo Finansów / Twój e-PIT', rows=rows)
+        return dane, karta
+
+    elif mod == 'usc':
+        urzad_usc = p.get('usc', 'Urząd Stanu Cywilnego')
+        dane = dict(
+            modul='usc',
+            nazwa='Urząd Stanu Cywilnego (USC) - odpisy i zaświadczenia',
+            urzad=urzad_usc,
+            dostepne_odpisy=['Odpis skrócony aktu urodzenia', 'Odpis aktu małżeństwa', 'Zaświadczenie o stanie cywilnym'],
+            forma='e-Odpis z pieczęcią cyfrową Ministra Cyfryzacji (ważny urzędowo)'
+        )
+        rows = [
+            ['Właściwy urząd', urzad_usc],
+            ['Dostępne odpisy', 'Akt urodzenia, akt małżeństwa, stan cywilny'],
+            ['Moc prawna', 'Dokument elektroniczny z kwalifikowaną pieczęcią cyfrową']
+        ]
+        karta = dict(icon='doc', title='Urząd Stanu Cywilnego (USC)', source='Rejestr Stanu Cywilnego', rows=rows)
+        return dane, karta
+
+    elif mod == 'pz':
+        dane = dict(
+            modul='pz',
+            nazwa='Profil Zaufany (PZ)',
+            status='Aktywny',
+            wazny_do='15.06.2028',
+            metoda_autoryzacji='Aplikacja mObywatel (powiązana)',
+            telefon=o.get('telefon', ''),
+            email=o.get('email', '')
+        )
+        rows = [
+            ['Status profilu', 'Aktywny'],
+            ['Ważny do', '15.06.2028'],
+            ['Metoda autoryzacji', 'Aplikacja mObywatel'],
+            ['Adres e-mail', o.get('email', '')]
+        ]
+        karta = dict(icon='shield', title='Profil Zaufany (PZ)', source='Ministerstwo Cyfryzacji', rows=rows)
+        return dane, karta
+
+    elif mod == 'hdk':
+        dane = dict(
+            modul='hdk',
+            nazwa='Książeczka Honorowego Dawcy Krwi (HDK)',
+            status='Aktywny krwiodawca',
+            tytul='Zasłużony Honorowy Dawca Krwi',
+            grupa_krwi='0 Rh+ (dodatnia)',
+            oddana_krew='18,5 l',
+            termin_donacji='Możliwa od zaraz'
+        )
+        rows = [
+            ['Tytuł', 'Zasłużony Honorowy Dawca Krwi'],
+            ['Grupa krwi', '0 Rh+ (dodatnia)'],
+            ['Łącznie oddano', '18,5 litra'],
+            ['Kolejna donacja', 'Możliwa od zaraz']
+        ]
+        karta = dict(icon='health', title='Honorowy Dawca Krwi (HDK)', source='Regionalne Centrum Krwiodawstwa i Krwiolecznictwa', rows=rows)
+        return dane, karta
+
+    elif mod == 'osp':
+        dane = dict(
+            modul='osp',
+            nazwa='Legitymacja Strażaka OSP',
+            status='Aktywny ratownik OSP',
+            stopien='Ratownik OSP / Dowódca Sekcji',
+            jednostka='Ochotnicza Straż Pożarna ' + p.get('miasto', 'Kraków'),
+            nr_legitymacji='OSP/MP/2019/084',
+            uprawnienia=['Kwalifikowana Pierwsza Pomoc (KPP)', 'Aparaty Dróg Oddechowych (AODO)', 'Szkolenie Podstawowe Strażaka-Ratownika'],
+            badania_bojowe='Ważne do 10.2027'
+        )
+        rows = [
+            ['Stopień służbowy', 'Ratownik OSP / Dowódca Sekcji'],
+            ['Jednostka', 'Ochotnicza Straż Pożarna ' + p.get('miasto', 'Kraków')],
+            ['Uprawnienia', 'KPP, AODO, Szkolenie podstawowe'],
+            ['Badania bojowe', 'Ważne do 10.2027']
+        ]
+        karta = dict(icon='shield', title='Legitymacja Strażaka OSP', source='Związek Ochotniczych Straży Pożarnych RP', rows=rows)
+        return dane, karta
+
+    return dict(blad='nieznany moduł: %s' % mod), None
 
 READ = {k[2:]: v for k, v in list(globals().items()) if k.startswith('r_')}

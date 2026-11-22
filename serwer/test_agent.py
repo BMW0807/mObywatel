@@ -76,6 +76,43 @@ class ZgodnyClientTests(unittest.TestCase):
         self.assertNotIn('test-secret', str(raised.exception))
         self.assertIn('[REDACTED]', str(raised.exception))
 
+    def test_pokaz_modul_tool_and_event(self):
+        import narzedzia, dane
+        self.assertIn('pokaz_modul', narzedzia.NAZWY_ODCZYTOW)
+        self.assertIn('pokaz_modul', dane.READ)
+
+        modules = ['zus_zla', 'karta_szczepien', 'ucc', 'pit', 'usc', 'pz', 'hdk', 'osp']
+        for m in modules:
+            d, k = dane.r_pokaz_modul({'modul': m}, {})
+            self.assertEqual(d.get('modul'), m)
+            self.assertIsNotNone(k)
+            self.assertIn('title', k)
+            self.assertIn('rows', k)
+
+        tool_call_resp = {
+            'content': [
+                {'type': 'tool_use', 'id': 'call-mod-1', 'name': 'pokaz_modul', 'input': {'modul': 'zus_zla'}},
+            ],
+            'stop_reason': 'tool_use'
+        }
+        final_text_resp = {
+            'content': [
+                {'type': 'text', 'text': 'Oto Twoje aktywne zwolnienie lekarskie.'}
+            ],
+            'stop_reason': 'end_turn'
+        }
+        with patch.object(agent, 'llm', side_effect=[tool_call_resp, final_text_resp]):
+            messages, stan, events, czeka = agent.run(
+                [{'role': 'user', 'content': 'Pokaż moje zwolnienie L4'}],
+                stan=None,
+                osoba='marta'
+            )
+            modul_events = [e for e in events if e.get('t') == 'modul']
+            self.assertEqual(len(modul_events), 1)
+            self.assertEqual(modul_events[0].get('modul'), 'zus_zla')
+            card_events = [e for e in events if e.get('t') == 'card']
+            self.assertEqual(len(card_events), 1)
+
 
 if __name__ == '__main__':
     unittest.main()
