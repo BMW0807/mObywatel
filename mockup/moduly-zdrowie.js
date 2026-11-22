@@ -599,7 +599,22 @@
 
   // Stan lokalny modułu
   let _szczepActiveTab = 'zalecane';
-  let _currentRateJan = 80; // 80% lub 100%
+  let _currentRateJan = 80; // kompatybilność wsteczna
+  const _currentZlaRates = {
+    jan: 80,
+    marta: 80
+  };
+
+  function getZlaRate(personaId) {
+    return _currentZlaRates[personaId] || 80;
+  }
+
+  function setZlaRate(personaId, rate) {
+    _currentZlaRates[personaId] = rate;
+    if (personaId === 'jan') {
+      _currentRateJan = rate;
+    }
+  }
 
   // ==========================================================================
   // INIEKCJA STYLÓW DLA MODUŁÓW ZDROWIA I ZUS
@@ -761,6 +776,8 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
+        flex-wrap: wrap;
+        gap: 8px;
       }
       .zcc-title {
         font-size: 12px;
@@ -771,22 +788,34 @@
         gap: 6px;
       }
       .rate-toggle-btns {
-        display: flex;
+        display: inline-flex;
+        align-items: center;
         gap: 4px;
         background: #e2e8f0;
-        padding: 2px;
+        padding: 3px;
         border-radius: 8px;
+        max-width: 100%;
       }
       .rt-btn {
         border: none;
         background: transparent;
         font-size: 10.5px;
         font-weight: 700;
-        padding: 3px 8px;
+        padding: 4px 8px;
         border-radius: 6px;
         cursor: pointer;
         color: #475569;
-        transition: all 0.2s;
+        transition: all 0.2s ease;
+        white-space: nowrap;
+        line-height: 1.2;
+      }
+      .rt-btn:hover:not(.active) {
+        background: rgba(255, 255, 255, 0.5);
+        color: #1e293b;
+      }
+      .rt-btn:focus-visible {
+        outline: 2px solid #007834;
+        outline-offset: 1px;
       }
       .rt-btn.active {
         background: #ffffff;
@@ -1179,6 +1208,13 @@
       .phone.dark-mode .rate-toggle-btns {
         background: #141824 !important;
       }
+      .phone.dark-mode .rt-btn {
+        color: #94a3b8 !important;
+      }
+      .phone.dark-mode .rt-btn:hover:not(.active) {
+        background: rgba(255, 255, 255, 0.08) !important;
+        color: #f1f5f9 !important;
+      }
       .phone.dark-mode .szczep-tab-btn.active,
       .phone.dark-mode .rt-btn.active {
         background: #2a3447 !important;
@@ -1228,6 +1264,18 @@
         background: #ffd700 !important;
         color: #000000 !important;
         border-color: #ffd700 !important;
+        font-weight: 900 !important;
+      }
+      .high-contrast .rate-toggle-btns {
+        background: #000000 !important;
+        border: 1px solid #ffd700 !important;
+      }
+      .high-contrast .rt-btn {
+        color: #ffffff !important;
+      }
+      .high-contrast .rt-btn.active {
+        background: #ffd700 !important;
+        color: #000000 !important;
         font-weight: 900 !important;
       }
     `;
@@ -1315,16 +1363,20 @@
     const hist = data.historiaZla || [];
     const ewizyta = _store.get('zus_ewizyta_' + data.id, null);
 
-    // Przeliczenie kwoty dla Jana przy zmianie stawki 80% / 100%
-    let displayRate = active ? active.stawkaProcent : 80;
+    // Przeliczenie kwoty dla persony z aktywnym L4 (Jan i Marta) przy zmianie stawki 80% / 100%
+    const currentRate = getZlaRate(data.id);
+    let displayRate = currentRate;
     let displayDaily = active ? active.podstawaDzienna : 0;
     let displayTotal = active ? active.kwotaLaczna : 0;
 
-    if (active && data.id === 'jan') {
-      displayRate = _currentRateJan;
-      if (_currentRateJan === 100) {
+    if (active) {
+      displayRate = currentRate;
+      if (currentRate === 100) {
         displayDaily = +(active.podstawaDzienna * 1.25).toFixed(2);
         displayTotal = +(displayDaily * active.dni).toFixed(2);
+      } else {
+        displayDaily = active.podstawaDzienna;
+        displayTotal = active.kwotaLaczna;
       }
     }
 
@@ -1374,14 +1426,10 @@
                 <span>💰</span>
                 <span>Świadczenie chorobowe</span>
               </div>
-              ${data.id === 'jan' ? `
-                <div class="rate-toggle-btns" role="group" aria-label="Wybór stawki procentowej">
-                  <button type="button" class="rt-btn ${_currentRateJan === 80 ? 'active' : ''}" onclick="toggleZlaRate(80)">80% podstawy</button>
-                  <button type="button" class="rt-btn ${_currentRateJan === 100 ? 'active' : ''}" onclick="toggleZlaRate(100)">100% (szpital/wypadek)</button>
-                </div>
-              ` : `
-                <span style="font-size:11px;font-weight:700;color:#007834;background:#ecfdf5;padding:2px 8px;border-radius:6px">Stawka ${displayRate}%</span>
-              `}
+              <div class="rate-toggle-btns" role="group" aria-label="Wybór stawki procentowej">
+                <button type="button" class="rt-btn ${currentRate === 80 ? 'active' : ''}" onclick="toggleZlaRate(80)">80% podstawy</button>
+                <button type="button" class="rt-btn ${currentRate === 100 ? 'active' : ''}" onclick="toggleZlaRate(100)">100% (szpital/wypadek)</button>
+              </div>
             </div>
 
             <div class="zcc-nums">
@@ -1552,7 +1600,9 @@
   }
 
   function toggleZlaRate(rate) {
-    _currentRateJan = rate;
+    const data = getActivePersonData();
+    const pid = (data && data.id) || 'jan';
+    setZlaRate(pid, rate);
     renderZusZlaModal();
     if (typeof showToast === 'function') {
       showToast(`Przełączono kalkulację na ${rate}% podstawy wymiaru`);
@@ -1599,8 +1649,128 @@
   }
 
   function downloadZlaPdf(id) {
-    if (typeof showToast === 'function') {
-      showToast('Pobrano urzędowe zaświadczenie o zwolnieniu lekarskim e-ZLA (PDF)');
+    try {
+      const data = getActivePersonData();
+      if (!id) {
+        id = data.activeZla ? data.activeZla.id : 'historia';
+      }
+
+      let zla = null;
+      if (data.activeZla && (data.activeZla.id === id || id === 'active')) {
+        zla = data.activeZla;
+      } else if (data.historiaZla) {
+        zla = data.historiaZla.find(h => h.id === id);
+      }
+
+      if (!zla && id !== 'historia' && data.activeZla) {
+        zla = data.activeZla;
+      }
+
+      const ubezp = data.ubezpieczenieZus || {};
+      let docTitle = 'ZAKLAD UBEZPIECZEN SPOLECZNYCH - ZASWIADCZENIE e-ZLA';
+      let lines = [];
+
+      if (zla) {
+        let rate = zla.stawkaProcent || 80;
+        let daily = zla.podstawaDzienna || 0;
+        let total = zla.kwotaLaczna || 0;
+
+        if (data.activeZla && zla.id === data.activeZla.id) {
+          rate = getZlaRate(data.id);
+          if (rate === 100) {
+            daily = +(zla.podstawaDzienna * 1.25).toFixed(2);
+            total = +(daily * zla.dni).toFixed(2);
+          } else {
+            daily = zla.podstawaDzienna;
+            total = zla.kwotaLaczna;
+          }
+        }
+
+        lines = [
+          'DANE UBEZPIECZONEGO (PACJENTA):',
+          `Imie i nazwisko: ${data.imieNazwisko}`,
+          `Numer PESEL: ${data.pesel} | Data urodzenia: ${data.urodzenie}`,
+          '',
+          'DANE PLATNIKA SKLADEK (PRACODAWCA):',
+          `Platnik: ${ubezp.tytul || 'Brak danych'}`,
+          `NIP platnika: ${ubezp.nip || 'Brak'}`,
+          `Oddzial ZUS: ${ubezp.oddzial || 'ZUS'}`,
+          '',
+          'SZCZEGOLY ZWOLNIENIA LEKARSKIEGO e-ZLA:',
+          `Seria i numer zaswiadczenia: ${zla.seriaNr}`,
+          `Okres niezdolnosci do pracy: ${zla.okresOd} do ${zla.okresDo} (${zla.dni} dni)`,
+          `Rozpoznanie lekarskie (ICD-10): ${zla.kodChoroby || 'N/A'} - ${zla.opisChoroby || ''}`,
+          `Zalecenia medyczne: ${zla.zaleceniaOpis || (zla.zaleceniaKod === '1' ? 'Chory powinien lezec' : 'Chory moze chodzic')}`,
+          `Lekarz wystawiajacy: ${zla.lekarz} ${zla.lekarzSpec ? '(' + zla.lekarzSpec + ')' : ''}`,
+          `Podmiot leczniczy: ${zla.placowka || 'Brak'}`,
+          '',
+          'SWIADCZENIE CHOROBOWE / KALKULACJA:',
+          `Wskaznik podstawy wymiaru: ${rate}%`,
+          daily ? `Dzienna stawka swiadczenia: ${daily.toFixed(2)} PLN brutto` : '',
+          total ? `Laczna kwota zasilku chorobowego: ${total.toFixed(2)} PLN brutto` : '',
+          zla.organWyplacajacy ? `Organ wyplacajacy swiadczenie: ${zla.organWyplacajacy}` : '',
+          zla.statusZasilku ? `Status wyplaty: ${zla.statusZasilku}` : `Status: ${zla.status || 'Rozliczone'}`,
+          '',
+          'Status doreczenia: Dokument przekazano automatycznie do ZUS i do profilu PUE platnika.'
+        ].filter(Boolean);
+      } else {
+        docTitle = 'ZAKLAD UBEZPIECZEN SPOLECZNYCH - HISTORIA e-ZLA';
+        lines = [
+          'ZESTAWIENIE HISTORYCZNYCH ZWOLNIEN LEKARSKICH e-ZLA',
+          `Ubezpieczony: ${data.imieNazwisko} (PESEL: ${data.pesel})`,
+          `Platnik skladek: ${ubezp.tytul || 'Brak danych'} (NIP: ${ubezp.nip || '-'})`,
+          `Oddzial ZUS: ${ubezp.oddzial || 'ZUS'}`,
+          '',
+          'ZAREJESTROWANE ZWOLNIENIA W SYSTEMIE:'
+        ];
+        const hist = data.historiaZla || [];
+        if (hist.length === 0) {
+          lines.push('Brak zarejestrowanych zwolnien lekarskich.');
+        } else {
+          hist.forEach((h, idx) => {
+            lines.push(
+              `${idx + 1}. ${h.seriaNr} [${h.okresOd} do ${h.okresDo}, ${h.dni} dni] ICD-10: ${h.kodChoroby} | ${h.lekarz} | ${h.kwotaLaczna} PLN`
+            );
+          });
+        }
+      }
+
+      const pdfGen = (typeof window !== 'undefined' && window.generateMinimalPdf) ? window.generateMinimalPdf : (typeof generateMinimalPdf === 'function' ? generateMinimalPdf : null);
+      const dlBlob = (typeof window !== 'undefined' && window.downloadBlob) ? window.downloadBlob : (typeof downloadBlob === 'function' ? downloadBlob : null);
+
+      if (!pdfGen || !dlBlob) {
+        throw new Error('Moduł generatora PDF nie jest dostępny');
+      }
+
+      const pdf = pdfGen(docTitle, lines, { subtitle: 'ZUS PUE • ELEKTRONICZNE ZASWIADCZENIE LEKARSKIE' });
+      const filename = 'eZLA_' + id + '.pdf';
+      const success = dlBlob(filename, pdf, 'application/pdf');
+
+      if (success) {
+        if (typeof showToast === 'function') {
+          showToast('Pobrano urzędowe zaświadczenie o zwolnieniu lekarskim e-ZLA (PDF)');
+        }
+        if (typeof MobStore !== 'undefined' && typeof MobStore.addUPO === 'function') {
+          MobStore.addUPO({
+            title: `Zaświadczenie e-ZLA: ${zla ? zla.seriaNr : id}`,
+            source: 'Zakład Ubezpieczeń Społecznych (PUE ZUS)',
+            rows: [
+              ['Identyfikator', id],
+              ['Ubezpieczony', data.imieNazwisko],
+              ['PESEL', data.pesel]
+            ]
+          });
+        }
+      } else {
+        if (typeof showToast === 'function') {
+          showToast('Błąd pobierania pliku e-ZLA');
+        }
+      }
+    } catch (e) {
+      console.error('Błąd podczas pobierania e-ZLA:', e);
+      if (typeof showToast === 'function') {
+        showToast('Wystąpił błąd podczas generowania dokumentu e-ZLA');
+      }
     }
   }
 
@@ -1750,14 +1920,173 @@
   }
 
   function exportSzczepCalendar(choroba) {
-    if (typeof showToast === 'function') {
-      showToast(`Dodano przypomnienie do kalendarza (.ics): Dawka przypominająca ${choroba}`);
+    try {
+      const data = getActivePersonData();
+      const szczep = data.szczepienia || {};
+      const reminder = szczep.reminder || {};
+      const chName = choroba || reminder.choroba || 'Dawka przypominająca';
+
+      // Ustal datę rozpoczęcia wydarzenia z reminder.termin (np. '01.2028' -> 2028-01-15 09:00:00Z)
+      let dtstart = '20280115T090000Z';
+      let dtend = '20280115T100000Z';
+      if (reminder.termin) {
+        const parts = reminder.termin.split('.');
+        if (parts.length === 2) {
+          const mm = parts[0].padStart(2, '0');
+          const yyyy = parts[1];
+          dtstart = `${yyyy}${mm}15T090000Z`;
+          dtend = `${yyyy}${mm}15T100000Z`;
+        }
+      }
+
+      const now = new Date();
+      const pad = n => String(n).padStart(2, '0');
+      const dtstamp = `${now.getUTCFullYear()}${pad(now.getUTCMonth() + 1)}${pad(now.getUTCDate())}T${pad(now.getUTCHours())}${pad(now.getUTCMinutes())}${pad(now.getUTCSeconds())}Z`;
+      const uid = `szczepienie-${data.id || 'jan'}-${Date.now()}@mobywatel.gov.pl`;
+
+      const summary = `Szczepienie przypominajace: ${chName}`;
+      const description = `Przypomnienie z mObywatel 2.0 (IKP): ${reminder.tekst || chName}. Skonsultuj sie z przychodnia POZ lub punktem szczepien.`;
+
+      const ics = [
+        'BEGIN:VCALENDAR',
+        'VERSION:2.0',
+        'PRODID:-//mObywatel//Elektroniczna Karta Szczepien//PL',
+        'CALSCALE:GREGORIAN',
+        'METHOD:PUBLISH',
+        'BEGIN:VEVENT',
+        `UID:${uid}`,
+        `DTSTAMP:${dtstamp}`,
+        `DTSTART:${dtstart}`,
+        `DTEND:${dtend}`,
+        `SUMMARY:${summary}`,
+        `DESCRIPTION:${description}`,
+        'LOCATION:Przychodnia POZ / Punkt Szczepien',
+        'STATUS:CONFIRMED',
+        'BEGIN:VALARM',
+        'ACTION:DISPLAY',
+        `DESCRIPTION:Przypomnienie o terminie szczepienia: ${chName}`,
+        'TRIGGER:-P7D',
+        'END:VALARM',
+        'END:VEVENT',
+        'END:VCALENDAR'
+      ].join('\r\n');
+
+      const dlBlob = (typeof window !== 'undefined' && window.downloadBlob) ? window.downloadBlob : (typeof downloadBlob === 'function' ? downloadBlob : null);
+      if (!dlBlob) {
+        throw new Error('Funkcja pobierania pliku jest niedostępna');
+      }
+
+      const filename = 'Szczepienie_' + chName + '.ics';
+      const success = dlBlob(filename, ics, 'text/calendar;charset=utf-8');
+
+      if (success) {
+        if (typeof showToast === 'function') {
+          showToast(`Dodano przypomnienie do kalendarza (.ics): Dawka przypominająca ${chName}`);
+        }
+      } else {
+        if (typeof showToast === 'function') {
+          showToast('Błąd pobierania pliku kalendarza');
+        }
+      }
+    } catch (e) {
+      console.error('Błąd podczas generowania pliku .ics:', e);
+      if (typeof showToast === 'function') {
+        showToast('Nie udało się wyeksportować przypomnienia do kalendarza');
+      }
     }
   }
 
   function downloadFullSzczepCardPdf() {
-    if (typeof showToast === 'function') {
-      showToast('Wygenerowano i pobrano oficjalny odpis Karty Szczepień IKP (PDF)');
+    try {
+      const data = getActivePersonData();
+      const szczep = data.szczepienia || {};
+      const obow = szczep.obowiazkowe || [];
+      const zal = szczep.zalecane || [];
+
+      const lines = [
+        'ODPIS ELEKTRONICZNEJ KARTY SZCZEPIEN (IKP)',
+        `Pacjent: ${data.imieNazwisko}`,
+        `Numer PESEL: ${data.pesel} | Data urodzenia: ${data.urodzenie}`,
+        `Data sporzadzenia odpisu: ${new Date().toLocaleDateString('pl-PL')}`,
+        '',
+        'SZCZEPIENIA OBOWIAZKOWE:'
+      ];
+
+      if (obow.length === 0) {
+        lines.push('  Brak zarejestrowanych szczepien obowiazkowych.');
+      } else {
+        obow.forEach((item, idx) => {
+          lines.push(
+            `[${idx + 1}] ${item.choroba} - ${item.preparat}`,
+            `    Data: ${item.data} | Seria: ${item.seria} | Dawka: ${item.dawka}`,
+            `    Punkt: ${item.punkt} | Lekarz: ${item.lekarz} | Podal: ${item.podal}`,
+            `    Certyfikat: ${item.certId || 'Brak'} | Waznosc: ${item.waznosc || 'Zgodnie z PSO'}`
+          );
+        });
+      }
+
+      lines.push('', 'SZCZEPIENIA ZALECANE:');
+      if (zal.length === 0) {
+        lines.push('  Brak zarejestrowanych szczepien zalecanych.');
+      } else {
+        zal.forEach((item, idx) => {
+          lines.push(
+            `[${idx + 1}] ${item.choroba} - ${item.preparat}`,
+            `    Data: ${item.data} | Seria: ${item.seria} | Dawka: ${item.dawka}`,
+            `    Punkt: ${item.punkt} | Lekarz: ${item.lekarz} | Podal: ${item.podal}`,
+            `    Certyfikat: ${item.certId || 'Brak'} | Waznosc: ${item.waznosc || 'Zgodnie z PSO'}`
+          );
+        });
+      }
+
+      if (szczep.reminder) {
+        lines.push(
+          '',
+          'TERMIN PRZYPOMINAJACY (PSO):',
+          `  ${szczep.reminder.tekst}`
+        );
+      }
+
+      const pdfGen = (typeof window !== 'undefined' && window.generateMinimalPdf) ? window.generateMinimalPdf : (typeof generateMinimalPdf === 'function' ? generateMinimalPdf : null);
+      const dlBlob = (typeof window !== 'undefined' && window.downloadBlob) ? window.downloadBlob : (typeof downloadBlob === 'function' ? downloadBlob : null);
+
+      if (!pdfGen || !dlBlob) {
+        throw new Error('Moduł generatora PDF nie jest dostępny');
+      }
+
+      const pdf = pdfGen(
+        'MINISTERSTWO ZDROWIA - KARTA SZCZEPIEN IKP',
+        lines,
+        { subtitle: 'CENTRUM e-ZDROWIA • ELEKTRONICZNA DOKUMENTACJA MEDYCZNA' }
+      );
+
+      const success = dlBlob('Karta_Szczepien_IKP.pdf', pdf, 'application/pdf');
+
+      if (success) {
+        if (typeof showToast === 'function') {
+          showToast('Wygenerowano i pobrano oficjalny odpis Karty Szczepień IKP (PDF)');
+        }
+        if (typeof MobStore !== 'undefined' && typeof MobStore.addUPO === 'function') {
+          MobStore.addUPO({
+            title: 'Karta Szczepień IKP (Odpis)',
+            source: 'Centrum e-Zdrowia (CeZ) / IKP',
+            rows: [
+              ['Pacjent', data.imieNazwisko],
+              ['PESEL', data.pesel],
+              ['Liczba pozycji', String(obow.length + zal.length)]
+            ]
+          });
+        }
+      } else {
+        if (typeof showToast === 'function') {
+          showToast('Błąd pobierania Karty Szczepień');
+        }
+      }
+    } catch (e) {
+      console.error('Błąd podczas generowania Karty Szczepień PDF:', e);
+      if (typeof showToast === 'function') {
+        showToast('Nie udało się wygenerować Karty Szczepień (PDF)');
+      }
     }
   }
 
@@ -1899,14 +2228,115 @@
   }
 
   function downloadUccPdf(certId) {
-    if (typeof showToast === 'function') {
-      showToast('Pobrano oficjalny certyfikat szczepienia UCC w formacie PDF');
+    try {
+      const data = getActivePersonData();
+      const all = [...(data.szczepienia.zalecane || []), ...(data.szczepienia.obowiazkowe || [])];
+      let item = all.find(s => s.certId === certId || s.id === certId) || all[0];
+
+      if (!item) {
+        throw new Error('Nie znaleziono danych certyfikatu UCC');
+      }
+
+      const uvci = item.certId || certId || 'UCC-PL-CERT';
+
+      const lines = [
+        'UNIJNY CERTYFIKAT SZCZEPIENIA (EU DIGITAL VACCINE CERTIFICATE)',
+        'Certyfikat wydany zgodnie z przepisami Unii Europejskiej i Centrum e-Zdrowia (CeZ)',
+        '',
+        'DANE POSIADACZA CERTYFIKATU:',
+        `Nazwisko i imie: ${data.imieNazwisko}`,
+        `Numer PESEL: ${data.pesel} | Data urodzenia: ${data.urodzenie}`,
+        '',
+        'DANE WYKONANEGO SZCZEPIENIA:',
+        `Choroba docelowa: ${item.choroba}`,
+        `Preparat szczepionkowy: ${item.preparat}`,
+        `Numer serii: ${item.seria}`,
+        `Dawka w cyklu: ${item.dawka}`,
+        `Data szczepienia: ${item.data}`,
+        `Punkt szczepien: ${item.punkt}`,
+        `Lekarz kwalifikujacy: ${item.lekarz} | Podal: ${item.podal}`,
+        '',
+        'DANE FORMALNE I UVCI:',
+        `Unikalny identyfikator certyfikatu (UVCI): ${uvci}`,
+        'Panstwo czlonkowskie: Polska (PL)',
+        'Organ wydajacy: Centrum e-Zdrowia (CeZ) / Ministerstwo Zdrowia',
+        `Waznosc certyfikatu: ${item.waznosc || 'Zgodnie z przepisami UE'}`,
+        '',
+        'Certyfikat opatrzony kwalifikowana pieczecia cyfrowa Rzeczypospolitej Polskiej'
+      ];
+
+      const pdfGen = (typeof window !== 'undefined' && window.generateMinimalPdf) ? window.generateMinimalPdf : (typeof generateMinimalPdf === 'function' ? generateMinimalPdf : null);
+      const dlBlob = (typeof window !== 'undefined' && window.downloadBlob) ? window.downloadBlob : (typeof downloadBlob === 'function' ? downloadBlob : null);
+
+      if (!pdfGen || !dlBlob) {
+        throw new Error('Moduł generatora PDF nie jest dostępny');
+      }
+
+      const pdf = pdfGen('UNIJNY CERTYFIKAT SZCZEPIENIA - UCC', lines, {
+        subtitle: 'RZECZPOSPOLITA POLSKA • CENTRUM e-ZDROWIA'
+      });
+
+      const filename = 'UCC_' + certId + '.pdf';
+      const success = dlBlob(filename, pdf, 'application/pdf');
+
+      if (success) {
+        if (typeof showToast === 'function') {
+          showToast('Pobrano oficjalny certyfikat szczepienia UCC w formacie PDF');
+        }
+        if (typeof MobStore !== 'undefined' && typeof MobStore.addUPO === 'function') {
+          MobStore.addUPO({
+            title: `Certyfikat UCC (${item.choroba})`,
+            source: 'Centrum e-Zdrowia (CeZ) / IKP',
+            rows: [
+              ['UVCI', uvci],
+              ['Preparat', item.preparat],
+              ['Posiadacz', data.imieNazwisko]
+            ]
+          });
+        }
+      } else {
+        if (typeof showToast === 'function') {
+          showToast('Błąd pobierania certyfikatu UCC');
+        }
+      }
+    } catch (e) {
+      console.error('Błąd podczas generowania certyfikatu UCC:', e);
+      if (typeof showToast === 'function') {
+        showToast('Wystąpił błąd podczas generowania certyfikatu UCC (PDF)');
+      }
     }
   }
 
   function saveToWallet(certId) {
-    if (typeof showToast === 'function') {
-      showToast('Dodano certyfikat szczepienia do cyfrowego Portfela (Apple / Google Wallet)');
+    try {
+      const data = getActivePersonData();
+      const personaId = (data && data.id) || 'jan';
+      const storageKey = 'mob_ucc_wallet_' + personaId + '_' + (certId || 'default');
+      const payload = {
+        certId: certId,
+        personaId: personaId,
+        imieNazwisko: data.imieNazwisko,
+        savedAt: new Date().toISOString()
+      };
+
+      try {
+        localStorage.setItem(storageKey, JSON.stringify(payload));
+      } catch (err) {
+        console.warn('Błąd localStorage przy zapisie do portfela:', err);
+      }
+      _store.set(storageKey, payload);
+
+      if (typeof showToast === 'function') {
+        showToast('Certyfikat zapisany w aplikacji (eksport do portfela systemowego niedostępny w wersji demonstracyjnej)');
+      }
+      if (typeof announceSR === 'function') {
+        announceSR('Certyfikat zapisany w pamięci aplikacji');
+      }
+    } catch (e) {
+      console.error('Błąd zapisu certyfikatu do portfela:', e);
+      if (typeof showToast === 'function') {
+        showToast('Wystąpił błąd podczas zapisywania certyfikatu w aplikacji');
+      }
     }
   }
 

@@ -303,6 +303,7 @@
     pdf += 'trailer\n<< /Size 6 /Root 1 0 R >>\nstartxref\n' + startxref + '\n%%EOF\n';
     return pdf;
   }
+  window.generateMinimalPdf = generateMinimalPdf;
 
   // --- Pobranie pliku do przeglądarki ---
   function downloadBlob(filename, content, mimeType) {
@@ -322,6 +323,7 @@
       return false;
     }
   }
+  window.downloadBlob = downloadBlob;
 
   // ==========================================================================
   // 1. TWÓJ E-PIT / KAS (URZĄD SKARBOWY)
