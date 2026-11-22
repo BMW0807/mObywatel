@@ -166,6 +166,16 @@ async function renderEvents(evs,voice){
   else if(e.t==='multi'){multi(e.opcje,sel=>agentSend(sel.join(', '),{chip:true}),true);if(e.mow)speak.push(e.mow)}
   else if(e.t==='qrflow'){qrEv=e}
   else if(e.t==='koniec'){KONIEC=VOICE}
+  else if(e.t==='modul'){
+   if(e.modul==='zus_zla'&&typeof window.openZusZlaModal==='function')window.openZusZlaModal();
+   else if(e.modul==='karta_szczepien'&&typeof window.openKartaSzczepienModal==='function')window.openKartaSzczepienModal();
+   else if(e.modul==='ucc'&&typeof window.openUccQrModal==='function')window.openUccQrModal();
+   else if(e.modul==='pit'&&typeof window.openPitSkarbowyModal==='function')window.openPitSkarbowyModal();
+   else if(e.modul==='usc'&&typeof window.openUscModal==='function')window.openUscModal();
+   else if(e.modul==='pz'&&typeof window.openPzModal==='function')window.openPzModal();
+   else if(e.modul==='hdk'&&typeof S!=='undefined'&&S.docShow)await S.docShow('hdk');
+   else if(e.modul==='osp'&&typeof S!=='undefined'&&S.docShow)await S.docShow('osp');
+  }
   else if(e.t==='confirm'){await confirmCard({icon:e.icon,title:e.title,source:e.source,rows:e.rows||[],note:e.note||'',body:e.body||'',label:e.label||'Potwierdź',pojazd:e.pojazd||null,tl:e.tl,then:()=>agentConfirm(e.id,true),onCancel:()=>agentConfirm(e.id,false)});if(voice)speak.push(e.mow||((e.title?e.title+'. ':'')+'Sprawdź dane na karcie i potwierdź.'))}
   if(VOICE&&(e.t==='qr'||e.t==='doc'||e.t==='confirm'))stageFrom(before);
  }
@@ -193,7 +203,7 @@ function stageFrom(before){
 function clearStage(){const st=$('#vstage');if(!st)return;[...st.children].forEach(n=>{if(n._ph&&n._ph.parentNode)n._ph.parentNode.replaceChild(n,n._ph);else n.remove()})}
 function pendingConfirm(){return !!$('#vstage .ui .actions')}
 function afterTurn(){if(!VOICE||CALLS)return;if(FILLER.end){FILLER.end.then(afterTurn);return}if(KONIEC){KONIEC=false;vstate('idle');setTimeout(()=>{if(VOICE&&!REC&&!SPEAKING)exitChat()},500);return}if(pendingConfirm()||(typeof PS!=='undefined'&&PS)||(typeof ZS!=='undefined'&&ZS)){vstate('wait');return}startRec()}
-function enterVoice(){if(window.GLOS===false)return;audioCtx();fillerPrep();enterChat();closeHist();VOICE=true;app.classList.add('voicing');input.blur();$('#vheard').textContent='';vstate('idle');startRec()}
+function enterVoice(){if(window.GLOS===false){if(typeof showToast==='function')showToast('Rozpoznawanie mowy niedostępne — brak klucza API');return;}audioCtx();fillerPrep();enterChat();closeHist();VOICE=true;app.classList.add('voicing');input.blur();$('#vheard').textContent='';vstate('idle');startRec()}
 function exitVoice(){VOICE=false;stopRec(true);stopSpeaking();fillerStop();clearStage();app.classList.remove('voicing');vstate('idle');requestAnimationFrame(()=>{VIS.el.scrollTop=VIS.el.scrollHeight})}
 
 /* ---------- głos: nagrywanie, rozpoznawanie, czytanie ---------- */
@@ -251,7 +261,7 @@ window.addEventListener('error',e=>glosDiag({wynik:'blad_js',err:String(e.messag
 function pickMime(){const c=['audio/webm;codecs=opus','audio/mp4','audio/webm','audio/ogg'];return window.MediaRecorder?c.find(m=>MediaRecorder.isTypeSupported&&MediaRecorder.isTypeSupported(m))||'':''}
 let REC_START=false;   // prośba o mikrofon w toku: drugie dotknięcie w tym czasie uruchamiało drugie, równoległe nagrywanie
 async function startRec(){
- if(REC||REC_START)return;
+ if(window.GLOS===false||REC||REC_START)return;
  const bar=$('.bar');stopSpeaking();fillerStop();session('play-and-record');const ctx=audioCtx();
  let stream;
  REC_START=true;
@@ -302,6 +312,7 @@ async function startRec(){
 }
 function stopRec(cancel){if(REC&&REC.mr.state!=='inactive'){REC.cancel=!!cancel;REC.mr.stop()}}
 function vmicTap(){
+ if(window.GLOS===false){if(typeof showToast==='function')showToast('Rozpoznawanie mowy niedostępne — brak klucza API');return;}
  audioCtx();
  if(REC){stopRec();return}
  if(SPEAKING){stopSpeaking();startRec();return}
@@ -309,10 +320,35 @@ function vmicTap(){
  startRec();
 }
 
+function disableMicButtons(){
+ window.GLOS=false;
+ const btns=document.querySelectorAll('#mic, .sp-mic-btn, #vmic');
+ btns.forEach(btn=>{
+  btn.disabled=true;
+  btn.classList.add('disabled');
+  btn.setAttribute('aria-disabled','true');
+  btn.setAttribute('aria-label','Rozpoznawanie mowy niedostępne — brak klucza API');
+  btn.setAttribute('title','Rozpoznawanie mowy niedostępne — brak klucza API');
+ });
+}
+
 async function initAgent(){
- if(/tryb=skrypt/.test(location.search))return;
- try{const r=await fetch('/api/health',{cache:'no-store'});const j=await r.json();AGENT=!!j.agent;window.AGENT_INFO=j}catch(e){AGENT=false}
+ try{
+  const r=await fetch('/api/health',{cache:'no-store'});
+  const j=await r.json();
+  AGENT=!!j.agent;
+  window.AGENT_INFO=j;
+  if(j.stt===false||j.tts===false){
+   disableMicButtons();
+  }else{
+   window.GLOS=true;
+  }
+ }catch(e){
+  AGENT=false;
+  disableMicButtons();
+ }
  if(typeof updateErrorBadge==='function')updateErrorBadge();
+ if(/tryb=skrypt/.test(location.search))return;
  if(!AGENT)return;
  app.dataset.agent='1';
  route=t=>agentSend(t);

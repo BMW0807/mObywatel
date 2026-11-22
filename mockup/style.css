@@ -9,7 +9,7 @@
   --scrim:rgba(10,12,18,.48);
   --ease-sheet:cubic-bezier(.32,.72,0,1); --ease-spring:cubic-bezier(.34,1.4,.64,1);
   --ease:cubic-bezier(.22,.9,.24,1);
-  --sans:-apple-system,BlinkMacSystemFont,"SF Pro Text","Inter",system-ui,sans-serif;
+  --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
   --elev-1:0 1px 2px rgba(15,25,60,.06),0 8px 22px -16px rgba(15,25,60,.28);
   --elev-2:0 12px 30px -18px rgba(15,25,60,.38);
 }
@@ -425,6 +425,25 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--red);outline-of
 .vkbd:active{background:rgba(0,0,0,.05)}
 @media (max-height:600px){.vmic{width:78px;height:78px}.vmic svg{width:32px;height:32px}.vstate{margin-bottom:12px;font-size:19px}.vkbd{margin-top:8px}}
 .phone.voicing .hmenu{z-index:28}
+
+/* Wyłączone przyciski mikrofonu (brak klucza API STT/TTS) */
+#mic:disabled, #mic.disabled,
+.sp-mic-btn:disabled, .sp-mic-btn.disabled,
+#vmic:disabled, #vmic.disabled,
+.vmic:disabled, .vmic.disabled {
+  opacity: 0.35 !important;
+  cursor: not-allowed !important;
+  filter: grayscale(1) !important;
+  pointer-events: auto !important;
+  box-shadow: none !important;
+}
+#mic:disabled:hover, #mic.disabled:hover,
+.sp-mic-btn:disabled:hover, .sp-mic-btn.disabled:hover,
+#vmic:disabled:hover, #vmic.disabled:hover,
+.vmic:disabled:hover, .vmic.disabled:hover {
+  transform: none !important;
+  background: inherit !important;
+}
 
 /* ---------- wersja 2: spokojniejszy ekran główny ---------- */
 .title{left:54px;max-width:calc(100% - 214px);font-size:21px;line-height:38px;letter-spacing:-.015em;font-weight:700;padding:3px 8px 3px 0;border-radius:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:opacity .25s,transform .4s var(--ease),background .2s}

@@ -295,6 +295,31 @@ const S={
   opcje.push({label:'Przypomnij mi',go:()=>result({title:'Przypomnienie ustawione',rows:[['O czym',t.h],['Kiedy',dPlus(3)+', 9:00']]})},{label:'Nie trzeba'});
   chips(opcje);
  },
+ async zusZla(){
+  await say('Otwieram zwolnienia lekarskie e-ZLA (L4). Możesz tu sprawdzić historię zwolnień oraz wyliczyć szacunkowy zasiłek chorobowy.');
+  if(typeof window.openZusZlaModal==='function')window.openZusZlaModal();
+ },
+ async kartaSzczepien(){
+  await say('Otwieram elektroniczną Kartę Szczepień oraz Unijny Certyfikat COVID (UCC).');
+  if(typeof window.openKartaSzczepienModal==='function')window.openKartaSzczepienModal();
+ },
+ async ucc(){
+  await say('Otwieram Unijny Certyfikat COVID (UCC) z kodem QR.');
+  if(typeof window.openUccQrModal==='function')window.openUccQrModal();
+ },
+ async pit(){
+  await say('Otwieram moduł Twój e-PIT i rozliczenia z Urzędem Skarbowym.');
+  if(typeof window.openPitSkarbowyModal==='function')window.openPitSkarbowyModal();
+ },
+ async usc(){
+  await say('Otwieram moduł Urzędu Stanu Cywilnego (odpisy aktów stanu cywilnego).');
+  if(typeof window.openUscModal==='function')window.openUscModal();
+ },
+ async pz(){
+  await say('Otwieram moduł Profilu Zaufanego (PZ).');
+  if(typeof window.openPzModal==='function')window.openPzModal();
+  else S.docShow('pz');
+ },
  async fallback(){await say('Tego w tej wersji jeszcze nie załatwię. Najbliżej pasuje:');chips([{label:'Co mam do załatwienia?',go:S.todo},{label:rodz('Zgubiłam portfel','Zgubiłem portfel'),go:S.portfel},{label:'Kupuję używane auto',go:S.auto}])}
 };
 
@@ -311,7 +336,13 @@ function route(t){
  if(/pokaz.*(kdr|duzej rodziny)/.test(n))return S.docShow('kdr');
  if(/pokaz.*(krwiodaw|krew|hdk|zhdk)/.test(n))return S.docShow('hdk');
  if(/pokaz.*(straz|osp|ogniow)/.test(n))return S.docShow('osp');
- if(/pokaz.*(profil.*zaufan|zaufany|pz)/.test(n))return S.docShow('pz');
+ if(/pokaz.*(profil.*zaufan|zaufany|pz )/.test(n))return S.docShow('pz');
+ if(/zwolnieni|\bl4\b|e-?zla|\bzla\b|chorobow/.test(n))return S.zusZla();
+ if(/szczepien|szczepion|szczepk/.test(n))return S.kartaSzczepien();
+ if(/\bucc\b|covid/.test(n))return S.ucc();
+ if(/\bpit\b|e-pit|urzad.*skarbow|skarbowk/.test(n))return S.pit();
+ if(/\busc\b|stanu cywilnego|odpis.*akt|akt (urodzen|malzen|zgon)/.test(n))return S.usc();
+ if(/\bpz\b|profil.*zaufan/.test(n))return S.pz();
  if(/recept|skierowani|lekarz|ikp|pacjent|medycyn|ewus/.test(n))return S.ikp();
  if(/rejestracj|umow.*(lekarz|wizyt)|zapisz.*(lekarz|wizyt)/.test(n))return S.erejestracja();
  if(/dilo|onkolog|nowotwor|rak\b/.test(n))return S.dilo();
