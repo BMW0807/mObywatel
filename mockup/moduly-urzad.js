@@ -307,6 +307,9 @@
 
   // --- Pobranie pliku do przeglądarki ---
   function downloadBlob(filename, content, mimeType) {
+    if (typeof window !== 'undefined' && window.downloadBlob && window.downloadBlob !== downloadBlob) {
+      return window.downloadBlob(filename, content, mimeType);
+    }
     try {
       const blob = new Blob([content], { type: mimeType });
       const url = URL.createObjectURL(blob);
@@ -543,14 +546,39 @@
     }
   };
 
+  function tryFallbackCopy(text) {
+    try {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      const res = document.execCommand('copy');
+      document.body.removeChild(ta);
+      return res;
+    } catch (e) {
+      return false;
+    }
+  }
+
   window.copyPitMikrorachunek = function () {
     const data = getPitData();
     const rawNumber = data.mikrorachunek.replace(/\s+/g, '');
+    let copied = false;
     if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(rawNumber).catch(() => {});
+      navigator.clipboard.writeText(rawNumber).catch(() => {
+        tryFallbackCopy(rawNumber);
+      });
+      copied = true;
+    } else {
+      copied = tryFallbackCopy(rawNumber);
     }
     if (typeof showToast === 'function') {
       showToast(`Skopiowano numer mikrorachunku podatkowego: ${data.mikrorachunek}`);
+    }
+    if (typeof announceSR === 'function') {
+      announceSR('Skopiowano numer mikrorachunku podatkowego');
     }
   };
 
@@ -911,7 +939,7 @@
     } else if (actVal === 'stan_cywilny') {
       type = 'stan_cywilny';
       person = data.holder;
-    } else if (actVal.startsWith('urodzenie_child_') || actVal.startsWith('urodzenie_c_')) {
+    } else if (actVal.startsWith('urodzenie_') && actVal !== 'urodzenie_self') {
       type = 'urodzenie';
       const childId = actVal.replace('urodzenie_', '');
       const childObj = data.children && data.children.find(c => c.id === childId);
@@ -1002,9 +1030,154 @@
   // 3. PROFIL ZAUFANY (PZ) - PEŁNA OBSŁUGA MODALU #pzModal
   // ==========================================================================
 
+  // --- Pomocniki dla Profilu Zaufanego (PZ) ---
+  function getPzDefaultValidDate(pId) {
+    const o = curOS();
+    const pzDoc = (o && o.docs && o.docs.find(d => d.id === 'pz')) ||
+      (typeof DOCS !== 'undefined' && DOCS.find(d => d.id === 'pz'));
+    if (pzDoc) {
+      const fVal = (pzDoc.f && pzDoc.f.find(x => x[0] === 'Ważny do')) ||
+                   (pzDoc.rows && pzDoc.rows.find(x => x[0] === 'Data ważności'));
+      if (fVal && fVal[1]) {
+        const m = fVal[1].match(/\d{2}\.\d{2}\.\d{4}/);
+        if (m) return m[0];
+      }
+    }
+    const defaults = {
+      jan: '12.05.2028',
+      marta: '14.07.2028',
+      ewa: '03.02.2028',
+      kacper: '21.03.2028'
+    };
+    return defaults[pId] || '14.10.2028';
+  }
+
+  function getPzValidUntil(pId) {
+    try {
+      const stored = localStorage.getItem('mob_pz_valid_until_' + pId);
+      if (stored) return stored;
+      if (typeof MobStore !== 'undefined' && MobStore.get) {
+        const ms = MobStore.get('pz_valid_until');
+        if (ms) return ms;
+      }
+    } catch (e) {}
+    return getPzDefaultValidDate(pId);
+  }
+
+  const DEFAULT_PZ_HISTORY = [
+    { title: 'Krajowa Administracja Skarbowa (Twój e-PIT)', time: 'Dzisiaj, 09:14', status: '✓', ok: true },
+    { title: 'Platforma Usług Elektronicznych ZUS (PUE ZUS)', time: 'Wczoraj, 14:22', ok: false },
+    { title: 'Elektroniczna Skrzynka Podawcza ePUAP', time: '12.11.2026, 11:05', ok: false }
+  ];
+
+  function getPzHistory(pId) {
+    try {
+      const stored = localStorage.getItem('mob_pz_history_' + pId);
+      if (stored) return JSON.parse(stored);
+      if (typeof MobStore !== 'undefined' && MobStore.get) {
+        const ms = MobStore.get('pz_history');
+        if (ms) return ms;
+      }
+    } catch (e) {}
+    return DEFAULT_PZ_HISTORY.slice();
+  }
+
+  function addPzHistoryEntry(pId, entry) {
+    const hist = getPzHistory(pId);
+    hist.unshift(entry);
+    try {
+      localStorage.setItem('mob_pz_history_' + pId, JSON.stringify(hist));
+      if (typeof MobStore !== 'undefined' && MobStore.set) {
+        MobStore.set('pz_history', hist);
+      }
+    } catch (e) {}
+  }
+
+  const DEFAULT_AUTH_METHOD = 'Aplikacja mObywatel (Powiadomienia PUSH)';
+
+  function getPzAuthMethod(pId) {
+    try {
+      const stored = localStorage.getItem('mob_pz_auth_method_' + pId);
+      if (stored) return stored;
+      if (typeof MobStore !== 'undefined' && MobStore.get) {
+        const ms = MobStore.get('pz_auth_method');
+        if (ms) return ms;
+      }
+    } catch (e) {}
+    return DEFAULT_AUTH_METHOD;
+  }
+
+  function getPzContactData(pId) {
+    const o = curOS() || { imie: 'Jan', nazwisko: 'Wiśniewski' };
+    const fullName = `${o.imie} ${o.nazwisko}`;
+    let defaultEmail = `${fullName.toLowerCase().replace(/\s+/g, '.')}@obywatel.gov.pl`;
+    let defaultPhone = '+48 ••• •• 12';
+
+    const pzDoc = (o && o.docs && o.docs.find(d => d.id === 'pz')) ||
+      (typeof DOCS !== 'undefined' && DOCS.find(d => d.id === 'pz'));
+    if (pzDoc && pzDoc.rows) {
+      const rEmail = pzDoc.rows.find(r => r[0] === 'Powiązany e-mail');
+      const rPhone = pzDoc.rows.find(r => r[0] === 'Powiązany telefon');
+      if (rEmail && rEmail[1]) defaultEmail = rEmail[1];
+      if (rPhone && rPhone[1]) defaultPhone = rPhone[1];
+    }
+
+    try {
+      const stored = localStorage.getItem('mob_pz_contact_' + pId);
+      if (stored) return JSON.parse(stored);
+      if (typeof MobStore !== 'undefined' && MobStore.get) {
+        const ms = MobStore.get('pz_contact');
+        if (ms) return ms;
+      }
+    } catch (e) {}
+    return { email: defaultEmail, phone: defaultPhone };
+  }
+
+  function syncPzDocWithStoredState() {
+    const pId = getPersonaKey();
+    const validUntil = getPzValidUntil(pId);
+    const authMethod = getPzAuthMethod(pId);
+    const contact = getPzContactData(pId);
+    const newYear = (validUntil.match(/\d{4}$/) || ['2029'])[0];
+
+    const updateDoc = doc => {
+      if (!doc || doc.id !== 'pz') return;
+      doc.sub = `Węzeł Krajowy • Ważny do ${newYear}`;
+      doc.line = `PZ aktywny, ważny do ${validUntil}`;
+      if (Array.isArray(doc.f)) {
+        const fDate = doc.f.find(x => x[0] === 'Ważny do');
+        if (fDate) fDate[1] = validUntil;
+        const fVer = doc.f.find(x => x[0] === 'Weryfikacja');
+        if (fVer && authMethod.includes('SMS')) fVer[1] = 'SMS / login.gov.pl';
+        else if (fVer && authMethod.includes('PUSH')) fVer[1] = 'mObywatel PUSH';
+        const fPhone = doc.f.find(x => x[0].startsWith('Powiązany tel'));
+        if (fPhone) fPhone[1] = contact.phone;
+      }
+      if (Array.isArray(doc.rows)) {
+        const rDate = doc.rows.find(x => x[0] === 'Data ważności');
+        if (rDate) rDate[1] = `${validUntil} (odnowienie online)`;
+        const rEmail = doc.rows.find(x => x[0] === 'Powiązany e-mail');
+        if (rEmail) rEmail[1] = contact.email;
+        const rPhone = doc.rows.find(x => x[0] === 'Powiązany telefon');
+        if (rPhone) rPhone[1] = contact.phone;
+      }
+    };
+
+    if (typeof DOCS !== 'undefined' && Array.isArray(DOCS)) DOCS.forEach(updateDoc);
+    const o = curOS();
+    if (o && Array.isArray(o.docs)) o.docs.forEach(updateDoc);
+  }
+
   function renderPzModalContent() {
     const container = document.getElementById('pzContent');
     if (!container) return;
+
+    const pId = getPersonaKey();
+    const validUntil = getPzValidUntil(pId);
+    const authMethod = getPzAuthMethod(pId);
+    const contact = getPzContactData(pId);
+    const history = getPzHistory(pId);
+    const isPush = authMethod.includes('PUSH') || authMethod.includes('mObywatel');
 
     const o = curOS() || { imie: 'Jan', nazwisko: 'Wiśniewski', moje: { pesel: '83051203455' } };
     const fullName = `${o.imie} ${o.nazwisko}`;
@@ -1014,7 +1187,7 @@
       <div class="pz-hero-card">
         <div class="pzc-icon">🛡️</div>
         <span class="pzc-title">Profil Zaufany jest AKTYWNY</span>
-        <div class="pzc-status">✓ Ważny do: 14.10.2028 (Certyfikat kwalifikowany Węzła Krajowego)</div>
+        <div class="pzc-status">✓ Ważny do: <b>${validUntil}</b> (Certyfikat kwalifikowany Węzła Krajowego)</div>
       </div>
 
       <div class="pz-details-grid">
@@ -1026,34 +1199,53 @@
           <span style="color:var(--ink2)">Identyfikator (PESEL):</span>
           <b style="font-family:monospace">${pesel}</b>
         </div>
-        <div class="pzd-row">
+        <div class="pzd-row" style="align-items:center">
           <span style="color:var(--ink2)">Metoda autoryzacji:</span>
-          <b style="color:#059669">Aplikacja mObywatel (Powiadomienia PUSH)</b>
+          <div style="display:flex;align-items:center;gap:6px">
+            <b style="color:${isPush ? '#059669' : '#2563eb'}">${authMethod}</b>
+            <button type="button" class="btn secondary" style="padding:2px 8px;font-size:10px" onclick="togglePzAuthMethod()" aria-label="Zmień metodę autoryzacji PZ">Przełącz</button>
+          </div>
         </div>
         <div class="pzd-row">
           <span style="color:var(--ink2)">Połączony adres e-mail:</span>
-          <b>${fullName.toLowerCase().replace(/\s+/g, '.')}@obywatel.gov.pl</b>
+          <b id="pzDisplayEmail">${contact.email}</b>
         </div>
         <div class="pzd-row">
           <span style="color:var(--ink2)">Powiązany numer telefonu:</span>
-          <b>+48 ••• •• 12</b>
+          <b id="pzDisplayPhone">${contact.phone}</b>
+        </div>
+      </div>
+
+      <div style="margin:-4px 0 12px;display:flex;justify-content:flex-end">
+        <button type="button" class="btn secondary" style="font-size:11px;padding:4px 10px" onclick="changePzContactData()">
+          ✏️ Zmień powiązane dane (e-mail / tel)
+        </button>
+      </div>
+
+      <div id="pzContactEditBox" style="display:none;background:#f8fafc;border:1px solid #cbd5e1;border-radius:10px;padding:10px;margin-bottom:12px">
+        <div style="font-weight:700;font-size:12px;margin-bottom:6px;color:var(--ink)">Zmień powiązane dane kontaktowe Profilu Zaufanego:</div>
+        <div class="gfw-field" style="margin-bottom:6px">
+          <label style="font-size:11px;color:var(--ink2);display:block;margin-bottom:2px" for="pzEmailInput">Adres e-mail:</label>
+          <input type="email" id="pzEmailInput" class="cf-input" value="${contact.email}" style="width:100%;font-size:12px;padding:6px 8px">
+        </div>
+        <div class="gfw-field" style="margin-bottom:8px">
+          <label style="font-size:11px;color:var(--ink2);display:block;margin-bottom:2px" for="pzPhoneInput">Numer telefonu:</label>
+          <input type="tel" id="pzPhoneInput" class="cf-input" value="${contact.phone}" style="width:100%;font-size:12px;padding:6px 8px">
+        </div>
+        <div style="display:flex;gap:6px">
+          <button type="button" class="btn primary" style="flex:1;font-size:11px;padding:6px" onclick="savePzContactFromInputs()">Zapisz dane</button>
+          <button type="button" class="btn secondary" style="flex:none;font-size:11px;padding:6px 10px" onclick="changePzContactData()">Anuluj</button>
         </div>
       </div>
 
       <h4 style="font-size:12px;color:var(--ink);margin:0 0 6px 2px;font-weight:700">Ostatnie autoryzacje przez login.gov.pl:</h4>
       <div style="background:#fff;border:1px solid var(--hair);border-radius:10px;padding:8px 12px;font-size:11px;margin-bottom:14px;display:flex;flex-direction:column;gap:6px">
-        <div style="display:flex;justify-content:space-between">
-          <span>Krajowa Administracja Skarbowa (Twój e-PIT)</span>
-          <b style="color:#059669">Dzisiaj, 09:14 ✓</b>
-        </div>
-        <div style="display:flex;justify-content:space-between">
-          <span>Platforma Usług Elektronicznych ZUS (PUE ZUS)</span>
-          <span style="color:var(--ink2)">Wczoraj, 14:22</span>
-        </div>
-        <div style="display:flex;justify-content:space-between">
-          <span>Elektroniczna Skrzynka Podawcza ePUAP</span>
-          <span style="color:var(--ink2)">12.11.2026, 11:05</span>
-        </div>
+        ${history.slice(0, 4).map(h => `
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+            <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${h.title}</span>
+            <b style="color:${h.ok ? '#059669' : 'var(--ink2)'};flex:none">${h.time}${h.status ? ' ' + h.status : ''}</b>
+          </div>
+        `).join('')}
       </div>
 
       <div style="display:flex;gap:8px">
@@ -1090,6 +1282,7 @@
       (document.getElementById('app') || document.body).appendChild(m);
     }
 
+    syncPzDocWithStoredState();
     renderPzModalContent();
     m.classList.add('open');
     if (typeof openDialogFocus === 'function') openDialogFocus('pzModal', m, '.tx-close');
@@ -1106,32 +1299,229 @@
 
   window.downloadPzCert = function () {
     const o = curOS() || { imie: 'Jan', nazwisko: 'Wiśniewski', moje: { pesel: '83051203455' } };
+    const pId = getPersonaKey();
+    const validUntil = getPzValidUntil(pId);
+    const authMethod = getPzAuthMethod(pId);
+    const contact = getPzContactData(pId);
     const fullName = `${o.imie} ${o.nazwisko}`;
     const lines = [
       `Certyfikat Identyfikacyjny Profilu Zaufanego (PZ)`,
       `Wlasciciel: ${fullName}`,
       `PESEL: ${(o.moje && o.moje.pesel) || '83051203455'}`,
       `Wydawca: Minister Cyfryzacji / Wezel Krajowy login.gov.pl`,
-      `Data waznosci: 14.10.2028`,
-      `Metoda uwierzytelniania: mObywatel Push 2FA`,
+      `Data waznosci: ${validUntil}`,
+      `Metoda uwierzytelniania: ${authMethod}`,
+      `Powiazany adres e-mail: ${contact.email}`,
+      `Powiazany numer telefonu: ${contact.phone}`,
       `Odcisk cyfrowy klucza publicznego SHA-256:`,
       `  98:A1:4F:22:90:BC:7E:11:09:44:81:AA:BB:12:DE:09:55:18:22:99`
     ];
-    const pdf = generateMinimalPdf('CERTYFIKAT PROFILU ZAUFANEGO (PZ)', lines, { subtitle: 'RZECZPOSPOLITA POLSKA • WEZEL KRAJOWY' });
-    downloadBlob('Certyfikat_Profil_Zaufany.pdf', pdf, 'application/pdf');
+    const pdfGen = (typeof window !== 'undefined' && window.generateMinimalPdf) || (typeof generateMinimalPdf === 'function' ? generateMinimalPdf : null);
+    if (pdfGen) {
+      const pdf = pdfGen('CERTYFIKAT PROFILU ZAUFANEGO (PZ)', lines, { subtitle: 'RZECZPOSPOLITA POLSKA • WEZEL KRAJOWY' });
+      downloadBlob('Certyfikat_Profil_Zaufany.pdf', pdf, 'application/pdf');
+    }
     if (typeof showToast === 'function') {
       showToast('Pobrano Certyfikat Profilu Zaufanego (PDF)');
     }
   };
 
   window.renewPz = function () {
+    const pId = getPersonaKey();
+    const curValid = getPzValidUntil(pId);
+    let newDateStr = '';
+
+    const m = curValid.match(/^(\d{2})\.(\d{2})\.(\d{4})$/);
+    if (m) {
+      const d = m[1];
+      const mo = m[2];
+      const yr = parseInt(m[3], 10) + 3;
+      newDateStr = `${d}.${mo}.${yr}`;
+    } else {
+      const nowD = new Date();
+      const d = String(nowD.getDate()).padStart(2, '0');
+      const mo = String(nowD.getMonth() + 1).padStart(2, '0');
+      const yr = nowD.getFullYear() + 3;
+      newDateStr = `${d}.${mo}.${yr}`;
+    }
+
+    try {
+      localStorage.setItem('mob_pz_valid_until_' + pId, newDateStr);
+      if (typeof MobStore !== 'undefined' && MobStore.set) {
+        MobStore.set('pz_valid_until', newDateStr);
+      }
+    } catch (e) {}
+
+    // Aktualizacja karty w DOCS i OS.docs
+    syncPzDocWithStoredState();
+
+    if (typeof renderStack === 'function') renderStack();
+    if (typeof updateDashboard === 'function') updateDashboard();
+
+    const det = document.getElementById('detail');
+    if (det && det.classList.contains('on')) {
+      const pzDoc = (typeof DOCS !== 'undefined' && DOCS.find(x => x.id === 'pz')) ||
+        (typeof curOS === 'function' && curOS() && curOS().docs && curOS().docs.find(x => x.id === 'pz'));
+      if (pzDoc && pzDoc.rows) {
+        const rowsEl = det.querySelector('.rows');
+        if (rowsEl && typeof rowsH === 'function') {
+          rowsEl.innerHTML = rowsH(pzDoc.rows);
+        }
+      }
+    }
+
+    const timeStr = typeof now === 'function' ? now() : new Date().toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' });
+    addPzHistoryEntry(pId, {
+      title: 'Przedłużenie ważności certyfikatu Profilu Zaufanego o 3 lata',
+      time: `Dzisiaj, ${timeStr}`,
+      status: '✓',
+      ok: true
+    });
+
+    if (typeof MobStore !== 'undefined' && MobStore.addUPO) {
+      const o = curOS();
+      MobStore.addUPO({
+        title: 'Przedłużenie ważności Profilu Zaufanego (PZ)',
+        source: 'Ministerstwo Cyfryzacji / Węzeł Krajowy login.gov.pl',
+        rows: [
+          ['Dokument', 'Profil Zaufany (PZ)'],
+          ['Okres ważności', `Przedłużono o 3 lata (do ${newDateStr})`],
+          ['Wnioskodawca', `${(o && o.imie) || 'Jan'} ${(o && o.nazwisko) || 'Wiśniewski'}`],
+          ['Status', 'Certyfikat zaktualizowany w Węźle Krajowym']
+        ]
+      });
+    }
+
+    renderPzModalContent();
+
     if (typeof showToast === 'function') {
-      showToast('Profil Zaufany został pomyślnie przedłużony o kolejne 3 lata.');
+      showToast(`Profil Zaufany przedłużony o 3 lata! Ważny do: ${newDateStr}`);
+    }
+    if (typeof announceSR === 'function') {
+      announceSR(`Profil Zaufany przedłużony o 3 lata, ważny do ${newDateStr}`);
     }
   };
 
+  window.togglePzAuthMethod = function () {
+    const pId = getPersonaKey();
+    const current = getPzAuthMethod(pId);
+    const isCurrentlyPush = current.includes('PUSH') || current.includes('mObywatel');
+    const newMethod = isCurrentlyPush
+      ? 'Kody SMS (Węzeł Krajowy login.gov.pl)'
+      : 'Aplikacja mObywatel (Powiadomienia PUSH)';
+
+    try {
+      localStorage.setItem('mob_pz_auth_method_' + pId, newMethod);
+      if (typeof MobStore !== 'undefined' && MobStore.set) {
+        MobStore.set('pz_auth_method', newMethod);
+      }
+    } catch (e) {}
+
+    syncPzDocWithStoredState();
+
+    const timeStr = typeof now === 'function' ? now() : new Date().toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' });
+    addPzHistoryEntry(pId, {
+      title: `Zmiana metody autoryzacji: ${isCurrentlyPush ? 'Kody SMS' : 'mObywatel PUSH'}`,
+      time: `Dzisiaj, ${timeStr}`,
+      status: '✓',
+      ok: true
+    });
+
+    renderPzModalContent();
+
+    if (typeof showToast === 'function') {
+      showToast(`Zmieniono metodę logowania na: ${isCurrentlyPush ? 'Kody SMS (login.gov.pl)' : 'Powiadomienia PUSH w mObywatelu'}`);
+    }
+    if (typeof announceSR === 'function') {
+      announceSR(`Zmieniono metodę autoryzacji na: ${newMethod}`);
+    }
+  };
+
+  window.savePzContactData = function (newEmail, newPhone) {
+    const pId = getPersonaKey();
+    const contact = {
+      email: (newEmail || '').trim(),
+      phone: (newPhone || '').trim()
+    };
+    try {
+      localStorage.setItem('mob_pz_contact_' + pId, JSON.stringify(contact));
+      if (typeof MobStore !== 'undefined' && MobStore.set) {
+        MobStore.set('pz_contact', contact);
+      }
+    } catch (e) {}
+
+    syncPzDocWithStoredState();
+
+    const timeStr = typeof now === 'function' ? now() : new Date().toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' });
+    addPzHistoryEntry(pId, {
+      title: 'Aktualizacja powiązanego numeru tel. i e-mail PZ',
+      time: `Dzisiaj, ${timeStr}`,
+      status: '✓',
+      ok: true
+    });
+
+    renderPzModalContent();
+
+    if (typeof showToast === 'function') {
+      showToast('Zaktualizowano dane kontaktowe Profilu Zaufanego.');
+    }
+    if (typeof announceSR === 'function') {
+      announceSR('Zaktualizowano dane kontaktowe Profilu Zaufanego');
+    }
+  };
+
+  window.changePzContactData = function (emailParam, phoneParam) {
+    const pId = getPersonaKey();
+    if (typeof emailParam === 'string' && typeof phoneParam === 'string') {
+      window.savePzContactData(emailParam, phoneParam);
+      return;
+    }
+    const editBox = document.getElementById('pzContactEditBox');
+    if (editBox) {
+      const isHidden = editBox.style.display === 'none';
+      editBox.style.display = isHidden ? 'block' : 'none';
+      if (isHidden) {
+        const inp = document.getElementById('pzEmailInput');
+        if (inp) inp.focus();
+      }
+    } else {
+      const current = getPzContactData(pId);
+      const email = window.prompt ? window.prompt('Wprowadź nowy adres e-mail powiązany z PZ:', current.email) : null;
+      if (email !== null && email.trim() !== '') {
+        const phone = window.prompt ? window.prompt('Wprowadź nowy numer telefonu powiązany z PZ:', current.phone) : current.phone;
+        window.savePzContactData(email, phone || current.phone);
+      }
+    }
+  };
+
+  window.savePzContactFromInputs = function () {
+    const emailInp = document.getElementById('pzEmailInput');
+    const phoneInp = document.getElementById('pzPhoneInput');
+    const pId = getPersonaKey();
+    const current = getPzContactData(pId);
+    const email = emailInp ? emailInp.value.trim() : current.email;
+    const phone = phoneInp ? phoneInp.value.trim() : current.phone;
+    window.savePzContactData(email, phone);
+  };
+
+  // Eksport funkcji PZ na window dla wygody i integracji
+  window.renderPzModalContent = renderPzModalContent;
+  window.syncPzDocWithStoredState = syncPzDocWithStoredState;
+  window.getPzValidUntil = getPzValidUntil;
+  window.getPzAuthMethod = getPzAuthMethod;
+  window.getPzContactData = getPzContactData;
+
+  // Inicjalna synchronizacja stanu PZ
+  try {
+    syncPzDocWithStoredState();
+  } catch (e) {}
+
   // --- Automatyczna inicjalizacja po załadowaniu DOM ---
   function initModulyUrzad() {
+    try {
+      syncPzDocWithStoredState();
+    } catch (e) {}
+
     // Sprawdzenie i przygotowanie modalów w DOM
     const pitModal = document.getElementById('pitSkarbowyModal');
     if (pitModal && !document.getElementById('pitContent')) {

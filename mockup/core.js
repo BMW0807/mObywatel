@@ -146,6 +146,149 @@ function qrSVG(seed=7){
 }
 function rowsH(rows){return rows.map(([k,v])=>{const kl=(k||'').length,vl=(v||'').length;const s=kl>18||vl>22||(kl+vl>34);return `<div class="row${s?' row-stack':''}"><span>${k}</span><b>${v}</b></div>`}).join('')}
 function closeDoc(){const det=$('#detail');if(!det||!det.classList.contains('on'))return;det.classList.remove('on');if(typeof restoreDialogFocus==='function')restoreDialogFocus('detail')}
+/* ---------- Pomocniki dla kart HDK i OSP ---------- */
+function showHdkDonationDetails(d){
+ const box=$('#qrbox');if(!box)return;
+ box.innerHTML=`<div class="ui" style="background:#fff;border-radius:12px;padding:12px;border:1px solid var(--hair);margin-top:6px">
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+   <div style="width:36px;height:36px;border-radius:18px;background:#ffe4e6;color:#e11d48;display:flex;align-items:center;justify-content:center;font-size:18px">🩸</div>
+   <div><b style="font-size:13px;color:var(--ink)">Szczegóły donacji krwiodawcy</b><div style="font-size:11px;color:var(--ink2)">Regionalne Centrum Krwiodawstwa i Krwiolecznictwa</div></div>
+  </div>
+  <div class="rows" style="padding-top:4px">${rowsH(d.rows)}</div>
+  <div style="margin-top:10px;padding:8px 10px;background:#fff1f2;border:1px solid #fecdd3;border-radius:8px;font-size:11px">
+   <b style="color:#9f1239">Historia ostatnich donacji (krew pełna 450 ml):</b>
+   <div style="display:flex;justify-content:space-between;margin-top:4px;color:var(--ink)"><span>14.10.2026 • 450 ml (RCKiK)</span><b style="color:#059669">Oddana ✓</b></div>
+   <div style="display:flex;justify-content:space-between;margin-top:2px;color:var(--ink2)"><span>10.06.2026 • 450 ml (Oddział Terenowy)</span><span>Oddana ✓</span></div>
+   <div style="display:flex;justify-content:space-between;margin-top:2px;color:var(--ink2)"><span>18.02.2026 • 450 ml (Akcja Mobilna)</span><span>Oddana ✓</span></div>
+  </div>
+ </div>`;
+ if(typeof announceSR==='function')announceSR('Wyświetlono szczegółowe dane donacji krwiodawcy');
+}
+window.showHdkDonationDetails=showHdkDonationDetails;
+
+function downloadHdkCert(){
+ const o=(typeof curOS==='function'?curOS():null)||(typeof OS!=='undefined'?OS:{imie:'Jan',nazwisko:'Wiśniewski',moje:{pesel:'83051203455'}});
+ const d=(o.docs&&o.docs.find(x=>x.id==='hdk'))||(typeof DOCS!=='undefined'&&DOCS.find(x=>x.id==='hdk'))||{};
+ const getF=k=>((d.rows||[]).find(r=>(r[0]||'').toLowerCase().includes(k.toLowerCase()))||[])[1]||'—';
+ const lines=[
+  'ZASWIADCZENIE O ODDAWANIU KRWI I TYTULE HONOROWEGO DAWCY KRWI',
+  'Wydane na podstawie ustawy z dnia 22 sierpnia 1997 r. o publicznej sluzbie krwi',
+  '',
+  `Dawca: ${o.imie} ${o.nazwisko}`,
+  `PESEL: ${(o.moje&&o.moje.pesel)||'83051203455'}`,
+  `Tytul: ${getF('Tytuł')}`,
+  `Grupa krwi: ${getF('Grupa')}`,
+  `Laczna objetosc oddanej krwi pelnej: ${getF('Oddan')||getF('oddano')}`,
+  `Numer legitymacji: ${getF('legitymacji')}`,
+  `Ostatnia donacja: ${getF('Ostatnia donacja')}`,
+  `Data wystawienia zaswiadczenia: ${typeof today==='function'?today():new Date().toLocaleDateString('pl-PL')}`,
+  'Organ wydajacy: Regionalne Centrum Krwiodawstwa i Krwiolecznictwa (RCKiK)',
+  '',
+  'Zaswiadczenie poswiadcza uprawnienia do ulgi podatkowej z tytulu darowizny krwi,',
+  'zwolnienia od pracy w dniu oddania krwi i dniu nastepnym oraz bezplatnych lekow.'
+ ];
+ const pdfGen=(typeof window!=='undefined'&&window.generateMinimalPdf)||(typeof generateMinimalPdf==='function'?generateMinimalPdf:null);
+ if(pdfGen){
+  const pdf=pdfGen('ZASWIADCZENIE HONOROWEGO DAWCY KRWI',lines,{subtitle:'RZECZPOSPOLITA POLSKA • MINISTERSTWO ZDROWIA • RCKiK'});
+  const dlBlob=(typeof window!=='undefined'&&window.downloadBlob)||(typeof downloadBlob==='function'?downloadBlob:null);
+  if(dlBlob){
+   dlBlob(`Zaswiadczenie_HDK_${o.nazwisko}.pdf`,pdf,'application/pdf');
+  }
+ }else if(typeof openOfficialCertificate==='function'){
+  openOfficialCertificate('hdk');
+ }
+ if(typeof showToast==='function')showToast('Pobrano oficjalne zaświadczenie dawcy krwi (PDF)');
+}
+window.downloadHdkCert=downloadHdkCert;
+
+function exportHdkDonationCalendar(d){
+ const rows=[...(d.f||[]),...(d.rows||[])];
+ const donRow=rows.find(r=>/kolejn|nast[eę]pn|przysz/i.test(r[0])&&/\d{2}\.\d{2}\.\d{4}/.test(r[1]))
+   ||rows.find(r=>/termin|donac/i.test(r[0])&&/\d{2}\.\d{2}\.\d{4}/.test(r[1]));
+ const dateMatch=donRow?donRow[1].match(/\d{2}\.\d{2}\.\d{4}/):null;
+ const targetDate=dateMatch?dateMatch[0]:'09.12.2026';
+ if(typeof exportToCalendar==='function'){
+  exportToCalendar({
+   title:'Termin kolejnej donacji krwi (RCKiK)',
+   desc:'Możesz ponownie oddać krew pełną (450 ml) w Centrum Krwiodawstwa. Pamiętaj o nawodnieniu i lekkim posiłku!',
+   date:targetDate,
+   daysBefore:2
+  });
+ }
+ if(typeof showToast==='function')showToast(`Zapisano termin kolejnej donacji (${targetDate}) w kalendarzu (.ics)`);
+}
+window.exportHdkDonationCalendar=exportHdkDonationCalendar;
+
+function showOspServiceDetails(d){
+ const box=$('#qrbox');if(!box)return;
+ box.innerHTML=`<div class="ui" style="background:#fff;border-radius:12px;padding:12px;border:1px solid var(--hair);margin-top:6px">
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+   <div style="width:36px;height:36px;border-radius:18px;background:#fef3c7;color:#b45309;display:flex;align-items:center;justify-content:center;font-size:18px">🚒</div>
+   <div><b style="font-size:13px;color:var(--ink)">Szczegóły służby ratowniczej OSP</b><div style="font-size:11px;color:var(--ink2)">Związek Ochotniczych Straży Pożarnych RP (KSRG)</div></div>
+  </div>
+  <div class="rows" style="padding-top:4px">${rowsH(d.rows)}</div>
+  <div style="margin-top:10px;padding:8px 10px;background:#fffbeb;border:1px solid #fde68a;border-radius:8px;font-size:11px">
+   <b style="color:#92400e">Jednostka Operacyjno-Techniczna (JOT):</b>
+   <div style="margin-top:4px;color:var(--ink)">Kategoria JOT: <b>Kategoria I (Krajowy System Ratowniczo-Gaśniczy)</b></div>
+   <div style="color:var(--ink2);margin-top:2px">Uprawnienia: Działania gaśnicze, ratownictwo techniczne, KPP</div>
+  </div>
+ </div>`;
+ if(typeof announceSR==='function')announceSR('Wyświetlono szczegółowe dane służby OSP');
+}
+window.showOspServiceDetails=showOspServiceDetails;
+
+function downloadOspCert(){
+ const o=(typeof curOS==='function'?curOS():null)||(typeof OS!=='undefined'?OS:{imie:'Jan',nazwisko:'Wiśniewski',moje:{pesel:'83051203455'}});
+ const d=(o.docs&&o.docs.find(x=>x.id==='osp'))||(typeof DOCS!=='undefined'&&DOCS.find(x=>x.id==='osp'))||{};
+ const getF=k=>((d.rows||[]).find(r=>(r[0]||'').toLowerCase().includes(k.toLowerCase()))||[])[1]||'—';
+ const lines=[
+  'OFICJALNE ZASWIADCZENIE CZLONKA OCHOTNICZEJ STRAZY POZARNEJ',
+  'Wydane przez Zwiazek Ochotniczych Strazy Pozarnych Rzeczypospolitej Polskiej',
+  '',
+  `Strazak-ratownik: ${o.imie} ${o.nazwisko}`,
+  `PESEL: ${(o.moje&&o.moje.pesel)||'83051203455'}`,
+  `Stopien sluzbowy: ${getF('Stopień')}`,
+  `Jednostka OSP: ${getF('Jednostka')}`,
+  `Numer legitymacji: ${getF('legitymacji')}`,
+  `Badania bojowe: ${getF('Badania')}`,
+  `Uprawnienia i certyfikaty: ${getF('Certyfikaty')}`,
+  `Data wystawienia: ${typeof today==='function'?today():new Date().toLocaleDateString('pl-PL')}`,
+  'Organ wydajacy: Zarzad Oddzialu Powiatowego ZOSP RP',
+  '',
+  'Dokument potwierdza status czlonka czynnego OSP uprawnionego do udzialu',
+  'w dzialaniach ratowniczo-gasniczych oraz w Krajowym Systemie Ratowniczo-Gasniczym (KSRG).'
+ ];
+ const pdfGen=(typeof window!=='undefined'&&window.generateMinimalPdf)||(typeof generateMinimalPdf==='function'?generateMinimalPdf:null);
+ if(pdfGen){
+  const pdf=pdfGen('LEGITYMACJA STRAZAKA OSP',lines,{subtitle:'RZECZPOSPOLITA POLSKA • ZOSP RP • KSRG'});
+  const dlBlob=(typeof window!=='undefined'&&window.downloadBlob)||(typeof downloadBlob==='function'?downloadBlob:null);
+  if(dlBlob){
+   dlBlob(`Legitymacja_OSP_${o.nazwisko}.pdf`,pdf,'application/pdf');
+  }
+ }else if(typeof openOfficialCertificate==='function'){
+  openOfficialCertificate('osp');
+ }
+ if(typeof showToast==='function')showToast('Pobrano oficjalną legitymację OSP (PDF)');
+}
+window.downloadOspCert=downloadOspCert;
+
+function exportOspExamCalendar(d){
+ const rows=[...(d.f||[]),...(d.rows||[])];
+ const badRow=rows.find(r=>/badani/i.test(r[0])&&/\d{2}\.\d{2}\.\d{4}/.test(r[1]));
+ const dateMatch=badRow?badRow[1].match(/\d{2}\.\d{2}\.\d{4}/):null;
+ const targetDate=dateMatch?dateMatch[0]:'14.04.2027';
+ if(typeof exportToCalendar==='function'){
+  exportToCalendar({
+   title:'Koniec ważności badań bojowych OSP',
+   desc:'Upływa termin badań lekarskich do udziału w działaniach ratowniczo-gaśniczych OSP. Umów wizytę u lekarza medycyny pracy.',
+   date:targetDate,
+   daysBefore:30
+  });
+ }
+ if(typeof showToast==='function')showToast(`Zapisano termin ważności badań bojowych OSP (${targetDate}) w kalendarzu (.ics)`);
+}
+window.exportOspExamCalendar=exportOspExamCalendar;
+
 function openDoc(id){
  const d=DOCS.find(x=>x.id===id),det=$('#detail');
  if(!d||!det)return;
@@ -162,18 +305,12 @@ function openDoc(id){
   q=[['scan','Poświadcz za firmę','firma_poswiadcz'],['shield','Podpisz e-dowodem','firma_podpis'],['doc','Odpis CEIDG (PDF)','cert_ceidg'],['clock','Biała Lista VAT','firma_vat'],['dots','Zapytaj asystenta','ask']];
  }else if(id==='pj'){
   q=[['scan','Potwierdź dane','qr'],['clock','Punkty CEPiK','mandaty'],['doc','Szczegóły','data'],['doc','Zaświadczenie PDF','cert'],['dots','Zapytaj asystenta','ask']];
-  }else if(id==='hdk'){
-   q=[['scan','Kod dawcy QR','qr'],['doc','Szczegóły donacji','data'],['clock','Termin donacji','cal'],['shield','Uprawnienia dawcy','data'],['dots','Zapytaj asystenta','ask']];
-  }else if(id==='osp'){
-   q=[['scan','Potwierdź dane OSP','qr'],['doc','Szczegóły służby','data'],['clock','Badania bojowe','cal'],['shield','Certyfikaty KPP','data'],['dots','Zapytaj asystenta','ask']];
-  }else if(id==='pz'){
-   q=[['scan','Podpisz zaufanym','qr'],['doc','Szczegóły certyfikatu','data'],['shield','Status PZ','data'],['doc','Zaświadczenie PDF','cert'],['dots','Zapytaj asystenta','ask']];
-  }else if(id==='hdk'){
-   q=[['scan','Kod dawcy QR','qr'],['doc','Szczegóły donacji','data'],['clock','Termin donacji','cal'],['shield','Uprawnienia dawcy','data'],['dots','Zapytaj asystenta','ask']];
-  }else if(id==='osp'){
-   q=[['scan','Potwierdź tożsamość OSP','qr'],['doc','Szczegóły służby','data'],['clock','Badania bojowe','cal'],['shield','Certyfikaty KPP','data'],['dots','Zapytaj asystenta','ask']];
-  }else if(id==='pz'){
-   q=[['scan','Podpisz zaufanym','qr'],['doc','Szczegóły certyfikatu','data'],['shield','Status PZ','data'],['doc','Zaświadczenie PDF','cert'],['dots','Zapytaj asystenta','ask']];
+ }else if(id==='hdk'){
+  q=[['scan','Kod dawcy QR','qr'],['doc','Szczegóły donacji','hdk_donacje'],['clock','Termin donacji','hdk_termin'],['doc','Zaświadczenie PDF','hdk_cert'],['dots','Zapytaj asystenta','ask']];
+ }else if(id==='osp'){
+  q=[['scan','Potwierdź dane OSP','qr'],['doc','Szczegóły służby','osp_sluzba'],['clock','Badania bojowe','osp_badania'],['doc','Zaświadczenie PDF','osp_cert'],['dots','Zapytaj asystenta','ask']];
+ }else if(id==='pz'){
+  q=[['shield','Profil Zaufany (PZ)','pz_modal'],['doc','Pobierz certyfikat PDF','pz_cert'],['clock','Przedłuż ważność PZ','pz_renew'],['scan','Podpisz podpisem zaufanym','pz_podpis'],['dots','Zapytaj asystenta','ask']];
  }else{
   q=[['scan','Potwierdź dane','qr'],['doc','Szczegóły','data'],['clock','Kalendarz','cal'],['doc','Zaświadczenie PDF','cert'],['dots','Zapytaj asystenta','ask']];
  }
@@ -196,10 +333,19 @@ function openDoc(id){
   if(a==='ikp_dilo'){openDiloModal();return}
   if(a==='cert_nfz'){openOfficialCertificate('nfz');return}
   if(a==='firma_poswiadcz'){openFirmaPoswiadczModal();return}
-  if(a==='firma_podpis'){openFirmaPodpisModal();return}
+  if(a==='firma_podpis'||a==='pz_podpis'){if(typeof openFirmaPodpisModal==='function')openFirmaPodpisModal();else qrFlow({doc:id});return}
   if(a==='cert_ceidg'){openOfficialCertificate('ceidg');return}
   if(a==='firma_vat'){closeDoc();startTopic('Sprawdź status firmy na Białej Liście VAT');return}
-  if(a==='cert'){openOfficialCertificate(id==='dowod'?'dowod':(id==='auto'?'pojazd':(id==='pj'?'punkty':'dowod')));return}
+  if(a==='pz_modal'){if(typeof window.openPzModal==='function')window.openPzModal();else if(typeof openPzModal==='function')openPzModal();return}
+  if(a==='pz_cert'){if(typeof window.downloadPzCert==='function')window.downloadPzCert();else if(typeof downloadPzCert==='function')downloadPzCert();return}
+  if(a==='pz_renew'){if(typeof window.renewPz==='function')window.renewPz();else if(typeof renewPz==='function')renewPz();return}
+  if(a==='hdk_donacje'||(id==='hdk'&&a==='data')){showHdkDonationDetails(d);return}
+  if(a==='hdk_cert'||(id==='hdk'&&a==='cert')){downloadHdkCert();return}
+  if(a==='hdk_termin'||(id==='hdk'&&a==='cal')){exportHdkDonationCalendar(d);return}
+  if(a==='osp_sluzba'||(id==='osp'&&a==='data')){showOspServiceDetails(d);return}
+  if(a==='osp_cert'||(id==='osp'&&a==='cert')){downloadOspCert();return}
+  if(a==='osp_badania'||(id==='osp'&&a==='cal')){exportOspExamCalendar(d);return}
+  if(a==='cert'){openOfficialCertificate(id==='dowod'?'dowod':(id==='auto'?'pojazd':(id==='pj'?'punkty':(id==='hdk'?'hdk':(id==='osp'?'osp':'dowod')))));return}
   if(a==='cal'){
     // daty z karty tej osoby (wcześniej na sztywno 20.07.2026 i 14.05.2031 dla wszystkich)
     const dataZ=re=>{const x=[...(d.f||[]),...(d.rows||[])].find(r=>re.test(r[0])&&/\d{2}\.\d{2}\.\d{4}/.test(r[1]));return x?x[1].match(/\d{2}\.\d{2}\.\d{4}/)[0]:null};

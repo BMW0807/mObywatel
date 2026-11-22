@@ -563,26 +563,39 @@ function closeUPO() {
 // --- 6. Pulpit Szybkich Spraw (Direct Dashboard) ---
 /* Lekkie kafelki: cały kafelek jest przyciskiem, bez dodatkowych guzików w środku. */
 function dashData() {
-  const pj = OS.docs.find(d => d.id === 'pj');
+  const pj = (typeof OS !== 'undefined' && OS.docs) ? OS.docs.find(d => d.id === 'pj') : null;
   let pkt = 0;
-  if (pj) { const f = pj.f.find(x => /Punkt/.test(x[0])); if (f) pkt = parseInt(f[1], 10) || 0; }
-  const limit = OS.id === 'kacper' ? 20 : 24;
-  const auto = OS.docs.find(d => d.id === 'auto');
-  const tax = OS.tiles.find(t => t.k === 'pay' && /podatek/i.test(t.h)) || OS.tiles.find(t => t.k === 'pay');
+  if (pj && pj.f) {
+    const f = pj.f.find(x => /Punkt/.test(x[0]));
+    if (f) pkt = parseInt(f[1], 10) || 0;
+  }
+  const limit = (typeof OS !== 'undefined' && OS.id === 'kacper') ? 20 : 24;
+  const auto = (typeof OS !== 'undefined' && OS.docs) ? OS.docs.find(d => d.id === 'auto') : null;
+  const pzDoc = (typeof OS !== 'undefined' && OS.docs) ? OS.docs.find(d => d.id === 'pz') : null;
+
+  let activeZla = null;
+  if (typeof window !== 'undefined' && window.ZDROWIE_DB && typeof OS !== 'undefined' && window.ZDROWIE_DB[OS.id]) {
+    activeZla = window.ZDROWIE_DB[OS.id].activeZla || null;
+  }
+
+  const tax = (typeof OS !== 'undefined' && OS.tiles)
+    ? (OS.tiles.find(t => t.k === 'pay' && /podatek/i.test(t.h)) || OS.tiles.find(t => t.k === 'pay'))
+    : null;
   const kwota = tax ? (tax.d.match(/[\d\s]+(,\d+)?\s*zł/) || [''])[0].trim() : '';
   const termin = tax ? (tax.d.match(/do\s+[\d.]+/) || [''])[0] : '';
-  return { pkt, limit, auto, tax, kwota, termin };
+  return { pj, pkt, limit, auto, activeZla, tax, kwota, termin, pzDoc };
 }
 
 function renderDashboard() {
   const host = document.getElementById('quickGrid');
   if (!host) return;
-  const { pkt, limit, auto, tax, kwota, termin } = dashData();
+  const { pj, pkt, limit, auto, activeZla, tax, kwota, termin, pzDoc } = dashData();
   const pesel = MobStore.isPeselBlocked();
   const unlockUntil = MobStore.get('pesel_unlock_until', 0);
   const isTempUnlocked = unlockUntil > Date.now();
   const paid = MobStore.isTaxPaid();
 
+  // Kafelek 1: PESEL (status zastrzeżenia, kliknięcie otwiera openZastrzezPeselModal() lub togglePeselDirect())
   let peselSub = pesel ? 'Zastrzeżony' : 'Niezastrzeżony';
   let peselTone = pesel ? 'ok' : 'warn';
   let peselIcon = pesel ? 'shield' : 'alert';
@@ -593,6 +606,57 @@ function renderDashboard() {
     peselIcon = 'clock';
   }
 
+  // Kafelek 2: Profil Zaufany (PZ) lub Punkty karne (dla kierowców: punkty, a kliknięcie otwiera openPointsDetail() / openPzModal())
+  let tile2Id = 'pkt';
+  let tile2Tone = 'ok';
+  let tile2Icon = 'clock';
+  let tile2Title = 'Punkty karne';
+  let tile2Sub = `${pkt} z ${limit}`;
+  if (pj) {
+    tile2Id = 'pkt';
+    tile2Tone = pkt === 0 ? 'ok' : pkt >= limit * 0.75 ? 'warn' : 'info';
+    tile2Icon = 'clock';
+    tile2Title = 'Punkty karne';
+    tile2Sub = `${pkt} z ${limit}`;
+  } else {
+    tile2Id = 'pz';
+    tile2Tone = 'ok';
+    tile2Icon = 'shield';
+    tile2Title = 'Profil Zaufany';
+    tile2Sub = (pzDoc && pzDoc.sub) ? pzDoc.sub.replace(/^.*•\s*/, '') : 'Ważny do 2028';
+  }
+
+  // Kafelek 3: Pojazd lub e-ZLA ZUS (np. jeśli persona ma auto to auto, jeśli nie ma auta a ma L4 to L4 ze statusem zwolnienia, kliknięcie otwiera dokument auta lub openZusZlaModal())
+  let tile3Id = 'auto';
+  let tile3Tone = 'ok';
+  let tile3Icon = 'car';
+  let tile3Title = 'Pojazd';
+  let tile3Sub = 'OC i badanie ważne';
+  if (auto) {
+    tile3Id = 'auto';
+    tile3Tone = auto.alert ? 'warn' : 'ok';
+    tile3Icon = 'car';
+    tile3Title = auto.model ? auto.model.split(' ')[0] : 'Pojazd';
+    tile3Sub = auto.alert || 'OC i badanie ważne';
+  } else {
+    tile3Id = 'zus';
+    tile3Tone = activeZla ? 'warn' : 'ok';
+    tile3Icon = 'doc';
+    tile3Title = 'e-ZLA ZUS';
+    tile3Sub = activeZla ? (`L4 do ${activeZla.okresDo}`) : 'Brak zwolnienia';
+  }
+
+  // Kafelek 4: ePłatności / Podatki (status opłacenia podatku lub składek, kliknięcie otwiera openEPlatnosciModal() lub openPitSkarbowyModal())
+  let tile4Id = 'pay';
+  let tile4Tone = paid ? 'ok' : (tax ? 'warn' : 'ok');
+  let tile4Icon = 'coin';
+  let tile4Title = paid ? 'Opłacone' : (kwota || (tax ? 'Do zapłaty' : 'ePłatności'));
+  let tile4Sub = paid
+    ? 'Brak zaległości'
+    : (termin
+        ? ((/mandat/i.test(tax ? tax.h : '') ? 'Mandat ' : /składk/i.test(tax ? tax.h : '') ? 'Składki ' : 'Podatek ') + termin)
+        : (tax ? tax.h : 'Brak zaległości'));
+
   const tile = (id, tone, icon, title, sub) =>
     `<button type="button" class="qt ${tone}" data-q="${id}" aria-label="${title}: ${sub}">
       <span class="qt-ic">${svg(icon)}</span>
@@ -601,20 +665,36 @@ function renderDashboard() {
 
   host.innerHTML = [
     tile('pesel', peselTone, peselIcon, 'PESEL', peselSub),
-    tile('pkt', pkt === 0 ? 'ok' : pkt >= limit * 0.75 ? 'warn' : 'info', 'clock', 'Punkty karne',
-      `${pkt} z ${limit}`),
-    auto ? tile('auto', auto.alert ? 'warn' : 'ok', 'car', auto.model ? auto.model.split(' ')[0] : 'Pojazd',
-      auto.alert || 'OC i badanie ważne') : '',
-    tax ? tile('pay', paid ? 'ok' : 'warn', 'coin', paid ? 'Opłacone' : (kwota || 'Do zapłaty'),
-      paid ? 'Brak zaległości' : (termin ? 'Podatek ' + termin : tax.h)) : ''
+    tile(tile2Id, tile2Tone, tile2Icon, tile2Title, tile2Sub),
+    tile(tile3Id, tile3Tone, tile3Icon, tile3Title, tile3Sub),
+    tile(tile4Id, tile4Tone, tile4Icon, tile4Title, tile4Sub)
   ].join('');
 
-  host.querySelectorAll('.qt').forEach(b => b.onclick = () => ({
-    pesel: () => { if (typeof openZastrzezPeselModal === 'function') openZastrzezPeselModal(); else togglePeselDirect(); },
-    pkt: openPointsDetail,
-    auto: () => openDoc('auto'),
-    pay: () => { if (typeof openEPlatnosciModal === 'function') openEPlatnosciModal(); else directPaymentClick(); }
-  })[b.dataset.q]());
+  host.querySelectorAll('.qt').forEach(b => {
+    b.onclick = () => {
+      const q = b.dataset.q;
+      if (q === 'pesel') {
+        if (typeof openZastrzezPeselModal === 'function') openZastrzezPeselModal();
+        else togglePeselDirect();
+      } else if (q === 'pkt') {
+        if (typeof openPointsDetail === 'function') openPointsDetail();
+        else if (typeof openPzModal === 'function') openPzModal();
+      } else if (q === 'pz') {
+        if (typeof openPzModal === 'function') openPzModal();
+        else if (typeof openPointsDetail === 'function') openPointsDetail();
+        else if (typeof openDoc === 'function') openDoc('pz');
+      } else if (q === 'auto') {
+        if (typeof openDoc === 'function') openDoc('auto');
+      } else if (q === 'zus') {
+        if (typeof openZusZlaModal === 'function') openZusZlaModal();
+        else if (typeof openDoc === 'function') openDoc('ikp');
+      } else if (q === 'pay') {
+        if (typeof openEPlatnosciModal === 'function') openEPlatnosciModal();
+        else if (typeof openPitSkarbowyModal === 'function') openPitSkarbowyModal();
+        else directPaymentClick();
+      }
+    };
+  });
 
   if (typeof layout === 'function') setTimeout(layout, 10);
 }
@@ -994,6 +1074,37 @@ function openOfficialCertificate(type = 'pesel') {
       ['Data wystawienia karty', '04.10.2026']
     ];
     legal = 'Karta DiLO uprawnia pacjenta do diagnostyki i leczenia onkologicznego w trybie pilnym, bez limitów finansowych NFZ, z zachowaniem ustawowych terminów maksymalnych.';
+  } else if (type === 'hdk') {
+    certTitle = 'ZAŚWIADCZENIE O TYTULE HONOROWEGO DAWCY KRWI (HDK)';
+    const hdk = (OS.docs && OS.docs.find(d => d.id === 'hdk')) || {};
+    const pole = re => (hdk.rows || []).find(x => re.test(x[0]))?.[1] || (hdk.f || []).find(x => re.test(x[0]))?.[1] || '—';
+    certNumber = 'RCKiK/' + new Date().getFullYear() + '/' + Math.floor(100000 + Math.random() * 900000);
+    rows = [
+      ['Imię i nazwisko', `${OS.imie} ${OS.nazwisko}`],
+      ['Numer PESEL', OS.moje.pesel],
+      ['Tytuł dawcy', pole(/Tytuł/i)],
+      ['Grupa krwi', pole(/Grupa/i)],
+      ['Łączna objętość oddanej krwi', pole(/Oddan|oddano/i)],
+      ['Numer legitymacji', pole(/legitymac/i)],
+      ['Ostatnia donacja', pole(/Ostatnia/i)],
+      ['Uprawnienia dawcy', pole(/Uprawnienia/i)]
+    ];
+    legal = 'Zaświadczenie wydane na podstawie ustawy z dnia 22 sierpnia 1997 r. o publicznej służbie krwi. Potwierdza uprawnienia do zwolnienia od pracy, ulg podatkowych oraz bezpłatnych leków z listy Zasłużonych.';
+  } else if (type === 'osp') {
+    certTitle = 'ZAŚWIADCZENIE O PRZYNALEŻNOŚCI DO OCHOTNICZEJ STRAŻY POŻARNEJ';
+    const osp = (OS.docs && OS.docs.find(d => d.id === 'osp')) || {};
+    const pole = re => (osp.rows || []).find(x => re.test(x[0]))?.[1] || (osp.f || []).find(x => re.test(x[0]))?.[1] || '—';
+    certNumber = 'ZOSP/' + new Date().getFullYear() + '/' + Math.floor(100000 + Math.random() * 900000);
+    rows = [
+      ['Strażak-ratownik', `${OS.imie} ${OS.nazwisko}`],
+      ['Numer PESEL', OS.moje.pesel],
+      ['Stopień służbowy', pole(/Stopień/i)],
+      ['Jednostka OSP', pole(/Jednostka/i)],
+      ['Numer legitymacji', pole(/legitymac/i)],
+      ['Ważność badań bojowych', pole(/Badania/i)],
+      ['Certyfikaty i uprawnienia', pole(/Certyfikaty/i)]
+    ];
+    legal = 'Zaświadczenie wydane przez Zarząd Oddziału ZOSP RP potwierdza status członka czynnego Ochotniczej Straży Pożarnej uprawnionego do bezpośredniego udziału w działaniach ratowniczo-gaśniczych KSRG.';
   } else {
     certTitle = 'ODPIS DANYCH DOWODU TOŻSAMOŚCI Z REJESTRU DOWODÓW';
     rows = [
@@ -1613,7 +1724,7 @@ function openFirmaPodpisModal() {
             <span class="erej-code">Sygnatura: XADES-BES/RP-${Math.floor(100000 + Math.random() * 900000)}</span>
           </div>
           <div class="erej-summary-box">
-            <div class="erej-row"><span>Podpisujący:</span> <b>Jan Wiśniewski (PESEL 81051939871)</b></div>
+            <div class="erej-row"><span>Podpisujący:</span> <b>${OS.imie} ${OS.nazwisko} (PESEL ${OS.moje.pesel})</b></div>
             <div class="erej-row"><span>W imieniu:</span> <b>Wiśniewski Instalacje (NIP 679 234 56 79)</b></div>
             <div class="erej-row"><span>Dokument:</span> <b>Umowa o współpracy B2B (Instalacje Sanitarne)</b></div>
             <div class="erej-row"><span>Znacznik czasu:</span> <b>${today()}, ${now()} (GUM RP)</b></div>
@@ -1662,7 +1773,7 @@ function openFirmaPodpisModal() {
         </div>
 
         <div class="f-cert-info-box">
-          <span>Certyfikat: <b>Podpis osobisty RP (Jan Wiśniewski)</b></span>
+          <span>Certyfikat: <b>Podpis osobisty RP (${OS.imie} ${OS.nazwisko})</b></span>
           <small>Certyfikat aktywny w bezpiecznym module Secure Enclave urządzenia.</small>
         </div>
 
