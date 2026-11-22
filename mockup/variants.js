@@ -1,13 +1,16 @@
-/* Warianty układu dokumentów: ?uklad=stos | karuzela | pion | lista | siatka */
+/* Stały układ dokumentów: Siatka 2x2 */
 const LAYOUTS=[
- ['stos','Stos','Jak dziś w mObywatelu i Apple Wallet'],
- ['karuzela','Karuzela','Duża karta przewijana w bok, akcje pod spodem'],
- ['pion','Pionowa karuzela','Karta na środku, przewijanie w górę i w dół'],
- ['lista','Lista ze statusem','Zdjęcie, dane i alerty w jednym wierszu'],
  ['siatka','Siatka 2×2','Wszystkie dokumenty naraz']
 ];
-let VARIANT=(()=>{const v=new URLSearchParams(location.search).get('uklad');return LAYOUTS.some(l=>l[0]===v)?v:'stos'})();
+let VARIANT='siatka';
 app.dataset.v=VARIANT;
+try{
+ const u=new URL(location.href);
+ if(u.searchParams.has('uklad')){
+  u.searchParams.delete('uklad');
+  history.replaceState(null,'',u.toString());
+ }
+}catch(e){}
 const ALT=$('#alt');
 let carIdx=0;
 
@@ -273,13 +276,11 @@ function layoutAlt(top,h,W){
  return 0;
 }
 
-/* menu rozwijane z góry: przełączanie wariantów i osoby */
+/* menu rozwijane z góry: wybór osoby i opcje */
 function setVariant(v){
- if(v===VARIANT){closeMenu();return}
- VARIANT=v;app.dataset.v=v;carIdx=0;buildAlt();layout();renderMenu();closeMenu();
- const lv=LAYOUTS.find(l=>l[0]===v);
- if(lv&&typeof announceSR==='function')announceSR('Zmieniono układ dokumentów na: '+lv[1]);
- try{const u=new URL(location.href);u.searchParams.set('uklad',v);history.replaceState(null,'',u.toString())}catch(e){}
+ VARIANT='siatka';app.dataset.v='siatka';
+ try{const u=new URL(location.href);if(u.searchParams.has('uklad')){u.searchParams.delete('uklad');history.replaceState(null,'',u.toString())}}catch(e){}
+ closeMenu();
 }
 function renderMenu(){
  const m=$('#lmenu');if(!m)return;
@@ -296,8 +297,8 @@ function renderMenu(){
   mo.innerHTML=Object.values(OSOBY).map(o=>`<button type="button" data-o="${o.id}" class="${o.id===OS.id?'on':''}" aria-current="${o.id===OS.id?'true':'false'}" aria-label="${o.imie} ${o.nazwisko} — ${o.opis}"><span class="oav" style="background-image:url(assets/foto-${o.id}.webp)" aria-hidden="true"></span><span class="otx"><b>${o.imie} ${o.nazwisko}</b><small>${o.opis}</small></span>${o.id===OS.id?svg('check'):''}</button>`).join('');
   mo.querySelectorAll('button').forEach(b=>b.onclick=()=>{if(b.dataset.o===OS.id){closeMenu();return}zmienOsobe(b.dataset.o)});
  }
- m.querySelector('.ml').innerHTML=LAYOUTS.map(([k,t,s])=>`<button type="button" data-k="${k}" class="${k===VARIANT?'on':''}" aria-current="${k===VARIANT?'true':'false'}"><span class="mi mi-${k}" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span class="mt"><b>${t}</b><small>${s}</small></span>${k===VARIANT?svg('check'):''}</button>`).join('');
- m.querySelectorAll('.ml button').forEach(b=>b.onclick=()=>setVariant(b.dataset.k));
+ const ml=m.querySelector('.ml');
+ if(ml) ml.innerHTML='';
  const ma=m.querySelector('.ma11y');if(ma&&typeof A11Y!=='undefined'){
   const errCnt=(typeof MobStore!=='undefined'&&MobStore.getAiErrors)?MobStore.getAiErrors().length:0;
   const curLang=new URLSearchParams(location.search).get('lang')||(function(){try{return localStorage.getItem('mobLang')}catch(e){return null}})()||'pl';
@@ -344,6 +345,7 @@ function renderMenu(){
 }
 let currentMenuTab = 'osoba';
 function setMenuTab(tab) {
+ if (tab !== 'a11y') tab = 'osoba';
  currentMenuTab = tab;
  const m = $('#lmenu');
  if(!m) return;
@@ -356,7 +358,7 @@ function setMenuTab(tab) {
  const secUklad = $('#secUklad');
  const secA11y = $('#secA11y');
  if(secOsoba) secOsoba.hidden = (tab !== 'osoba');
- if(secUklad) secUklad.hidden = (tab !== 'uklad');
+ if(secUklad) secUklad.hidden = true;
  if(secA11y) secA11y.hidden = (tab !== 'a11y');
  const panel = m.querySelector('.panel');
  if(panel) panel.scrollTop = 0;
@@ -365,16 +367,13 @@ function setMenuTab(tab) {
 function openMenu(tabOrFocusPersona){
  if(app.classList.contains('chatting'))return;
  closeHist();renderMenu();
- let targetTab = 'osoba';
- if(tabOrFocusPersona === 'uklad' || tabOrFocusPersona === false) targetTab = 'uklad';
- else if(tabOrFocusPersona === 'a11y') targetTab = 'a11y';
- else if(tabOrFocusPersona === 'osoba' || tabOrFocusPersona === true) targetTab = 'osoba';
+ let targetTab = (tabOrFocusPersona === 'a11y') ? 'a11y' : 'osoba';
  setMenuTab(targetTab);
- if(typeof openDialogFocus==='function')openDialogFocus('lmenu',$('#lmenu .panel'),targetTab==='osoba'?'#lmenu .mo button.on':(targetTab==='uklad'?'#lmenu .ml button.on':'.lmenu-tab.active'));
+ if(typeof openDialogFocus==='function')openDialogFocus('lmenu',$('#lmenu .panel'),targetTab==='osoba'?'#lmenu .mo button.on':'.lmenu-tab.active');
  app.classList.add('menu');
  $('#title').setAttribute('aria-expanded','true');
  const pb=$('#personBtn');if(pb)pb.setAttribute('aria-expanded','true');
- if(typeof announceSR==='function')announceSR('Otwarto menu: ' + (targetTab === 'osoba' ? 'wybór osoby' : (targetTab === 'uklad' ? 'układ kart' : 'opcje i dostępność')));
+ if(typeof announceSR==='function')announceSR('Otwarto menu: ' + (targetTab === 'osoba' ? 'wybór osoby' : 'opcje i dostępność'));
 }
 function closeMenu(){
  if(!app.classList.contains('menu'))return;
@@ -383,7 +382,7 @@ function closeMenu(){
  const pb=$('#personBtn');if(pb)pb.setAttribute('aria-expanded','false');
  if(typeof restoreDialogFocus==='function')restoreDialogFocus('lmenu');
 }
-$('#title').onclick=()=>app.classList.contains('menu')?closeMenu():openMenu('uklad');
+$('#title').onclick=()=>app.classList.contains('menu')?closeMenu():openMenu('osoba');
 $('#lmenu .scrim').onclick=closeMenu;
 $('#personBtn').onclick=()=>{
  if(app.classList.contains('chatting'))return;

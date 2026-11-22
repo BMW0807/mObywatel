@@ -332,6 +332,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--red);outline-of
 .lmenu-tab:hover{color:var(--ink)}
 .lmenu-tab.active{background:var(--surface);color:var(--ink);box-shadow:0 2px 8px rgba(15,25,60,.09)}
 .lmenu-sec[hidden]{display:none!important}
+#secUklad, .lmenu-tab[data-tab="uklad"] { display: none !important; }
 .lmenu .mh{font-size:13px;color:var(--ink2);padding:6px 12px 6px;font-weight:500}
 .lmenu .ml button{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:10px 12px;border-radius:14px}
 .lmenu .ml button.on{background:var(--red-wash)}

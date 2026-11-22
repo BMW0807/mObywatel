@@ -11,7 +11,7 @@
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="assets/icon-mobywatel.svg">
 <meta name="mobile-web-app-capable" content="yes">
-<link rel="stylesheet" href="style.css?v=48">
+<link rel="stylesheet" href="style.css?v=49">
 </head>
 <body>
 <div class="phone" id="app">
@@ -47,7 +47,7 @@
     <button type="button" class="ap-row" onclick="closeA11yPanel();openErrorHistory()"><span class="ap-ic" aria-hidden="true">!</span><span class="ap-tx"><b>Historia błędów AI</b><small id="apErrSub">Status asystenta i dziennik błędów</small></span></button>
   </div>
 
-  <button class="title" id="title" aria-haspopup="true" aria-expanded="false" aria-controls="lmenu">Dokumenty<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6.5 9.5 5.5 5.5 5.5-5.5"/></svg></button>
+  <button class="title" id="title" aria-haspopup="true" aria-expanded="false" aria-controls="lmenu">Dokumenty</button>
   <button class="person-bar" id="personBtn" type="button" aria-label="Wybierz osobę w pokazie" aria-haspopup="true" aria-expanded="false" aria-controls="lmenu">
     <span class="person-avatar" aria-hidden="true"></span>
     <span class="person-meta">
@@ -58,19 +58,14 @@
   </button>
   <div class="lmenu" id="lmenu">
     <div class="scrim"></div>
-    <div class="panel" role="dialog" aria-modal="true" aria-label="Układ dokumentów i osoba">
+    <div class="panel" role="dialog" aria-modal="true" aria-label="Wybór osoby i opcje">
       <div class="lmenu-tabs" role="tablist" aria-label="Sekcje menu">
         <button type="button" class="lmenu-tab active" data-tab="osoba" role="tab" aria-selected="true" onclick="setMenuTab('osoba')"><i class="ik ik-user" aria-hidden="true"></i> Osoba</button>
-        <button type="button" class="lmenu-tab" data-tab="uklad" role="tab" aria-selected="false" onclick="setMenuTab('uklad')"><i class="ik ik-layers" aria-hidden="true"></i> Układ</button>
         <button type="button" class="lmenu-tab" data-tab="a11y" role="tab" aria-selected="false" onclick="setMenuTab('a11y')"><i class="ik ik-gear" aria-hidden="true"></i> Opcje</button>
       </div>
       <div class="lmenu-sec" id="secOsoba">
         <div class="mh">Wybierz osobę w demonstracji</div>
         <div class="mo"></div>
-      </div>
-      <div class="lmenu-sec" id="secUklad" hidden>
-        <div class="mh">Układ kart dokumentów na ekranie</div>
-        <div class="ml"></div>
       </div>
       <div class="lmenu-sec" id="secA11y" hidden>
         <div class="mh">Dostępność i demonstracja</div>
@@ -533,25 +528,25 @@
   </div></div>
   <div class="homebar" aria-hidden="true"></div>
 </div>
-<script src="ikony.js?v=48"></script>
-<script src="osoby.js?v=48"></script>
-<script src="sylwetki.js?v=48"></script>
-<script src="core.js?v=48"></script>
-<script src="accessibility.js?v=48"></script>
-<script src="variants.js?v=48"></script>
-<script src="scenarios.js?v=48"></script>
-<script src="agent.js?v=48"></script>
-<script src="znak-kod.js?v=48"></script>
-<script src="znak.js?v=48"></script>
-<script src="uslugi.js?v=48"></script>
-<script src="weryfikacja.js?v=48"></script>
-<script src="poczta.js?v=48"></script>
-<script src="ikp-integracja.js?v=48"></script>
-<script src="mandaty.js?v=48"></script>
-<script src="powiadomienia-eksport.js?v=48"></script>
-<script src="katalog-kart.js?v=48"></script>
-<script src="spotlight.js?v=48"></script>
-<script src="moduly-zdrowie.js?v=48"></script>
-<script src="moduly-urzad.js?v=48"></script>
+<script src="ikony.js?v=49"></script>
+<script src="osoby.js?v=49"></script>
+<script src="sylwetki.js?v=49"></script>
+<script src="core.js?v=49"></script>
+<script src="accessibility.js?v=49"></script>
+<script src="variants.js?v=49"></script>
+<script src="scenarios.js?v=49"></script>
+<script src="agent.js?v=49"></script>
+<script src="znak-kod.js?v=49"></script>
+<script src="znak.js?v=49"></script>
+<script src="uslugi.js?v=49"></script>
+<script src="weryfikacja.js?v=49"></script>
+<script src="poczta.js?v=49"></script>
+<script src="ikp-integracja.js?v=49"></script>
+<script src="mandaty.js?v=49"></script>
+<script src="powiadomienia-eksport.js?v=49"></script>
+<script src="katalog-kart.js?v=49"></script>
+<script src="spotlight.js?v=49"></script>
+<script src="moduly-zdrowie.js?v=49"></script>
+<script src="moduly-urzad.js?v=49"></script>
 </body>
 </html>
