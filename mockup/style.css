@@ -2369,13 +2369,27 @@ body.dark-mode {
 }
 
 /* ---------- 3. WIDOK KATALOGU USŁUG (#viewServices) ---------- */
+.phone[data-nav="services"] .title,
+.phone[data-nav="services"] .person-bar,
+.phone.nav-services .title,
+.phone.nav-services .person-bar {
+  display: none !important;
+}
+
 .view-services {
   position: absolute;
-  inset: 60px 0 60px 0;
+  top: 52px;
+  top: var(--servicesTop, 52px);
+  left: 0;
+  right: 0;
+  bottom: 60px;
+  bottom: var(--bnavH, 60px);
   overflow-y: auto;
-  padding: 16px 16px 24px;
+  padding: 16px 16px 28px;
   z-index: 15;
   background: var(--bg);
+  box-sizing: border-box;
+  -webkit-overflow-scrolling: touch;
 }
 
 .services-header {

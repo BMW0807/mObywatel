@@ -4,7 +4,7 @@ function cardImgUrl(u) {
   return u + (u.indexOf('?') !== -1 ? '&' : '?') + 'v=46';
 }
 const $=s=>document.querySelector(s);
-const app=$('#app'),input=$('#prompt');app.classList.add('ukryte');let msgs=$('#msgs'),inflight=0;
+const app=$('#app'),input=$('#prompt');app.classList.add('ukryte');if(app){app.dataset.nav='docs';app.classList.add('nav-docs');}let msgs=$('#msgs'),inflight=0;
 const FAST=!!window.FAST;
 function settle(){setTimeout(()=>{inflight--;if(!inflight&&typeof onIdle==='function')onIdle()},0)}
 const sleep=ms=>{inflight++;return new Promise(r=>setTimeout(()=>{r();settle()},FAST?5:ms))};
@@ -97,6 +97,15 @@ function layout(){
  const stackTop=(chatting?(T+topH+2):(T+topH+4+pbarH))+downShift;
  let remTop=H-bnavH-compH-remH-(H<680?4:8);
  const avail=Math.max(120,remTop-(H<680?6:10)-stackTop);
+
+ const servicesTop=T+topH;
+ app.style.setProperty('--servicesTop',servicesTop+'px');
+ if(bnavH)app.style.setProperty('--bnavH',bnavH+'px');
+ const vsNode=$('#viewServices');
+ if(vsNode){
+  vsNode.style.top=servicesTop+'px';
+  if(bnavH)vsNode.style.bottom=bnavH+'px';
+ }
 
  // Większe odstępy między nazwami kart
  let cardH=natH,off=Math.min(110,(avail-natH)/Math.max(1,n-1));
@@ -427,6 +436,11 @@ function emptyState(box=VIS.el){
 }
 /* aktywna zakładka dolnej nawigacji (klasa i aria-current zawsze razem) */
 function setNavActive(view){
+  if(app){
+    app.dataset.nav=view;
+    app.classList.toggle('nav-services',view==='services');
+    app.classList.toggle('nav-docs',view==='docs');
+  }
   document.querySelectorAll('.bnav-btn').forEach(b => {
     const on = b.dataset.view === view;
     b.classList.toggle('active', on);
@@ -435,7 +449,12 @@ function setNavActive(view){
 }
 /* widok dokumentów: chowa katalog usług i przywraca stos kart, przypomnienia i pole rozmowy */
 function showDocsView(){
-  ['#stackwrap', '#alt', '#reminders', '#composer'].forEach(s => { const e = $(s); if (e) e.style.display = ''; });
+  if(app){
+    app.dataset.nav='docs';
+    app.classList.remove('nav-services');
+    app.classList.add('nav-docs');
+  }
+  ['#stackwrap', '#alt', '#reminders', '#composer', '#title', '#personBtn'].forEach(s => { const e = $(s); if (e) e.style.display = ''; });
   const vs = $('#viewServices');
   if (vs) { vs.hidden = true; vs.style.display = 'none'; }
 }
@@ -557,16 +576,21 @@ function switchNavTab(tab) {
   const rem = $('#reminders');
   const vs = $('#viewServices');
   const comp = $('#composer');
+  const title = $('#title');
+  const pbar = $('#personBtn');
 
   if (tab === 'services') {
     if (app.classList.contains('chatting')) exitChat();
     if (sw) sw.style.display = 'none';
     if (alt) alt.style.display = 'none';
     if (rem) rem.style.display = 'none';
+    if (title) title.style.display = 'none';
+    if (pbar) pbar.style.display = 'none';
     if (vs) { vs.hidden = false; vs.style.display = 'block'; }
     if (comp) comp.style.display = 'none';
     if (typeof renderUslugiTab === 'function') renderUslugiTab();
     if (typeof announceSR === 'function') announceSR('Przełączono na widok: Usługi publiczne');
+    layout();
   } else if (tab === 'docs') {
     if (app.classList.contains('chatting')) exitChat();
     showDocsView();

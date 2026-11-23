@@ -4,6 +4,7 @@ services:
     env_file: .env
     ports:
       - "127.0.0.1:8790:8790"   # tylko lokalnie: serwer korzysta z Twoich kluczy API i nie ma logowania
+      - "127.0.0.1:8795:8795"   # backend ZUS & e-ZLA (L4) API
     extra_hosts:
       - "host.docker.internal:host-gateway"   # dostęp do serwera modelu na Twoim komputerze (Linux)
     restart: unless-stopped

@@ -489,12 +489,70 @@ class H(SimpleHTTPRequestHandler):
         except Exception as e:
             log(dict(t='err', path=p, msg=str(e), tb=traceback.format_exc()[-800:])); self.js(dict(error=str(e)), 500)
 
+def czy_uruchomic_zus():
+    """Sprawdza, czy backend ZUS powinien zostać uruchomiony (START_ZUS=1 lub flaga CLI --start-zus / --zus)."""
+    if '--no-zus' in sys.argv:
+        return False
+    if '--start-zus' in sys.argv or '--zus' in sys.argv:
+        return True
+    val = os.environ.get('START_ZUS', '').strip().lower()
+    return val in ('1', 'true', 'yes', 'tak', 'on')
+
+
+def uruchom_zus_w_tle(zus_port=None):
+    """Uruchamia backend ZUS (zus_backend.server.uruchom_serwer) w osobnym wątku daemon."""
+    try:
+        root_dir = os.path.dirname(HERE)
+        if root_dir not in sys.path:
+            sys.path.insert(0, root_dir)
+        import zus_backend.server
+        port_zus = int(zus_port or os.environ.get('ZUS_PORT') or 8795)
+        for i, arg in enumerate(sys.argv[1:]):
+            if arg in ('--zus-port', '--port-zus') and i + 2 < len(sys.argv):
+                try:
+                    port_zus = int(sys.argv[i + 2])
+                except ValueError:
+                    pass
+
+        def _run_zus():
+            try:
+                zus_backend.server.uruchom_serwer(port_zus)
+            except Exception as err:
+                print(f"Błąd w wątku serwera ZUS: {err}", file=sys.stderr, flush=True)
+
+        watek = threading.Thread(
+            target=_run_zus,
+            daemon=True,
+            name='zus-backend'
+        )
+        watek.start()
+        print(f"Backend ZUS uruchomiony w tle na porcie {port_zus}", flush=True)
+        return watek
+    except Exception as e:
+        print(f"Nie udało się uruchomić backendu ZUS: {e}", file=sys.stderr, flush=True)
+        return None
+
+
 if __name__ == '__main__':
-    port = int(sys.argv[1]) if len(sys.argv) > 1 else int(os.environ.get('PORT') or 8790)
+    port = int(os.environ.get('PORT') or 8790)
+    for arg in sys.argv[1:]:
+        if arg.isdigit():
+            port = int(arg)
+            break
+        elif not arg.startswith('--'):
+            try:
+                port = int(arg)
+                break
+            except ValueError:
+                pass
     host = os.environ.get('HOST') or '127.0.0.1'
     try:
         import wiedza; threading.Thread(target=wiedza._wczytaj, daemon=True).start()   # baza kart gov.pl wczytuje się w tle (kilka sekund)
     except Exception as e: print('wiedza:', e)
+
+    if czy_uruchomic_zus():
+        uruchom_zus_w_tle()
+
     srv = ThreadingHTTPServer((host, port), H)
     print('mObywatel: http://%s:%d  (pliki: %s)' % ('127.0.0.1' if host in ('0.0.0.0', '::') else host, port, ROOT), flush=True)
     srv.serve_forever()

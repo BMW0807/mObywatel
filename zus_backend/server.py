@@ -10,21 +10,42 @@ import urllib.parse
 from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
 from typing import Dict, Any, Optional, Tuple
 
-from .models import Rola, waliduj_pesel, waliduj_nip
-from .baza import BAZA
-from .auth import (
-    pobierz_sesje_z_naglowka,
-    uwierzytelnij,
-    SesjaUzytkownika,
-    AKTYWNE_SESJE,
-    UZYTKOWNICY_DEMO
-)
-from .kalkulator import (
-    kalkuluj_zasilek_chorobowy,
-    symuluj_skladki_jdg_2026,
-    symuluj_emeryture
-)
-from .openapi import OPENAPI_SPEC, generuj_swagger_html
+if __package__:
+    from .models import Rola, waliduj_pesel, waliduj_nip
+    from .baza import BAZA
+    from .auth import (
+        pobierz_sesje_z_naglowka,
+        uwierzytelnij,
+        SesjaUzytkownika,
+        AKTYWNE_SESJE,
+        UZYTKOWNICY_DEMO
+    )
+    from .kalkulator import (
+        kalkuluj_zasilek_chorobowy,
+        symuluj_skladki_jdg_2026,
+        symuluj_emeryture
+    )
+    from .openapi import OPENAPI_SPEC, generuj_swagger_html
+else:
+    _dir = os.path.dirname(os.path.abspath(__file__))
+    _parent = os.path.dirname(_dir)
+    if _parent not in sys.path:
+        sys.path.insert(0, _parent)
+    from zus_backend.models import Rola, waliduj_pesel, waliduj_nip
+    from zus_backend.baza import BAZA
+    from zus_backend.auth import (
+        pobierz_sesje_z_naglowka,
+        uwierzytelnij,
+        SesjaUzytkownika,
+        AKTYWNE_SESJE,
+        UZYTKOWNICY_DEMO
+    )
+    from zus_backend.kalkulator import (
+        kalkuluj_zasilek_chorobowy,
+        symuluj_skladki_jdg_2026,
+        symuluj_emeryture
+    )
+    from zus_backend.openapi import OPENAPI_SPEC, generuj_swagger_html
 
 
 class ZUSRequestHandler(BaseHTTPRequestHandler):
@@ -324,7 +345,11 @@ class ZUSRequestHandler(BaseHTTPRequestHandler):
 
 
 def uruchom_serwer(port: int = 8795):
-    serwer = ThreadingHTTPServer(("0.0.0.0", port), ZUSRequestHandler)
+    try:
+        serwer = ThreadingHTTPServer(("0.0.0.0", port), ZUSRequestHandler)
+    except Exception as e:
+        print(f"Błąd uruchamiania serwera ZUS na porcie {port}: {e}", file=sys.stderr, flush=True)
+        return
     print(f"================================================================")
     print(f"  ZUS & e-ZLA (L4) REST API Server uruchomiony na porcie {port}")
     print(f"  Dokumentacja Swagger UI: http://localhost:{port}/docs")
@@ -333,9 +358,15 @@ def uruchom_serwer(port: int = 8795):
     print(f"================================================================")
     try:
         serwer.serve_forever()
-    except KeyboardInterrupt:
+    except (KeyboardInterrupt, SystemExit):
         print("\nZatrzymywanie serwera ZUS...")
         serwer.server_close()
+    except Exception as e:
+        print(f"Błąd serwera ZUS: {e}", file=sys.stderr, flush=True)
+        try:
+            serwer.server_close()
+        except Exception:
+            pass
 
 
 if __name__ == "__main__":
