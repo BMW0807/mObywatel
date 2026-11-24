@@ -1,10 +1,14 @@
 # -*- coding: utf-8 -*-
-"""Repozytorium danych w pamięci (mock ZUS/e-ZLA) z pełnym zestawem operacji."""
+"""Repozytorium danych w pamięci (mock ZUS/e-ZLA) z pełnym zestawem operacji i opcjonalną persystencją JSON."""
 
+import json
+import os
+import tempfile
 import threading
 import uuid
 from dataclasses import asdict
 from datetime import datetime, date, timedelta
+from enum import Enum
 from typing import Dict, Any, List, Optional
 from .models import (
     ZwolnienieLekarskie,
@@ -19,10 +23,11 @@ from .models import (
 
 
 class BazaZUS:
-    """Wielowątkowa baza danych w pamięci symulująca rejestry ZUS i PUE e-ZLA."""
+    """Wielowątkowa baza danych symulująca rejestry ZUS i PUE e-ZLA z trwałością JSON."""
 
-    def __init__(self):
+    def __init__(self, db_path: Optional[str] = None):
         self._lock = threading.RLock()
+        self._custom_db_path = db_path
         self.konta: Dict[str, KontoZUS] = {}
         self.zwolnienia: Dict[str, ZwolnienieLekarskie] = {}
         self.ewizyty: Dict[str, EWizyta] = {}
@@ -30,6 +35,16 @@ class BazaZUS:
         self.wnioski_zasilkowe: List[Dict[str, Any]] = []
         self.wplaty_nrs: List[Dict[str, Any]] = []
         self._zainicjalizuj_dane()
+
+    @property
+    def db_path(self) -> str:
+        if self._custom_db_path:
+            return self._custom_db_path
+        return os.environ.get("ZUS_DB_PATH") or os.path.join(os.path.dirname(__file__), "data", "zus_state.json")
+
+    @property
+    def _db_path(self) -> str:
+        return self.db_path
 
     def _zainicjalizuj_dane(self):
         """Inicjalizacja fikcyjnych, realistycznych danych testowych."""
@@ -191,6 +206,132 @@ class BazaZUS:
                         "dostepny": True
                     })
 
+        # Wczytanie zapisanego stanu JSON jeśli plik istnieje (persystencja)
+        if os.path.exists(self.db_path):
+            self._wczytaj_stan()
+
+    def _wczytaj_stan(self):
+        """Wczytuje i łączy stan z pliku JSON z danymi demonstracyjnymi."""
+        path = self.db_path
+        if not os.path.exists(path):
+            return
+        with self._lock:
+            try:
+                with open(path, "r", encoding="utf-8") as f:
+                    dane = json.load(f)
+            except Exception:
+                return
+
+            if not isinstance(dane, dict):
+                return
+
+            # 1. Konta
+            for pesel, k_dict in (dane.get("konta") or {}).items():
+                try:
+                    self.konta[pesel] = KontoZUS(**k_dict)
+                except Exception:
+                    pass
+
+            # 2. Zwolnienia lekarskie e-ZLA
+            for id_ezla, z_dict in (dane.get("zwolnienia") or {}).items():
+                try:
+                    if "status" in z_dict and isinstance(z_dict["status"], str):
+                        z_dict["status"] = StatusEZLA(z_dict["status"])
+                    self.zwolnienia[id_ezla] = ZwolnienieLekarskie(**z_dict)
+                except Exception:
+                    pass
+
+            # 3. E-wizyty
+            for id_wizyty, e_dict in (dane.get("ewizyty") or {}).items():
+                try:
+                    self.ewizyty[id_wizyty] = EWizyta(**e_dict)
+                except Exception:
+                    pass
+
+            # 4. Terminy e-wizyt
+            saved_terminy = dane.get("terminy_ewizyt")
+            if isinstance(saved_terminy, list) and saved_terminy:
+                terminy_map = {t["id_terminu"]: t for t in saved_terminy if isinstance(t, dict) and "id_terminu" in t}
+                for t in self.terminy_ewizyt:
+                    if t.get("id_terminu") in terminy_map:
+                        t.update(terminy_map[t["id_terminu"]])
+                istniejace = {t.get("id_terminu") for t in self.terminy_ewizyt}
+                for t_id, t_obj in terminy_map.items():
+                    if t_id not in istniejace:
+                        self.terminy_ewizyt.append(t_obj)
+
+            # 5. Wnioski zasiłkowe
+            saved_wnioski = dane.get("wnioski_zasilkowe")
+            if isinstance(saved_wnioski, list):
+                istniejace_w = {w.get("id_wniosku") for w in self.wnioski_zasilkowe if isinstance(w, dict)}
+                for w in saved_wnioski:
+                    if isinstance(w, dict) and w.get("id_wniosku") not in istniejace_w:
+                        self.wnioski_zasilkowe.append(w)
+                        if w.get("id_wniosku"):
+                            istniejace_w.add(w.get("id_wniosku"))
+
+            # 6. Wpłaty NRS
+            saved_wplaty = dane.get("wplaty_nrs")
+            if isinstance(saved_wplaty, list):
+                istniejace_wp = {wp.get("id_transakcji") for wp in self.wplaty_nrs if isinstance(wp, dict)}
+                for wp in saved_wplaty:
+                    if isinstance(wp, dict) and wp.get("id_transakcji") not in istniejace_wp:
+                        self.wplaty_nrs.append(wp)
+                        if wp.get("id_transakcji"):
+                            istniejace_wp.add(wp.get("id_transakcji"))
+
+    def _zapisz_stan(self):
+        """Bezpieczny, atomowy zapis stanu bazy danych do pliku JSON (z blokadą)."""
+        with self._lock:
+            path = self.db_path
+            dir_path = os.path.dirname(os.path.abspath(path))
+            try:
+                os.makedirs(dir_path, exist_ok=True)
+            except OSError:
+                pass
+
+            konta_dict = {pesel: asdict(k) for pesel, k in self.konta.items()}
+            zwolnienia_dict = {}
+            for id_ezla, z in self.zwolnienia.items():
+                d = asdict(z)
+                if isinstance(d.get("status"), Enum):
+                    d["status"] = d["status"].value
+                zwolnienia_dict[id_ezla] = d
+
+            ewizyty_dict = {id_wiz: asdict(w) for id_wiz, w in self.ewizyty.items()}
+
+            dane = {
+                "konta": konta_dict,
+                "zwolnienia": zwolnienia_dict,
+                "ewizyty": ewizyty_dict,
+                "terminy_ewizyt": self.terminy_ewizyt,
+                "wnioski_zasilkowe": self.wnioski_zasilkowe,
+                "wplaty_nrs": self.wplaty_nrs
+            }
+
+            def _serializator(obj):
+                if isinstance(obj, Enum):
+                    return obj.value
+                if isinstance(obj, (date, datetime)):
+                    return obj.isoformat()
+                raise TypeError(f"Object of type {type(obj).__name__} is not JSON serializable")
+
+            tmp_path = None
+            try:
+                fd, tmp_path = tempfile.mkstemp(dir=dir_path, prefix="zus_state_", suffix=".tmp")
+                with os.fdopen(fd, "w", encoding="utf-8") as f:
+                    json.dump(dane, f, ensure_ascii=False, indent=2, default=_serializator)
+                    f.flush()
+                    os.fsync(f.fileno())
+                os.replace(tmp_path, path)
+            except Exception:
+                if tmp_path and os.path.exists(tmp_path):
+                    try:
+                        os.remove(tmp_path)
+                    except OSError:
+                        pass
+                raise
+
     # --- Operacje na e-ZLA ---
 
     def pobierz_zwolnienia_pacjenta(self, pesel: str) -> List[Dict[str, Any]]:
@@ -273,7 +414,17 @@ class BazaZUS:
             )
 
             self.zwolnienia[nowy_id] = ezla
+            self._zapisz_stan()
             return ezla.to_dict(dla_platnika=False)
+
+    def dodaj_zwolnienie(self, dane_lub_obiekt: Any) -> Dict[str, Any]:
+        """Dodaje lub wystawia nowe zwolnienie lekarskie e-ZLA."""
+        if isinstance(dane_lub_obiekt, ZwolnienieLekarskie):
+            with self._lock:
+                self.zwolnienia[dane_lub_obiekt.id_ezla] = dane_lub_obiekt
+                self._zapisz_stan()
+                return dane_lub_obiekt.to_dict(dla_platnika=False)
+        return self.wystaw_ezla(dane_lub_obiekt)
 
     def anuluj_ezla(self, id_ezla: str, powod: str) -> Dict[str, Any]:
         """Anulowanie błędnie wystawionego e-ZLA."""
@@ -283,7 +434,12 @@ class BazaZUS:
                 raise KeyError(f"Nie znaleziono zwolnienia o identyfikatorze: {id_ezla}")
             z.status = StatusEZLA.ANULOWANE
             z.powod_anulowania = powod
+            self._zapisz_stan()
             return z.to_dict()
+
+    def anuluj_zwolnienie(self, id_ezla: str, powod: str = "") -> Dict[str, Any]:
+        """Anulowanie zwolnienia (alias dla anuluj_ezla)."""
+        return self.anuluj_ezla(id_ezla, powod)
 
     # --- Operacje na Koncie Ubezpieczonego / Składkach ---
 
@@ -310,6 +466,7 @@ class BazaZUS:
                 "nowe_saldo": konto.saldo_rozliczen
             }
             self.wplaty_nrs.append(wpis_wplaty)
+            self._zapisz_stan()
             return wpis_wplaty
 
     # --- Operacje na E-Wizytach ---
@@ -344,6 +501,7 @@ class BazaZUS:
                 status="potwierdzona"
             )
             self.ewizyty[id_wizyty] = wizyta
+            self._zapisz_stan()
             return asdict(wizyta)
 
     def pobierz_ewizyty_klienta(self, pesel: str) -> List[Dict[str, Any]]:
@@ -358,6 +516,7 @@ class BazaZUS:
             if w.pesel_klienta != pesel:
                 raise PermissionError("Brak uprawnień do anulowania tej wizyty.")
             w.status = "anulowana"
+            self._zapisz_stan()
             return asdict(w)
 
     # --- Wnioski zasiłkowe ---
@@ -375,7 +534,18 @@ class BazaZUS:
                 "dane": dane_dodatkowe
             }
             self.wnioski_zasilkowe.append(wpis)
+            self._zapisz_stan()
             return wpis
+
+    def dodaj_wniosek(self, pesel_lub_dane: Any, typ_wniosku: Optional[str] = None, dane_dodatkowe: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+        """Dodaje wniosek zasiłkowy (alias dla zloz_wniosek_zasilkowy)."""
+        if isinstance(pesel_lub_dane, dict) and typ_wniosku is None:
+            return self.zloz_wniosek_zasilkowy(
+                pesel=pesel_lub_dane.get("pesel", ""),
+                typ_wniosku=pesel_lub_dane.get("typ_wniosku") or pesel_lub_dane.get("typ", "zasilkowy"),
+                dane_dodatkowe=pesel_lub_dane.get("dane", pesel_lub_dane)
+            )
+        return self.zloz_wniosek_zasilkowy(pesel_lub_dane, typ_wniosku or "zasilkowy", dane_dodatkowe or {})
 
     def pobierz_wnioski_klienta(self, pesel: str) -> List[Dict[str, Any]]:
         with self._lock:

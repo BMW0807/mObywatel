@@ -385,6 +385,14 @@ class H(SimpleHTTPRequestHandler):
         try: return self._obsluz_get(head_only=head_only)
         except ValueError:   # np. bajt NUL w ścieżce pliku: os.path i open() zgłaszają ValueError
             return self.js(dict(error='nieprawidłowy adres'), 400, head_only=head_only)
+        except Exception as e:
+            err_id = uuid.uuid4().hex[:8]
+            tb = traceback.format_exc()
+            sys.stderr.write(f'[{err_id}] BŁĄD SERWERA: {tb}\n')
+            sys.stderr.flush()
+            p = urlparse(self.path).path
+            log(dict(t='err', err_id=err_id, path=p, msg=str(e), tb=tb[-800:]))
+            return self.js(dict(blad=f'Wewnętrzny błąd serwera (kod: {err_id})'), 500, head_only=head_only)
     def do_GET(self): return self._get_bezpiecznie(False)
     def do_HEAD(self): return self._get_bezpiecznie(True)
     def do_POST(self):
@@ -502,8 +510,12 @@ class H(SimpleHTTPRequestHandler):
         except urllib.error.HTTPError as e:
             msg = e.read().decode('utf-8', 'replace')[:400]; log(dict(t='err', path=p, code=e.code, msg=msg)); self.js(dict(error=msg), 502)
         except Exception as e:
-            log(dict(t='err', path=p, msg=str(e), tb=traceback.format_exc()[-800:]))
-            self.js(dict(error='Wystąpił błąd serwera. Spróbuj ponownie później.'), 500)
+            err_id = uuid.uuid4().hex[:8]
+            tb = traceback.format_exc()
+            sys.stderr.write(f'[{err_id}] BŁĄD SERWERA: {tb}\n')
+            sys.stderr.flush()
+            log(dict(t='err', err_id=err_id, path=p, msg=str(e), tb=tb[-800:]))
+            self.js(dict(blad=f'Wewnętrzny błąd serwera (kod: {err_id})'), 500)
 
 def czy_uruchomic_zus():
     """Sprawdza, czy backend ZUS powinien zostać uruchomiony (START_ZUS=1 lub flaga CLI --start-zus / --zus)."""

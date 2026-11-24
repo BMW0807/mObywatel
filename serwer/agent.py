@@ -289,14 +289,27 @@ OBCE = re.compile('[\u0370-\u03ff\u0400-\u052f\u0590-\u06ff\u10a0-\u10ff\u3040-\
 def popraw_jezyk(text, keys, log):
     """Gdy model wtrąci obce słowo (np. cyrylicą), poprawiamy tekst osobnym, krótkim wywołaniem."""
     if not OBCE.search(text): return text
+    instrukcja = 'Popraw tekst na poprawną polszczyznę: każde słowo w obcym języku lub alfabecie zastąp właściwym polskim słowem. Nie zmieniaj sensu ani formatowania (**pogrubienia** zostaw). Zwróć wyłącznie poprawiony tekst.'
     try:
         if PROVIDER == 'openai':
-            body = dict(model=OPENAI_MODEL, instructions='Popraw tekst na poprawną polszczyznę: każde słowo w obcym języku lub alfabecie zastąp właściwym polskim słowem. Nie zmieniaj sensu ani formatowania (**pogrubienia** zostaw). Zwróć wyłącznie poprawiony tekst.',
+            body = dict(model=OPENAI_MODEL, instructions=instrukcja,
                         input=text, max_output_tokens=600, store=False, reasoning={'effort': 'low'})
             if OPENAI_TIER: body['service_tier'] = OPENAI_TIER
-            req = urllib.request.Request('https://api.openai.com/v1/responses', data=json.dumps(body).encode(), headers={'Authorization': 'Bearer ' + keys['openai'], 'Content-Type': 'application/json'})
+            req = urllib.request.Request('https://api.openai.com/v1/responses', data=json.dumps(body).encode(), headers={'Authorization': 'Bearer ' + (keys or {}).get('openai', ''), 'Content-Type': 'application/json'})
             with urllib.request.urlopen(req, timeout=30) as r: out = json.loads(r.read())
             fixed = ''.join(p.get('text', '') for it in out.get('output', []) if it.get('type') == 'message' for p in it.get('content', []) if p.get('type') in ('output_text', 'text')).strip()
+        elif PROVIDER == 'zgodny':
+            if not ZGODNY_MODEL: raise BladAPI('PROVIDER=zgodny wymaga zmiennej MODEL')
+            naglowki = {'Content-Type': 'application/json'}
+            key = (keys or {}).get('zgodny')
+            if key and key != 'bez-klucza': naglowki['Authorization'] = 'Bearer ' + key
+            body = dict(model=ZGODNY_MODEL, messages=[{'role': 'system', 'content': instrukcja}, {'role': 'user', 'content': text}], max_tokens=600)
+            req = urllib.request.Request(ZGODNY_BAZA + '/chat/completions', data=json.dumps(body).encode(), headers=naglowki)
+            with urllib.request.urlopen(req, timeout=min(30, ZGODNY_TIMEOUT)) as r: out = json.loads(r.read())
+            msg = ((out.get('choices') or [{}])[0] or {}).get('message') or {}
+            txt = msg.get('content')
+            if isinstance(txt, list): txt = ''.join(p.get('text', '') for p in txt if isinstance(p, dict))
+            fixed = MYSLI.sub('', txt or '').strip()
         else:
             fixed = ''
         if fixed and not OBCE.search(fixed):

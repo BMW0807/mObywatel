@@ -1689,33 +1689,44 @@
         headers['Content-Type'] = 'application/json';
       }
 
+      let resp;
       try {
         const ctrl = new AbortController();
         const timeoutId = setTimeout(() => ctrl.abort(), 3500);
 
-        const resp = await fetch(url, {
+        resp = await fetch(url, {
           method,
           headers,
           body: body ? JSON.stringify(body) : undefined,
           signal: ctrl.signal
         });
         clearTimeout(timeoutId);
-
-        if (!resp.ok) {
-          const errData = await resp.json().catch(() => ({}));
-          throw new Error(errData.blad || `HTTP ${resp.status}`);
-        }
-
-        STATE.isLiveBackend = true;
-        updateApiStatusUI(true);
-        return await resp.json();
-      } catch (err) {
-        console.warn(`[ZUS REST API] Połączenie nieudane (${endpoint}):`, err.message);
+      } catch (networkErr) {
+        // Prawdziwy błąd połączenia sieciowego (fetch failed, timeout / AbortError, serwer wyłączony)
+        console.warn(`[ZUS REST API] Połączenie nieudane (${endpoint}):`, networkErr.message);
         STATE.isLiveBackend = false;
         updateApiStatusUI(false);
-        // Przełączenie na inteligentny silnik mock/fallback
+        // Aktywacja trybu symulacji / mock fallback TYLKO przy rzeczywistym braku połączenia
         return handleMockFallback(endpoint, method, body);
       }
+
+      // Serwer odpowiedział na żądanie HTTP - serwer działa i jest osiągalny na żywo!
+      STATE.isLiveBackend = true;
+      updateApiStatusUI(true);
+
+      if (!resp.ok) {
+        const errData = await resp.json().catch(() => ({}));
+        const errMsg = errData.blad || (resp.status === 403 ? 'Brak uprawnień lub błąd żądania' : `Błąd żądania (HTTP ${resp.status})`);
+        console.warn(`[ZUS REST API] Błąd HTTP ${resp.status} (${endpoint}):`, errMsg);
+        showToast(errMsg, 'error');
+        const httpError = new Error(errMsg);
+        httpError.status = resp.status;
+        httpError.errData = errData;
+        httpError.toastShown = true;
+        throw httpError;
+      }
+
+      return await resp.json();
     }
 
     function updateApiStatusUI(isLive) {
@@ -1750,21 +1761,41 @@
         STATE.isLiveBackend = false;
         updateApiStatusUI(false);
         showToast('Nie udało się nawiązać połączenia z serwerem. Aktywowano tryb symulacji.', 'error');
+        zaladujWszystko();
       }
     }
 
     // --- ZMIANA UŻYTKOWNIKA DEMONSTRACYJNEGO ---
     function onUserChange(key) {
       STATE.activeUserKey = key;
-      const u = DEMO_USERS[key];
+      const u = DEMO_USERS[key] || DEMO_USERS.marta;
       document.getElementById('userAvatar').textContent = u.avatar;
       showToast(`Przełączono tożsamość na: ${u.imie ? u.imie + ' ' + u.nazwisko : u.nazwa} (${u.opis})`);
 
-      // Dostosowanie widoków i uprawnień dla roli
+      const btnToggle = document.getElementById('btnTogglePlatnikView');
+      const rodoBox = document.getElementById('rodoAlertBox');
+      const btnWystaw = document.getElementById('btnWystawEzlaModal');
+
+      // Dostosowanie widoków i uprawnień dla poszczególnych ról
       if (key === 'techpolska') {
         STATE.isPlatnikView = true;
-      } else {
+        if (rodoBox) rodoBox.style.display = 'block';
+        if (btnToggle) btnToggle.style.display = 'none';
+        if (btnWystaw) btnWystaw.style.display = 'none';
+      } else if (key === 'tomasz') {
         STATE.isPlatnikView = false;
+        if (rodoBox) rodoBox.style.display = 'none';
+        if (btnToggle) btnToggle.style.display = 'none';
+        if (btnWystaw) btnWystaw.style.display = 'inline-flex';
+      } else {
+        // Ubezpieczeni: marta, jan (oraz urzędnik ZUS)
+        STATE.isPlatnikView = false;
+        if (rodoBox) rodoBox.style.display = 'none';
+        if (btnToggle) {
+          btnToggle.style.display = 'inline-flex';
+          btnToggle.textContent = '👁️ Przełącz widok pracodawcy (RODO)';
+        }
+        if (btnWystaw) btnWystaw.style.display = 'none';
       }
 
       zaladujWszystko();
@@ -1785,12 +1816,142 @@
     // SEKCJA 1: KONTO I SKŁADKI
     // ==========================================================================
 
+    function renderKontoInstytucjonalne(user, typ) {
+      if (!user) return;
+      STATE.kontoData = null;
+
+      if (typ === 'platnik') {
+        document.getElementById('heroUserName').textContent = (user.nazwa || 'PŁATNIK SKŁADEK').toUpperCase();
+        document.getElementById('heroWaloryzacja').textContent = `NIP: ${user.nip || '5252525259'} • Profil Pracodawcy`;
+        document.getElementById('heroTotalAmount').textContent = 'Konto Płatnika Składek';
+        document.getElementById('pillar1Amount').textContent = 'Płatnik zarejestrowany';
+        document.getElementById('pillar2Amount').textContent = `NIP ${user.nip || '5252525259'}`;
+        document.getElementById('pillarPrognoza').textContent = 'Profil Płatnika (PUE ZUS)';
+
+        const nrsP = '81 1010 0000 0000 5252 5252 5900';
+        document.getElementById('nrsNumberText').textContent = nrsP;
+        document.getElementById('wplataNrsInput').value = nrsP.replace(/\s+/g, '');
+
+        const saldoEl = document.getElementById('saldoRozliczenBadge');
+        saldoEl.className = 'saldo-badge saldo-ok';
+        saldoEl.textContent = 'Rozliczenia płatnika: brak zaległości (saldo: 0,00 zł)';
+
+        document.getElementById('stazWiek').textContent = '-';
+        document.getElementById('stazWiekEmerytalny').textContent = '-';
+        document.getElementById('stazLata').textContent = '-';
+        document.getElementById('stazPozostalo').textContent = '-';
+
+        document.getElementById('zgloszeniaContainer').innerHTML = `
+          <div style="padding:16px; background:var(--surface-2); border-radius:10px; border:1px solid var(--hairline)">
+            <div style="font-weight:700; margin-bottom:6px">🏢 Panel Płatnika Składek (Pracodawca / HR)</div>
+            <div style="font-size:13px; color:var(--ink-muted); line-height:1.5">
+              Widok indywidualnego konta emerytalnego i zgłoszeń ubezpieczeniowych dotyczy osób fizycznych z numerem PESEL.<br>
+              Jako płatnik składek zarządzasz zwolnieniami lekarskimi pracowników w zakładce <strong>Zwolnienia Lekarskie e-ZLA</strong> w widoku pracodawcy (z automatyczną ochroną danych medycznych RODO).
+            </div>
+          </div>
+        `;
+
+        document.getElementById('historiaSkladekBody').innerHTML = `
+          <tr>
+            <td colspan="7" style="text-align:center; padding:24px; color:var(--ink-muted)">
+              Imienne raporty miesięczne (ZUS RCA / ZUA) dostępne są dla indywidualnych ubezpieczonych z numerem PESEL.
+            </td>
+          </tr>
+        `;
+      } else if (typ === 'lekarz') {
+        const lekarzNazwa = user.pwz ? `dr n. med. ${user.imie || ''} ${user.nazwisko || ''}`.trim() : (user.imie ? `${user.imie} ${user.nazwisko}` : user.nazwa);
+        document.getElementById('heroUserName').textContent = lekarzNazwa.toUpperCase();
+        document.getElementById('heroWaloryzacja').textContent = `Numer PWZ: ${user.pwz || '7891234'} • Certyfikat ZUS aktywny`;
+        document.getElementById('heroTotalAmount').textContent = 'Panel Lekarza Orzecznika';
+        document.getElementById('pillar1Amount').textContent = `PWZ: ${user.pwz || '7891234'}`;
+        document.getElementById('pillar2Amount').textContent = 'Lekarz uprawniony';
+        document.getElementById('pillarPrognoza').textContent = 'Wystawianie e-ZLA aktywne';
+
+        document.getElementById('nrsNumberText').textContent = '-';
+        document.getElementById('wplataNrsInput').value = '';
+
+        const saldoEl = document.getElementById('saldoRozliczenBadge');
+        saldoEl.className = 'saldo-badge saldo-ok';
+        saldoEl.textContent = 'Status orzecznika ZUS: Aktywny';
+
+        document.getElementById('stazWiek').textContent = '-';
+        document.getElementById('stazWiekEmerytalny').textContent = '-';
+        document.getElementById('stazLata').textContent = '-';
+        document.getElementById('stazPozostalo').textContent = '-';
+
+        document.getElementById('zgloszeniaContainer').innerHTML = `
+          <div style="padding:16px; background:var(--surface-2); border-radius:10px; border:1px solid var(--hairline)">
+            <div style="font-weight:700; margin-bottom:6px">🩺 Panel Lekarza Orzecznika (PWZ: ${esc(user.pwz || '7891234')})</div>
+            <div style="font-size:13px; color:var(--ink-muted); line-height:1.5">
+              Konto lekarza uprawnionego umożliwia wystawianie i anulowanie zaświadczeń lekarskich e-ZLA dla pacjentów.<br>
+              Przejdź do zakładki <strong>Zwolnienia Lekarskie e-ZLA</strong>, aby wystawić nowe zwolnienie za pomocą przycisku <strong>➕ Wystaw nowe e-ZLA</strong>.
+            </div>
+          </div>
+        `;
+
+        document.getElementById('historiaSkladekBody').innerHTML = `
+          <tr>
+            <td colspan="7" style="text-align:center; padding:24px; color:var(--ink-muted)">
+              Widok indywidualnego kapitału emerytalnego i raportów RCA dotyczy ubezpieczonych pacjentów.
+            </td>
+          </tr>
+        `;
+      } else {
+        document.getElementById('heroUserName').textContent = (user.nazwa || 'INSPEKTOR ZUS').toUpperCase();
+        document.getElementById('heroWaloryzacja').textContent = user.opis || 'Inspektor ZUS';
+        document.getElementById('heroTotalAmount').textContent = 'Panel Administracyjny ZUS';
+        document.getElementById('pillar1Amount').textContent = 'Uprawnienia urzędnika';
+        document.getElementById('pillar2Amount').textContent = 'Dostęp pełny (Oddział I)';
+        document.getElementById('pillarPrognoza').textContent = 'Nadzór PUE ZUS';
+
+        document.getElementById('nrsNumberText').textContent = '-';
+        document.getElementById('wplataNrsInput').value = '';
+
+        const saldoEl = document.getElementById('saldoRozliczenBadge');
+        saldoEl.className = 'saldo-badge saldo-ok';
+        saldoEl.textContent = 'Rola urzędowa: Inspektor ZUS';
+
+        document.getElementById('stazWiek').textContent = '-';
+        document.getElementById('stazWiekEmerytalny').textContent = '-';
+        document.getElementById('stazLata').textContent = '-';
+        document.getElementById('stazPozostalo').textContent = '-';
+
+        document.getElementById('zgloszeniaContainer').innerHTML = `
+          <div style="padding:16px; background:var(--surface-2); border-radius:10px; border:1px solid var(--hairline)">
+            <div style="font-weight:700; margin-bottom:6px">🏛️ Panel Inspektora ZUS</div>
+            <div style="font-size:13px; color:var(--ink-muted)">Konto urzędnika ZUS z uprawnieniami do weryfikacji i orzekania.</div>
+          </div>
+        `;
+
+        document.getElementById('historiaSkladekBody').innerHTML = `
+          <tr>
+            <td colspan="7" style="text-align:center; padding:24px; color:var(--ink-muted)">
+              Panel podglądu spraw ubezpieczonych w systemie PUE ZUS.
+            </td>
+          </tr>
+        `;
+      }
+    }
+
     async function odswiezKonto() {
       const user = DEMO_USERS[STATE.activeUserKey];
-      const pesel = user.pesel || '90031501245';
-      const data = await apiRequest(`/api/zus/konto?pesel=${pesel}`, 'GET');
-      STATE.kontoData = data;
-      renderKonto(data);
+      if (!user || !user.pesel || STATE.isPlatnikView || user.pwz) {
+        if (user && user.pwz) {
+          renderKontoInstytucjonalne(user, 'lekarz');
+        } else {
+          renderKontoInstytucjonalne(user, 'platnik');
+        }
+        return;
+      }
+      try {
+        const data = await apiRequest(`/api/zus/konto?pesel=${user.pesel}`, 'GET');
+        if (data) {
+          STATE.kontoData = data;
+          renderKonto(data);
+        }
+      } catch (err) {
+        console.warn('[ZUS] Błąd pobierania konta:', err.message);
+      }
     }
 
     function renderKonto(k) {
@@ -1893,7 +2054,11 @@
     async function wykonajWplateNRS(e) {
       e.preventDefault();
       const user = DEMO_USERS[STATE.activeUserKey];
-      const pesel = user.pesel || '82041203471';
+      if (!user.pesel) {
+        showToast('Wpłata na indywidualny rachunek NRS w tej formatce dotyczy ubezpieczonych osób fizycznych.', 'error');
+        return;
+      }
+      const pesel = user.pesel;
       const kwota = parseFloat(document.getElementById('wplataKwotaInput').value);
       const tytul = document.getElementById('wplataTytulInput').value;
 
@@ -1907,7 +2072,9 @@
         showToast(`Wpłata ${formatPLN(kwota)} zaksięgowana pomyślnie! Nowe saldo: ${formatPLN(odp.nowe_saldo)}`);
         odswiezKonto();
       } catch (err) {
-        showToast('Błąd rejestracji wpłaty: ' + err.message, 'error');
+        if (!err.toastShown) {
+          showToast('Błąd rejestracji wpłaty: ' + err.message, 'error');
+        }
       }
     }
 
@@ -1919,18 +2086,28 @@
       const user = DEMO_USERS[STATE.activeUserKey];
       let data;
 
-      if (STATE.isPlatnikView) {
-        const nip = user.nip || '5252525259';
-        data = await apiRequest(`/api/l4/platnik?nip=${nip}`, 'GET');
-        renderEzla(data.zwolnienia || [], true);
-      } else {
-        const pesel = user.pesel || '90031501245';
-        data = await apiRequest(`/api/l4/moje?pesel=${pesel}`, 'GET');
-        renderEzla(data.zwolnienia || [], false);
+      try {
+        if (STATE.isPlatnikView || !user.pesel) {
+          const nip = user.nip || (user.nipPlatnika || '5252525259');
+          data = await apiRequest(`/api/l4/platnik?nip=${nip}`, 'GET');
+          renderEzla(data ? (data.zwolnienia || []) : [], true);
+        } else if (user.pwz) {
+          renderEzla([], false);
+        } else {
+          data = await apiRequest(`/api/l4/moje?pesel=${user.pesel}`, 'GET');
+          renderEzla(data ? (data.zwolnienia || []) : [], false);
+        }
+      } catch (err) {
+        console.warn('[ZUS] Błąd wczytywania e-ZLA:', err.message);
       }
     }
 
     function togglePlatnikView() {
+      const user = DEMO_USERS[STATE.activeUserKey];
+      if (!user.pesel) {
+        showToast('To konto jest dedykowane wyłącznie dla płatnika składek.', 'error');
+        return;
+      }
       STATE.isPlatnikView = !STATE.isPlatnikView;
       const btn = document.getElementById('btnTogglePlatnikView');
       btn.textContent = STATE.isPlatnikView ? '👤 Przełącz na widok pacjenta' : '👁️ Przełącz widok pracodawcy (RODO)';
@@ -1944,6 +2121,14 @@
       const c = document.getElementById('ezlaListContainer');
 
       if (!lista || lista.length === 0) {
+        if (DEMO_USERS[STATE.activeUserKey] && DEMO_USERS[STATE.activeUserKey].pwz) {
+          c.innerHTML = `<div style="text-align:center; padding:30px; color:var(--ink-muted)">
+            <div style="font-size:32px; margin-bottom:8px">🩺</div>
+            <strong>Panel Lekarza Uprawnionego (PWZ: ${esc(DEMO_USERS[STATE.activeUserKey].pwz)})</strong>
+            <p style="margin-top:6px; font-size:13px">Wystawiaj zaświadczenia e-ZLA dla pacjentów za pomocą przycisku <strong>➕ Wystaw nowe e-ZLA</strong> powyżej.</p>
+          </div>`;
+          return;
+        }
         c.innerHTML = `<div style="text-align:center; padding:30px; color:var(--ink-muted)">
           <div style="font-size:32px; margin-bottom:8px">🩺</div>
           Brak zarejestrowanych zwolnień lekarskich e-ZLA.
@@ -2046,7 +2231,9 @@
         showToast('Zwolnienie e-ZLA zostało pomyślnie wystawione i wysłane do ZUS!');
         wczytajEzla();
       } catch (err) {
-        showToast('Błąd wystawiania e-ZLA: ' + err.message, 'error');
+        if (!err.toastShown) {
+          showToast('Błąd wystawiania e-ZLA: ' + err.message, 'error');
+        }
       }
     }
 
@@ -2067,7 +2254,9 @@
         showToast(`Zwolnienie ${id} zostało anulowane.`);
         wczytajEzla();
       } catch (err) {
-        showToast('Błąd anulowania e-ZLA: ' + err.message, 'error');
+        if (!err.toastShown) {
+          showToast('Błąd anulowania e-ZLA: ' + err.message, 'error');
+        }
       }
     }
 
@@ -2108,7 +2297,9 @@
         document.getElementById('calcL4Podstawa').textContent = formatPLN(r.podstawa_wymiaru_miesieczna);
         showToast('Pomyślnie przeliczono świadczenie chorobowe!');
       } catch (err) {
-        showToast('Błąd obliczeń zasiłku: ' + err.message, 'error');
+        if (!err.toastShown) {
+          showToast('Błąd obliczeń zasiłku: ' + err.message, 'error');
+        }
       }
     }
 
@@ -2130,7 +2321,9 @@
         document.getElementById('calcJdgZdrowotna').textContent = formatPLN(r.skladka_zdrowotna);
         showToast('Składki JDG 2026 przeliczone!');
       } catch (err) {
-        showToast('Błąd kalkulatora JDG: ' + err.message, 'error');
+        if (!err.toastShown) {
+          showToast('Błąd kalkulatora JDG: ' + err.message, 'error');
+        }
       }
     }
 
@@ -2152,7 +2345,9 @@
         document.getElementById('simZysk1Rok').textContent = `+${formatPLN(r.korzysc_z_pracy_o_rok_dluzej || 380)} / mies.`;
         showToast('Zaktualizowano symulację emerytalną!');
       } catch (err) {
-        showToast('Błąd symulacji emerytalnej: ' + err.message, 'error');
+        if (!err.toastShown) {
+          showToast('Błąd symulacji emerytalnej: ' + err.message, 'error');
+        }
       }
     }
 
@@ -2163,8 +2358,12 @@
     async function wczytajTerminyEwizyt() {
       const temat = document.getElementById('ewizytyFiltrTemat').value;
       const q = temat ? `?temat=${encodeURIComponent(temat)}` : '';
-      const data = await apiRequest(`/api/zus/ewizyty/terminy${q}`, 'GET');
-      renderTerminyEwizyt(data.terminy || []);
+      try {
+        const data = await apiRequest(`/api/zus/ewizyty/terminy${q}`, 'GET');
+        renderTerminyEwizyt((data && data.terminy) || []);
+      } catch (err) {
+        console.warn('[ZUS] Błąd wczytywania terminów e-wizyt:', err.message);
+      }
     }
 
     function renderTerminyEwizyt(terminy) {
@@ -2194,37 +2393,41 @@
     }
 
     async function wczytajMojeEwizyty() {
-      const data = await apiRequest('/api/zus/ewizyty/moje', 'GET');
-      const wizyty = data.ewizyty || [];
-      STATE.mojeEwizyty = wizyty;
-      document.getElementById('ewizytyCountBadge').textContent = wizyty.length;
+      try {
+        const data = await apiRequest('/api/zus/ewizyty/moje', 'GET');
+        const wizyty = (data && data.ewizyty) || [];
+        STATE.mojeEwizyty = wizyty;
+        document.getElementById('ewizytyCountBadge').textContent = wizyty.length;
 
-      const c = document.getElementById('mojeEwizytyContainer');
-      if (wizyty.length === 0) {
-        c.innerHTML = `<div style="text-align:center; padding:24px; color:var(--ink-muted)">Nie masz zaplanowanych e-wizyt w ZUS.</div>`;
-        return;
+        const c = document.getElementById('mojeEwizytyContainer');
+        if (wizyty.length === 0) {
+          c.innerHTML = `<div style="text-align:center; padding:24px; color:var(--ink-muted)">Nie masz zaplanowanych e-wizyt w ZUS.</div>`;
+          return;
+        }
+
+        c.innerHTML = wizyty.map(w => `
+          <div style="border:1px solid var(--hairline); border-radius:14px; padding:18px; margin-bottom:12px; background:#fff; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:14px">
+            <div>
+              <div style="display:flex; align-items:center; gap:8px">
+                <span class="badge badge-success">ZAPLANOWANA</span>
+                <strong style="font-size:16px">Wideorozmowa: ${esc(w.temat || 'Sprawy ogólne')}</strong>
+              </div>
+              <div style="font-size:14px; margin-top:4px; color:var(--ink)">
+                🗓️ <b>${esc(w.data)}</b> o godzinie <b>${esc(w.godzina)}</b>
+              </div>
+              <div style="font-size:12px; color:var(--ink-muted)">
+                Link do pokoju ZUS: <a href="${esc(w.link_do_wideorozmowy || '#')}" target="_blank" rel="noopener noreferrer" style="color:var(--zus-green)">${esc(w.link_do_wideorozmowy || 'https://ewizyta.zus.pl/pokoj/' + w.id_wizyty)}</a>
+              </div>
+            </div>
+            <div style="display:flex; gap:8px">
+              <a href="${esc(w.link_do_wideorozmowy || '#')}" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-sm">📹 Dołącz do e-Wizyty</a>
+              <button class="btn btn-outline btn-sm" onclick="anulujEwizyte('${esc(w.id_wizyty)}')">Odwołaj</button>
+            </div>
+          </div>
+        `).join('');
+      } catch (err) {
+        console.warn('[ZUS] Błąd wczytywania moich e-wizyt:', err.message);
       }
-
-      c.innerHTML = wizyty.map(w => `
-        <div style="border:1px solid var(--hairline); border-radius:14px; padding:18px; margin-bottom:12px; background:#fff; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:14px">
-          <div>
-            <div style="display:flex; align-items:center; gap:8px">
-              <span class="badge badge-success">ZAPLANOWANA</span>
-              <strong style="font-size:16px">Wideorozmowa: ${esc(w.temat || 'Sprawy ogólne')}</strong>
-            </div>
-            <div style="font-size:14px; margin-top:4px; color:var(--ink)">
-              🗓️ <b>${esc(w.data)}</b> o godzinie <b>${esc(w.godzina)}</b>
-            </div>
-            <div style="font-size:12px; color:var(--ink-muted)">
-              Link do pokoju ZUS: <a href="${esc(w.link_do_wideorozmowy || '#')}" target="_blank" rel="noopener noreferrer" style="color:var(--zus-green)">${esc(w.link_do_wideorozmowy || 'https://ewizyta.zus.pl/pokoj/' + w.id_wizyty)}</a>
-            </div>
-          </div>
-          <div style="display:flex; gap:8px">
-            <a href="${esc(w.link_do_wideorozmowy || '#')}" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-sm">📹 Dołącz do e-Wizyty</a>
-            <button class="btn btn-outline btn-sm" onclick="anulujEwizyte('${esc(w.id_wizyty)}')">Odwołaj</button>
-          </div>
-        </div>
-      `).join('');
     }
 
     function scrollToTerminy() {
@@ -2233,17 +2436,23 @@
 
     async function rezerwujEwizyte(idTerminu, data, godzina) {
       const user = DEMO_USERS[STATE.activeUserKey];
+      if (!user.pesel) {
+        showToast('Rezerwacja e-Wizyty wymaga indywidualnego konta z numerem PESEL.', 'error');
+        return;
+      }
       try {
         await apiRequest('/api/zus/ewizyty/rezerwuj', 'POST', {
           id_terminu: idTerminu,
-          pesel: user.pesel || '90031501245',
-          imie_nazwisko: `${user.imie || 'Marta'} ${user.nazwisko || 'Kowalska'}`
+          pesel: user.pesel,
+          imie_nazwisko: user.imie ? `${user.imie} ${user.nazwisko}` : user.nazwa
         });
         showToast(`Zarezerwowano e-Wizytę na dzień ${data} godz. ${godzina}!`);
         wczytajMojeEwizyty();
         wczytajTerminyEwizyt();
       } catch (err) {
-        showToast('Błąd rezerwacji e-wizyty: ' + err.message, 'error');
+        if (!err.toastShown) {
+          showToast('Błąd rezerwacji e-wizyty: ' + err.message, 'error');
+        }
       }
     }
 
@@ -2255,7 +2464,9 @@
         wczytajMojeEwizyty();
         wczytajTerminyEwizyt();
       } catch (err) {
-        showToast('Błąd anulowania wizyty: ' + err.message, 'error');
+        if (!err.toastShown) {
+          showToast('Błąd anulowania wizyty: ' + err.message, 'error');
+        }
       }
     }
 
@@ -2264,27 +2475,30 @@
     // ==========================================================================
 
     async function wczytajWnioski() {
-      const data = await apiRequest('/api/zus/wnioski/moje', 'GET');
-      const wnioski = data.wnioski || [];
-      STATE.wnioskiList = wnioski;
-      document.getElementById('wnioskiCountBadge').textContent = wnioski.length;
+      try {
+        const data = await apiRequest('/api/zus/wnioski/moje', 'GET');
+        const wnioski = (data && data.wnioski) || [];
+        STATE.wnioskiList = wnioski;
+        document.getElementById('wnioskiCountBadge').textContent = wnioski.length;
 
-      const tbody = document.getElementById('wnioskiTableBody');
-      if (wnioski.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:20px; color:var(--ink-muted)">Brak złożonych wniosków.</td></tr>`;
-        return;
+        const tbody = document.getElementById('wnioskiTableBody');
+        if (wnioski.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:20px; color:var(--ink-muted)">Brak złożonych wniosków.</td></tr>`;
+          return;
+        }
+
+        tbody.innerHTML = wnioski.map(w => `
+          <tr>
+            <td><code style="font-weight:700">${esc(w.id_wniosku)}</code></td>
+            <td><b>${esc(w.typ_wniosku)}</b></td>
+            <td>${esc(w.data_zlozenia)}</td>
+            <td><small style="color:var(--ink-muted)">${esc(w.opis || 'Wniosek złożony elektronicznie przez mObywatel/PUE')}</small></td>
+            <td><span class="badge ${w.status === 'rozpatrzony_pozytywnie' ? 'badge-success' : 'badge-warning'}">${esc(w.status || 'w_trakcie_rozpatrywania')}</span></td>
+          </tr>
+        `).join('');
+      } catch (err) {
+        console.warn('[ZUS] Błąd wczytywania wniosków:', err.message);
       }
-
-      tbody.innerHTML = wnioski.map(w => `
-        <tr>
-          <td><code style="font-weight:700">${esc(w.id_wniosku)}</code></td>
-          <td><b>${esc(w.typ_wniosku)}</b></td>
-          <td>${esc(w.data_zlozenia)}</td>
-          <td><small style="color:var(--ink-muted)">${esc(w.opis || 'Wniosek złożony elektronicznie przez mObywatel/PUE')}</small></td>
-          <td><span class="badge ${w.status === 'rozpatrzony_pozytywnie' ? 'badge-success' : 'badge-warning'}">${esc(w.status || 'w_trakcie_rozpatrywania')}</span></td>
-        </tr>
-      `).join('');
-      `).join('');
     }
 
     function openNowyWniosekModal() {
@@ -2294,12 +2508,16 @@
     async function wykonajZlozenieWniosku(e) {
       e.preventDefault();
       const user = DEMO_USERS[STATE.activeUserKey];
+      if (!user.pesel) {
+        showToast('Składanie wniosków w PUE ZUS wymaga konta z numerem PESEL.', 'error');
+        return;
+      }
       const typ = document.getElementById('wniosekTypSelect').value;
       const uwagi = document.getElementById('wniosekUwagiInput').value;
 
       try {
         const odp = await apiRequest('/api/zus/wnioski', 'POST', {
-          pesel: user.pesel || '90031501245',
+          pesel: user.pesel,
           typ_wniosku: typ,
           dane: { uwagi, wnioskodawca: user.imie ? `${user.imie} ${user.nazwisko}` : user.nazwa }
         });
@@ -2307,7 +2525,9 @@
         showToast(`Wniosek zarejestrowany! Nr sprawy: ${odp.id_wniosku}`);
         wczytajWnioski();
       } catch (err) {
-        showToast('Błąd składania wniosku: ' + err.message, 'error');
+        if (!err.toastShown) {
+          showToast('Błąd składania wniosku: ' + err.message, 'error');
+        }
       }
     }
 
@@ -2414,6 +2634,9 @@
 
       // GET /api/zus/konto
       if (endpoint.startsWith('/api/zus/konto')) {
+        if (!u.pesel || STATE.isPlatnikView) {
+          return null;
+        }
         const p = u.pesel || '90031501245';
         return MOCK_DB.konta[p] || MOCK_DB.konta['90031501245'];
       }
@@ -2556,7 +2779,14 @@
     // ==========================================================================
 
     function zaladujWszystko() {
-      odswiezKonto();
+      const user = DEMO_USERS[STATE.activeUserKey];
+      if (!STATE.isPlatnikView && user && user.pesel && !user.pwz) {
+        odswiezKonto();
+      } else if (user && user.pwz) {
+        renderKontoInstytucjonalne(user, 'lekarz');
+      } else {
+        renderKontoInstytucjonalne(user, 'platnik');
+      }
       wczytajEzla();
       wczytajTerminyEwizyt();
       wczytajMojeEwizyty();

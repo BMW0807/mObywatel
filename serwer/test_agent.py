@@ -113,6 +113,54 @@ class ZgodnyClientTests(unittest.TestCase):
             card_events = [e for e in events if e.get('t') == 'card']
             self.assertEqual(len(card_events), 1)
 
+    def test_popraw_jezyk_zgodny_success(self):
+        captured = {}
+        payload = {
+            'choices': [{
+                'message': {
+                    'role': 'assistant',
+                    'content': 'Poprawny polski tekst bez obcych liter'
+                }
+            }]
+        }
+
+        def fake_urlopen(request, timeout):
+            captured['url'] = request.full_url
+            captured['headers'] = dict(request.headers)
+            captured['body'] = json.loads(request.data.decode('utf-8'))
+            return _Response(payload)
+
+        with patch.object(agent, 'PROVIDER', 'zgodny'), \
+                patch.object(agent, 'ZGODNY_MODEL', 'test-model'), \
+                patch.object(agent, 'ZGODNY_BAZA', 'https://api.test/v1'), \
+                patch.object(agent.urllib.request, 'urlopen', fake_urlopen):
+            wynik = agent.popraw_jezyk('Tekst z obcymi literami: Привет мир', {'zgodny': 'klucz-test'}, lambda _: None)
+
+        self.assertEqual(wynik, 'Poprawny polski tekst bez obcych liter')
+        self.assertEqual(captured['url'], 'https://api.test/v1/chat/completions')
+        self.assertEqual(captured['headers'].get('Authorization'), 'Bearer klucz-test')
+        self.assertEqual(captured['body']['model'], 'test-model')
+        self.assertEqual(captured['body']['max_tokens'], 600)
+        self.assertIn('Popraw tekst na poprawną polszczyznę', captured['body']['messages'][0]['content'])
+        self.assertEqual(captured['body']['messages'][1]['content'], 'Tekst z obcymi literami: Привет мир')
+
+    def test_popraw_jezyk_zgodny_fallback_on_error(self):
+        import urllib.error
+
+        def fake_urlopen_fail(request, timeout):
+            raise urllib.error.URLError('timeout')
+
+        with patch.object(agent, 'PROVIDER', 'zgodny'), \
+                patch.object(agent, 'ZGODNY_MODEL', 'test-model'), \
+                patch.object(agent, 'ZGODNY_BAZA', 'https://api.test/v1'), \
+                patch.object(agent.urllib.request, 'urlopen', fake_urlopen_fail):
+            # 'Если' powinno zostać przetłumaczone na 'Jeśli' przez słownik awaryjny,
+            # a pozostałe znaki cyrylicy usunięte
+            wynik = agent.popraw_jezyk('Если dokumenty są gotowe', {'zgodny': 'klucz-test'}, lambda _: None)
+
+        self.assertIn('Jeśli', wynik)
+        self.assertNotIn('Если', wynik)
+
 
 if __name__ == '__main__':
     unittest.main()

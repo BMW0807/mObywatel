@@ -16,7 +16,7 @@ jobs:
 
       - name: Sprawdzenie składni i uruchomienie testów jednostkowych
         run: |
-          python3 -m py_compile serwer/server.py serwer/agent.py serwer/dane.py serwer/akcje.py serwer/persony.py zus_backend/server.py zus_backend/baza.py zus_backend/kalkulator.py
+          python3 -m compileall serwer zus_backend -q
           python3 -m unittest discover -s serwer -p "test_*.py" -v
           python3 -m unittest discover -s zus_backend/tests -p "test_*.py" -v
 

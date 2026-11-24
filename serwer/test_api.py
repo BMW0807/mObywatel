@@ -416,8 +416,9 @@ class ApiTestCase(unittest.TestCase):
             st, _, body = self.request('/api/agent', method='POST', data={'messages': [{'role': 'user', 'content': 'hej'}]})
             self.assertEqual(st, 500)
             err = json.loads(body.decode('utf-8'))
-            self.assertNotIn('SensibleDatabaseSecret', err.get('error', ''))
-            self.assertIn('błąd serwera', err.get('error', '').lower())
+            self.assertNotIn('SensibleDatabaseSecret', err.get('blad', ''))
+            self.assertIn('błąd serwera', err.get('blad', '').lower())
+            self.assertRegex(err.get('blad', ''), r'Wewnętrzny błąd serwera \(kod: [0-9a-f]{8}\)')
 
     def test_rate_bucket_prunes_on_high_unique_ips(self):
         now = 100000.0
