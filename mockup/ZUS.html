@@ -853,11 +853,11 @@
     <div class="server-banner-inner">
       <div>
         <strong>Status usługi REST API ZUS:</strong>
-        <span id="serverBannerMsg">Sprawdzanie dostępności backendu na <code>http://localhost:8795</code>...</span>
+        <span id="serverBannerMsg">Sprawdzanie dostępności backendu...</span>
       </div>
       <div class="server-banner-btns">
         <button class="btn-banner" onclick="testBackendConnection()">Sprawdź połączenie</button>
-        <button class="btn-banner" onclick="openBackendModal()">Konfiguracja portu</button>
+        <button class="btn-banner" onclick="openBackendModal()">Konfiguracja API</button>
       </div>
     </div>
   </div>
@@ -1540,18 +1540,12 @@
       </div>
 
       <div style="font-size:13.5px; margin-bottom:16px">
-        <p>Aplikacja łączy się z autonomicznym serwerem REST API ZUS & e-ZLA.</p>
-        <div style="background:#f8fafc; border:1px solid var(--hairline); padding:12px; border-radius:8px; margin:10px 0">
-          <strong>Uruchomienie serwera w terminalu:</strong><br>
-          <code style="display:block; margin-top:6px; background:#e2e8f0; padding:6px 10px; border-radius:4px; font-family:Consolas,monospace">
-            python -m zus_backend.server 8795
-          </code>
-        </div>
+        <p>Aplikacja łączy się bezpośrednio z usługą REST API ZUS & e-ZLA działającą na tym samym serwerze (port 8790).</p>
       </div>
 
       <div class="form-group">
-        <label class="form-label">Adres URL Backend API:</label>
-        <input type="url" class="form-input" id="backendUrlInput" value="http://localhost:8795" required>
+        <label class="form-label">Adres URL Backend API (pozostaw puste dla bieżącego serwera):</label>
+        <input type="text" class="form-input" id="backendUrlInput" placeholder="(domyślny - ten sam serwer)" value="">
       </div>
 
       <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:20px">
@@ -1570,8 +1564,14 @@
        KLIENT REST API ZUS & AUTONOMICZNA INTEGRACJA Z MOCK/FALLBACK
        ========================================================================== */
 
+    let storedBackendUrl = localStorage.getItem('zus_backend_url') || '';
+    if (storedBackendUrl.includes(':8795')) {
+      localStorage.removeItem('zus_backend_url');
+      storedBackendUrl = '';
+    }
+
     const STATE = {
-      backendUrl: localStorage.getItem('zus_backend_url') || 'http://localhost:8795',
+      backendUrl: storedBackendUrl,
       isLiveBackend: false,
       activeUserKey: 'marta',
       activeTab: 'konto',
@@ -1668,13 +1668,15 @@
 
     function zapiszBackendUrl() {
       const val = document.getElementById('backendUrlInput').value.trim().replace(/\/$/, '');
+      STATE.backendUrl = val;
       if (val) {
-        STATE.backendUrl = val;
         localStorage.setItem('zus_backend_url', val);
-        closeModal('modalBackend');
-        showToast('Zapisano adres URL backendu. Ponowne sprawdzanie połączenia...');
-        testBackendConnection();
+      } else {
+        localStorage.removeItem('zus_backend_url');
       }
+      closeModal('modalBackend');
+      showToast('Zapisano konfigurację backendu. Ponowne sprawdzanie połączenia...');
+      testBackendConnection();
     }
 
     // --- KLIENT REST API ---
@@ -1734,14 +1736,15 @@
       const text = document.getElementById('apiStatusText');
       const banner = document.getElementById('serverBannerMsg');
 
+      const serverDisplay = STATE.backendUrl || (window.location.origin ? window.location.origin : '127.0.0.1:8790');
       if (isLive) {
         pill.className = 'api-status-pill online';
         text.textContent = 'REST API ZUS: Połączono';
-        banner.innerHTML = `Serwer działa na żywo pod adresem <code>${esc(STATE.backendUrl)}</code>. Wszystkie operacje są zapisywane w backendzie.`;
+        banner.innerHTML = `Serwer działa na żywo (<code>${esc(serverDisplay)}</code>). Wszystkie operacje są zapisywane w backendzie.`;
       } else {
         pill.className = 'api-status-pill mock';
-        text.textContent = 'Tryb Symulacji (uruchom backend)';
-        banner.innerHTML = `Serwer offline. Aby podłączyć API na żywo, wpisz w konsoli: <code>python -m zus_backend.server 8795</code>`;
+        text.textContent = 'Tryb Symulacji';
+        banner.innerHTML = `Serwer offline. Sprawdź dostępność pod adresem <code>${esc(serverDisplay)}</code>.`;
       }
     }
 
@@ -1752,7 +1755,7 @@
           const d = await resp.json();
           STATE.isLiveBackend = true;
           updateApiStatusUI(true);
-          showToast(`Połączono pomyślnie z ${d.service || 'ZUS Backend'}!`);
+          showToast(`Połączono pomyślnie z ${d.service || 'serwerem mObywatel & ZUS API'}!`);
           zaladujWszystko();
         } else {
           throw new Error(`HTTP ${resp.status}`);

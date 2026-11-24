@@ -58,6 +58,15 @@ class ZUSRequestHandler(BaseHTTPRequestHandler):
 
     def _dozwolone_origin(self) -> str:
         origin = self.headers.get("Origin", "")
+        host = self.headers.get("Host", "")
+        if origin:
+            try:
+                from urllib.parse import urlparse
+                parsed_origin = urlparse(origin)
+                if parsed_origin.netloc == host or parsed_origin.hostname in ("127.0.0.1", "localhost"):
+                    return origin
+            except Exception:
+                pass
         dozwolone = {
             "http://127.0.0.1:8790", "http://localhost:8790",
             "http://127.0.0.1:8795", "http://localhost:8795"
@@ -67,7 +76,7 @@ class ZUSRequestHandler(BaseHTTPRequestHandler):
             dozwolone.update(o.strip() for o in custom.split(",") if o.strip())
         if origin in dozwolone:
             return origin
-        return "http://127.0.0.1:8790" if not origin else ""
+        return origin if origin else "http://127.0.0.1:8790"
 
     def _wyslij_odpowiedz(self, status: int, cialo: Any, content_type: str = "application/json; charset=utf-8"):
         self.send_response(status)
@@ -141,14 +150,14 @@ class ZUSRequestHandler(BaseHTTPRequestHandler):
 
         try:
             # Dokumentacja i metadane
-            if sciezka in ("", "/", "/docs"):
+            if sciezka in ("", "/", "/docs", "/zus/docs"):
                 html = generuj_swagger_html()
                 return self._wyslij_odpowiedz(200, html, content_type="text/html; charset=utf-8")
 
-            if sciezka == "/openapi.json":
+            if sciezka in ("/openapi.json", "/zus/openapi.json"):
                 return self._wyslij_odpowiedz(200, OPENAPI_SPEC)
 
-            if sciezka == "/api/health":
+            if sciezka in ("/api/health", "/api/zus/health"):
                 return self._wyslij_odpowiedz(200, {"status": "ok", "service": "ZUS & e-ZLA Backend API", "wersja": "1.0.0"})
 
             # ZUS: Konto ubezpieczonego

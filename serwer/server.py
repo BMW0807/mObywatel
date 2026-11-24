@@ -9,6 +9,14 @@ mimetypes.add_type('application/manifest+json', '.webmanifest')
 mimetypes.add_type('application/manifest+json', '.json')
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
+ROOT_DIR = os.path.dirname(HERE)
+if ROOT_DIR not in sys.path:
+    sys.path.insert(0, ROOT_DIR)
+try:
+    from zus_backend.server import ZUSRequestHandler
+except ImportError:
+    class ZUSRequestHandler:
+        pass
 
 def wczytaj_env(sciezka):
     """Wczytuje plik .env (KLUCZ=wartość) do zmiennych środowiskowych; nie nadpisuje już ustawionych."""
@@ -221,27 +229,58 @@ def tts(text, lang='pl'):
     req = urllib.request.Request('https://api.openai.com/v1/audio/speech', data=body, headers={'Authorization': 'Bearer ' + klucz, 'Content-Type': 'application/json'})
     with urllib.request.urlopen(req, timeout=60) as r: return r.read(), 'openai'
 
-class H(SimpleHTTPRequestHandler):
+class H(ZUSRequestHandler, SimpleHTTPRequestHandler):
     def __init__(self, *a, **kw): super().__init__(*a, directory=ROOT, **kw)
     def log_message(self, *a): pass
     def end_headers(self):
-        self.send_header('X-Content-Type-Options', 'nosniff')
-        self.send_header('Referrer-Policy', 'same-origin')
-        self.send_header('X-Frame-Options', 'SAMEORIGIN')
-        csp = (
-            "default-src 'self'; "
-            "script-src 'self' 'unsafe-inline'; "
-            "style-src 'self' 'unsafe-inline'; "
-            "img-src 'self' data: blob:; "
-            "media-src 'self' data: blob:; "
-            "connect-src 'self' http://127.0.0.1:* http://localhost:* https://api.openai.com https://api.anthropic.com https://api.elevenlabs.io https://integrate.api.nvidia.com; "
-            "frame-ancestors 'self'; "
-            "base-uri 'self';"
-        )
-        self.send_header('Content-Security-Policy', csp)
+        buf = getattr(self, '_headers_buffer', [])
+        headers_str = b"".join(buf).decode('latin1', 'ignore') if buf else ""
+        if 'x-content-type-options' not in headers_str.lower():
+            self.send_header('X-Content-Type-Options', 'nosniff')
+        if 'referrer-policy' not in headers_str.lower():
+            self.send_header('Referrer-Policy', 'same-origin')
+        if 'x-frame-options' not in headers_str.lower():
+            self.send_header('X-Frame-Options', 'SAMEORIGIN')
+        if 'content-security-policy' not in headers_str.lower():
+            csp = (
+                "default-src 'self'; "
+                "script-src 'self' 'unsafe-inline'; "
+                "style-src 'self' 'unsafe-inline'; "
+                "img-src 'self' data: blob:; "
+                "media-src 'self' data: blob:; "
+                "connect-src 'self' http://127.0.0.1:* http://localhost:* https://api.openai.com https://api.anthropic.com https://api.elevenlabs.io https://integrate.api.nvidia.com; "
+                "frame-ancestors 'self'; "
+                "base-uri 'self';"
+            )
+            self.send_header('Content-Security-Policy', csp)
         if not getattr(self, '_cc_set', False) and not self.path.startswith('/api/'):
             self.send_header('Cache-Control', 'no-cache')
         super().end_headers()
+
+    def _czy_zus_get(self, p):
+        return (
+            p.startswith('/api/zus/') or
+            p.startswith('/api/l4/') or
+            p.startswith('/api/auth/') or
+            p in ('/openapi.json', '/docs', '/zus/docs', '/zus/openapi.json')
+        )
+
+    def _czy_zus_post(self, p):
+        return (
+            p.startswith('/api/zus/') or
+            p.startswith('/api/l4/') or
+            p.startswith('/api/auth/')
+        )
+
+    def do_OPTIONS(self):
+        p = urlparse(self.path).path
+        if self._czy_zus_get(p) or self._czy_zus_post(p):
+            return ZUSRequestHandler.do_OPTIONS(self)
+        self.send_response(204)
+        self.send_header('Access-Control-Allow-Origin', '*')
+        self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
+        self.send_header('Access-Control-Allow-Headers', '*')
+        self.end_headers()
     def klient_ip(self):
         raw_ip = (self.client_address[0] if self.client_address else '') or 'local'
         # shortcut: ufa nagłówkom proxy tylko przy jawnej fladze środowiskowej TRUST_PROXY=1
@@ -342,12 +381,14 @@ class H(SimpleHTTPRequestHandler):
     def _obsluz_get(self, head_only=False):
         u = urlparse(self.path)
         p, q = u.path, u.query
+        if self._czy_zus_get(p):
+            return ZUSRequestHandler.do_GET(self)
         if p == '/api/health':
             if zablokowane():
-                return self.js(dict(ok=True, status='ok', agent=True, stt=True, tts=False, provider='brak', model='brak', blokada=True), head_only=head_only)
+                return self.js(dict(ok=True, status='ok', agent=True, zus=True, stt=True, tts=False, provider='brak', model='brak', blokada=True), head_only=head_only)
             prov = agent.PROVIDER
             glos = bool(k('openai') or k('elevenlabs'))
-            return self.js(dict(ok=True, status='ok', agent=bool(k(prov)), stt=glos, tts=bool(k('openai') or el_ok('tts')), provider=prov,
+            return self.js(dict(ok=True, status='ok', agent=bool(k(prov)), zus=True, stt=glos, tts=bool(k('openai') or el_ok('tts')), provider=prov,
                                 glos=dict(stt='elevenlabs' if el_ok('stt') else 'openai', tts='elevenlabs' if el_ok('tts') else 'openai'),
                                 model=agent.OPENAI_MODEL if prov == 'openai' else agent.ZGODNY_MODEL if prov == 'zgodny' else (agent._model_ok or agent.MODELE[0])), head_only=head_only)
         if p in ('/api/i18n', '/api/i18n.js'):
@@ -397,6 +438,8 @@ class H(SimpleHTTPRequestHandler):
     def do_HEAD(self): return self._get_bezpiecznie(True)
     def do_POST(self):
         p = urlparse(self.path).path
+        if self._czy_zus_post(p):
+            return ZUSRequestHandler.do_POST(self)
         try:
             koszyk = 'ai' if p in ('/api/agent', '/api/stt', '/api/tts') else ('znak' if p.startswith('/api/znak/') else 'api')
             ok_lim, retry = sprawdz_limit(self.klient_ip(), koszyk)
@@ -518,12 +561,12 @@ class H(SimpleHTTPRequestHandler):
             self.js(dict(blad=f'Wewnętrzny błąd serwera (kod: {err_id})'), 500)
 
 def czy_uruchomic_zus():
-    """Sprawdza, czy backend ZUS powinien zostać uruchomiony (START_ZUS=1 lub flaga CLI --start-zus / --zus)."""
+    """Sprawdza, czy backend ZUS powinien zostać dodatkowo uruchomiony na osobnym porcie (np. dla testów zewnętrznych)."""
     if '--no-zus' in sys.argv:
         return False
-    if '--start-zus' in sys.argv or '--zus' in sys.argv:
+    if '--start-zus' in sys.argv or '--zus' in sys.argv or '--zus-port' in sys.argv or '--port-zus' in sys.argv:
         return True
-    val = os.environ.get('START_ZUS', '').strip().lower()
+    val = os.environ.get('START_ZUS_SEPARATE_PORT', '').strip().lower()
     return val in ('1', 'true', 'yes', 'tak', 'on')
 
 
