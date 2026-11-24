@@ -102,7 +102,7 @@ zainicjalizuj_sesje_demo()
 def uwierzytelnij(login: str, haslo: str) -> Optional[SesjaUzytkownika]:
     """Weryfikuje login i hasło oraz generuje nowy token sesji."""
     konto = UZYTKOWNICY_DEMO.get(login)
-    if not konto or konto["haslo"] != haslo:
+    if not konto or not isinstance(haslo, str) or not secrets.compare_digest(konto["haslo"], haslo):
         return None
 
     nowy_token = f"zus_{secrets.token_hex(24)}"

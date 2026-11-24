@@ -153,7 +153,8 @@ function qrSVG(seed=7){
  for(let y=0;y<n;y++)for(let x=0;x<n;x++){if((x<8&&y<8)||(x>16&&y<8)||(x<8&&y>16))continue;if(r()>.52)p+=`<rect x="${x}" y="${y}" width="1" height="1"/>`}
  return `<svg viewBox="-1 -1 27 27" fill="currentColor" shape-rendering="crispEdges">${p}${fin(0.5,0.5)}${fin(18.5,0.5)}${fin(0.5,18.5)}</svg>`;
 }
-function rowsH(rows){return rows.map(([k,v])=>{const kl=(k||'').length,vl=(v||'').length;const s=kl>18||vl>22||(kl+vl>34);return `<div class="row${s?' row-stack':''}"><span>${k}</span><b>${v}</b></div>`}).join('')}
+const esc=t=>(t==null?'':String(t)).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function rowsH(rows){return (rows||[]).map(([k,v])=>{const ks=esc(k),vs=esc(v);const kl=ks.length,vl=vs.length;const s=kl>18||vl>22||(kl+vl>34);return `<div class="row${s?' row-stack':''}"><span>${ks}</span><b>${vs}</b></div>`}).join('')}
 function closeDoc(){const det=$('#detail');if(!det||!det.classList.contains('on'))return;det.classList.remove('on');if(typeof restoreDialogFocus==='function')restoreDialogFocus('detail')}
 /* ---------- Pomocniki dla kart HDK i OSP ---------- */
 function showHdkDonationDetails(d){
@@ -374,23 +375,22 @@ function openDoc(id){
 }
 
 /* ---------- rozmowa ---------- */
-const esc=t=>t.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
 function el(h){const t=document.createElement('template');t.innerHTML=h.trim();return t.content.firstElementChild}
 function end(){requestAnimationFrame(()=>msgs.scrollTo({top:msgs.scrollHeight,behavior:FAST?'auto':'smooth'}))}
 function clearEmpty(){const e=msgs.querySelector('.empty');if(e)e.remove()}
 function addUser(t){clearEmpty();const foto=/^(Zdjęcie dowodu|Dodano \d+ zdjęci)/.test(t);msgs.append(el(`<div class="msg user${foto?' foto':''}" data-t="0">${foto&&typeof ikona==='function'?ikona('camera')+' ':''}${esc(t)}</div>`));end();touch('user',t)}
 async function say(t){clearEmpty();const ty=el('<div class="typing" aria-hidden="true"><i></i><i></i><i></i></div>');msgs.append(ty);end();await sleep(Math.min(1100,400+t.replace(/<[^>]+>/g,'').length*6));ty.remove();const p=plain(t);msgs.append(el(`<div class="msg bot">${t}</div>`));end();touch('bot',p);if(typeof announceSR==='function')announceSR(p)}
-function hd(icon,title){return `<div class="hd"><div class="ic">${svg(icon)}</div><div class="tt">${title}</div></div>`}
-const srcH=s=>s?`<div class="src">${svg('db')}${s}</div>`:'';
+function hd(icon,title){return `<div class="hd"><div class="ic">${svg(icon)}</div><div class="tt">${esc(title)}</div></div>`}
+const srcH=s=>s?`<div class="src">${svg('db')}${esc(s)}</div>`:'';
 async function card(h){await sleep(160);const c=el(h);msgs.append(c);end();return c}
 function info({icon='doc',title,source,rows=[],body='',flag='',note='',tone='',pojazd=null,tl=0}){
- return card(`<div class="ui ${tone}"${tl?' data-t="0"':''}>${hd(icon,title)}${sylBanner(pojazd)}${body?`<div class="body">${body}</div>`:''}${rows.length?`<div class="rows">${rowsH(rows)}</div>`:''}${flag?`<div class="flag">${flag}</div>`:''}${note?`<div class="note">${note}</div>`:''}${srcH(source)}</div>`);
+ return card(`<div class="ui ${tone}"${tl?' data-t="0"':''}>${hd(icon,title)}${sylBanner(pojazd)}${body?`<div class="body">${body}</div>`:''}${rows.length?`<div class="rows">${rowsH(rows)}</div>`:''}${flag?`<div class="flag">${esc(flag)}</div>`:''}${note?`<div class="note">${esc(note)}</div>`:''}${srcH(source)}</div>`);
 }
 function result(o){
  if(typeof MobStore!=='undefined'){
   try{
    const upo=MobStore.addUPO({title:o.title||'Załatwiona sprawa',source:o.source||'Rejestr Państwowy',rows:o.rows||[]});
-   const btnH=`<div class="upo-attach"><button type="button" class="btn ghost upo-view-btn" onclick='openUPO(${JSON.stringify(upo)})'><i class="ik ik-file" aria-hidden="true"></i> Urzędowe Poświadczenie Odbioru (${upo.upo})</button></div>`;
+   const btnH=`<div class="upo-attach"><button type="button" class="btn ghost upo-view-btn" onclick='openUPO(${JSON.stringify(upo)})'><i class="ik ik-file" aria-hidden="true"></i> Urzędowe Poświadczenie Odbioru (${esc(upo.upo)})</button></div>`;
    o.body=(o.body||'')+btnH;
   }catch(e){}
  }
@@ -398,7 +398,7 @@ function result(o){
  return info({icon:'check',tone:'ok',...o});
 }
 async function confirmCard({icon='doc',title,source,rows,note='',body='',label='Potwierdź',then,onCancel,pojazd=null,tl=0}){
- const c=await card(`<div class="ui" role="region" aria-label="Karta potwierdzenia: ${esc(title||label)}"${tl?' data-t="0"':''}>${hd(icon,title)}${sylBanner(pojazd)}${body?`<div class="body">${body}</div>`:''}<div class="rows">${rowsH(rows)}</div>${note?`<div class="note">${note}</div>`:''}<div class="actions"><button type="button" class="btn ghost">${(window.T||(s=>s))('Anuluj')}</button><button type="button" class="btn primary">${label}</button></div>${srcH(source)}</div>`);
+ const c=await card(`<div class="ui" role="region" aria-label="Karta potwierdzenia: ${esc(title||label)}"${tl?' data-t="0"':''}>${hd(icon,title)}${sylBanner(pojazd)}${body?`<div class="body">${body}</div>`:''}<div class="rows">${rowsH(rows)}</div>${note?`<div class="note">${esc(note)}</div>`:''}<div class="actions"><button type="button" class="btn ghost">${(window.T||(s=>s))('Anuluj')}</button><button type="button" class="btn primary">${esc(label)}</button></div>${srcH(source)}</div>`);
  if(typeof announceSR==='function')announceSR('Wymagane potwierdzenie: '+(title||label)+'. Sprawdź dane i wybierz '+label+' lub Anuluj.');
  const [no,ok]=c.querySelectorAll('.btn');
  ok.onclick=()=>act(async()=>{c.querySelector('.actions').remove();await faceid();c.classList.add('done');then&&then()});
@@ -406,12 +406,12 @@ async function confirmCard({icon='doc',title,source,rows,note='',body='',label='
 }
 function chips(opts,noT){
  const row=el('<div class="chips"></div>');if(noT)row.dataset.t='0';
- opts.forEach(o=>{const b=el(`<button>${o.label}</button>`);b.onclick=()=>act(()=>{row.remove();pending=null;addUser(o.say||o.label);o.go&&o.go()});row.append(b)});
+ opts.forEach(o=>{const b=el(`<button>${esc(o.label)}</button>`);b.onclick=()=>act(()=>{row.remove();pending=null;addUser(o.say||o.label);o.go&&o.go()});row.append(b)});
  msgs.append(row);end();
 }
 function multi(opts,next,noT){
  const row=el('<div class="chips"></div>'),sel=new Set();if(noT)row.dataset.t='0';
- opts.forEach(o=>{const b=el(`<button>${o}</button>`);b.onclick=()=>{sel.has(o)?sel.delete(o):sel.add(o);b.classList.toggle('sel')};row.append(b)});
+ opts.forEach(o=>{const b=el(`<button>${esc(o)}</button>`);b.onclick=()=>{sel.has(o)?sel.delete(o):sel.add(o);b.classList.toggle('sel')};row.append(b)});
  const n=el('<button class="next">Dalej</button>');n.onclick=()=>{if(!sel.size)return;act(()=>{row.remove();const a=opts.filter(o=>sel.has(o));addUser(a.join(', '));next(a)})};row.append(n);
  msgs.append(row);end();
 }

@@ -48,15 +48,38 @@ else:
     from zus_backend.openapi import OPENAPI_SPEC, generuj_swagger_html
 
 
+class BrakAutoryzacji(Exception): pass
+class BrakUprawnien(Exception): pass
+
+
 class ZUSRequestHandler(BaseHTTPRequestHandler):
     server_version = "ZUS-REST-API/1.0"
+    MAX_JSON_PAYLOAD = 262144  # 256 KB
+
+    def _dozwolone_origin(self) -> str:
+        origin = self.headers.get("Origin", "")
+        dozwolone = {
+            "http://127.0.0.1:8790", "http://localhost:8790",
+            "http://127.0.0.1:8795", "http://localhost:8795"
+        }
+        custom = os.environ.get("ALLOWED_ORIGINS", "")
+        if custom:
+            dozwolone.update(o.strip() for o in custom.split(",") if o.strip())
+        if origin in dozwolone:
+            return origin
+        return "http://127.0.0.1:8790" if not origin else ""
 
     def _wyslij_odpowiedz(self, status: int, cialo: Any, content_type: str = "application/json; charset=utf-8"):
         self.send_response(status)
         self.send_header("Content-Type", content_type)
-        self.send_header("Access-Control-Allow-Origin", "*")
+        origin_val = self._dozwolone_origin()
+        if origin_val:
+            self.send_header("Access-Control-Allow-Origin", origin_val)
+            self.send_header("Vary", "Origin")
         self.send_header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
         self.send_header("Access-Control-Allow-Headers", "Content-Type, Authorization, X-API-Key")
+        self.send_header("X-Content-Type-Options", "nosniff")
+        self.send_header("X-Frame-Options", "SAMEORIGIN")
         self.end_headers()
 
         if isinstance(cialo, str):
@@ -75,13 +98,17 @@ class ZUSRequestHandler(BaseHTTPRequestHandler):
         self._wyslij_odpowiedz(204, None)
 
     def _odczytaj_json(self) -> Dict[str, Any]:
-        """Bezpiecznie odczytuje i parsuje treść żądania JSON."""
+        """Bezpiecznie odczytuje i parsuje treść żądania JSON z limitem rozmiaru."""
         try:
             dlugosc = int(self.headers.get("Content-Length", 0))
             if dlugosc <= 0:
                 return {}
+            if dlugosc > self.MAX_JSON_PAYLOAD:
+                raise ValueError(f"Przekroczono dopuszczalny rozmiar żądania ({self.MAX_JSON_PAYLOAD} B)")
             surowe = self.rfile.read(dlugosc).decode("utf-8")
             return json.loads(surowe)
+        except ValueError:
+            raise
         except Exception as e:
             raise ValueError(f"Nieprawidłowy format JSON: {str(e)}")
 
@@ -94,9 +121,16 @@ class ZUSRequestHandler(BaseHTTPRequestHandler):
     def _wymagaj_sesji(self) -> SesjaUzytkownika:
         sesja = self._pobierz_sesje()
         if not sesja:
-            # Fallback na konto testowe Marty Kowalskiej, aby umożliwić natychmiastowe testowanie bez nagłówków
-            sesja = AKTYWNE_SESJE.get("token-marta-90031501245")
+            raise BrakAutoryzacji("Wymagana autoryzacja. Podaj nagłówek Authorization: Bearer <token>")
         return sesja
+
+    def _sprawdz_pesel(self, sesja: SesjaUzytkownika, pesel: str):
+        if sesja.rola != Rola.URZEDNIK_ZUS and sesja.pesel != pesel:
+            raise BrakUprawnien(f"Brak uprawnień do przeglądania danych PESEL {pesel}.")
+
+    def _sprawdz_nip(self, sesja: SesjaUzytkownika, nip: str):
+        if sesja.rola != Rola.URZEDNIK_ZUS and (sesja.rola != Rola.PLATNIK or sesja.nip != nip):
+            raise BrakUprawnien(f"Brak uprawnień do przeglądania danych płatnika NIP {nip}.")
 
     # --- Routing GET ---
 
@@ -120,7 +154,8 @@ class ZUSRequestHandler(BaseHTTPRequestHandler):
             # ZUS: Konto ubezpieczonego
             if sciezka == "/api/zus/konto":
                 sesja = self._wymagaj_sesji()
-                pesel = query.get("pesel", [sesja.pesel or "90031501245"])[0]
+                pesel = query.get("pesel", [sesja.pesel])[0]
+                self._sprawdz_pesel(sesja, pesel)
                 konto = BAZA.pobierz_konto(pesel)
                 if not konto:
                     return self._wyslij_odpowiedz(404, {"blad": f"Nie znaleziono konta ZUS dla PESEL {pesel}"})
@@ -137,7 +172,8 @@ class ZUSRequestHandler(BaseHTTPRequestHandler):
             # ZUS: Symulacja emerytury
             if sciezka == "/api/zus/emerytura/symulacja":
                 sesja = self._wymagaj_sesji()
-                pesel = query.get("pesel", [sesja.pesel or "90031501245"])[0]
+                pesel = query.get("pesel", [sesja.pesel])[0]
+                self._sprawdz_pesel(sesja, pesel)
                 konto = BAZA.pobierz_konto(pesel) or {}
                 stan_k = float(query.get("stan_konta", [konto.get("stan_konta_emerytalnego", 184320.50)])[0])
                 stan_sub = float(query.get("stan_subkonta", [konto.get("stan_subkonta", 72150.80)])[0])
@@ -178,7 +214,8 @@ class ZUSRequestHandler(BaseHTTPRequestHandler):
             # L4: Lista zwolnień lekarskich pacjenta
             if sciezka == "/api/l4/moje":
                 sesja = self._wymagaj_sesji()
-                pesel = query.get("pesel", [sesja.pesel or "90031501245"])[0]
+                pesel = query.get("pesel", [sesja.pesel])[0]
+                self._sprawdz_pesel(sesja, pesel)
                 zwolnienia = BAZA.pobierz_zwolnienia_pacjenta(pesel)
                 return self._wyslij_odpowiedz(200, {
                     "pesel": pesel,
@@ -196,12 +233,21 @@ class ZUSRequestHandler(BaseHTTPRequestHandler):
                 ezla = BAZA.pobierz_ezla_po_id(id_ezla, dla_platnika=dla_platnika)
                 if not ezla:
                     return self._wyslij_odpowiedz(404, {"blad": f"Nie znaleziono e-ZLA o ID {id_ezla}"})
+                dostep = (
+                    sesja.rola == Rola.URZEDNIK_ZUS or
+                    (sesja.rola == Rola.LEKARZ and sesja.pwz == ezla.get("pwz_lekarza")) or
+                    (sesja.pesel and sesja.pesel == ezla.get("pesel_pacjenta")) or
+                    (sesja.rola == Rola.PLATNIK and sesja.nip and sesja.nip == ezla.get("nip_platnika"))
+                )
+                if not dostep:
+                    raise BrakUprawnien(f"Brak uprawnień do przeglądania e-ZLA {id_ezla}.")
                 return self._wyslij_odpowiedz(200, ezla)
 
             # L4: Widok płatnika składek (pracodawcy)
             if sciezka == "/api/l4/platnik":
                 sesja = self._wymagaj_sesji()
-                nip = query.get("nip", [sesja.nip or "5252525259"])[0]
+                nip = query.get("nip", [sesja.nip])[0]
+                self._sprawdz_nip(sesja, nip)
                 zwolnienia = BAZA.pobierz_zwolnienia_platnika(nip)
                 return self._wyslij_odpowiedz(200, {
                     "nip_platnika": nip,
@@ -213,8 +259,19 @@ class ZUSRequestHandler(BaseHTTPRequestHandler):
             # Nieznana ścieżka GET
             self._wyslij_odpowiedz(404, {"blad": f"Nie znaleziono endpointu GET: {sciezka}"})
 
-        except Exception as e:
-            self._wyslij_odpowiedz(500, {"blad": "Błąd wewnętrzny serwera", "szczegoly": str(e)})
+        except BrakAutoryzacji as ba:
+            self._wyslij_odpowiedz(401, {"blad": str(ba)})
+        except BrakUprawnien as bu:
+            self._wyslij_odpowiedz(403, {"blad": str(bu)})
+        except ValueError as ve:
+            kod_bledu = 413 if "rozmiar" in str(ve).lower() else 422
+            self._wyslij_odpowiedz(kod_bledu, {"blad": "Błąd walidacji danych", "szczegoly": str(ve)})
+        except KeyError as ke:
+            self._wyslij_odpowiedz(404, {"blad": str(ke)})
+        except PermissionError as pe:
+            self._wyslij_odpowiedz(403, {"blad": str(pe)})
+        except Exception:
+            self._wyslij_odpowiedz(500, {"blad": "Wewnętrzny błąd serwera"})
 
     # --- Routing POST ---
 
@@ -241,6 +298,7 @@ class ZUSRequestHandler(BaseHTTPRequestHandler):
             if sciezka == "/api/zus/wplata-nrs":
                 sesja = self._wymagaj_sesji()
                 pesel = dane.get("pesel", sesja.pesel or "82041203471")
+                self._sprawdz_pesel(sesja, pesel)
                 kwota = float(dane.get("kwota", 0.0))
                 tytul = dane.get("tytul", "Wpłata na składki ZUS")
                 if kwota <= 0:
@@ -252,8 +310,9 @@ class ZUSRequestHandler(BaseHTTPRequestHandler):
             if sciezka == "/api/zus/ewizyty/rezerwuj":
                 sesja = self._wymagaj_sesji()
                 id_terminu = dane.get("id_terminu")
-                pesel = dane.get("pesel", sesja.pesel or "90031501245")
-                imie_nazwisko = dane.get("imie_nazwisko", sesja.nazwa or "Marta Kowalska")
+                pesel = sesja.pesel or dane.get("pesel", "90031501245")
+                self._sprawdz_pesel(sesja, pesel)
+                imie_nazwisko = sesja.nazwa or dane.get("imie_nazwisko", "Marta Kowalska")
                 if not id_terminu:
                     return self._wyslij_odpowiedz(400, {"blad": "Wymagany parametr 'id_terminu'."})
                 wizyta = BAZA.zarezerwuj_ewizyte(pesel, id_terminu, imie_nazwisko)
@@ -263,7 +322,8 @@ class ZUSRequestHandler(BaseHTTPRequestHandler):
             if sciezka == "/api/zus/ewizyty/anuluj":
                 sesja = self._wymagaj_sesji()
                 id_wizyty = dane.get("id_wizyty")
-                pesel = dane.get("pesel", sesja.pesel or "90031501245")
+                pesel = sesja.pesel or dane.get("pesel", "90031501245")
+                self._sprawdz_pesel(sesja, pesel)
                 if not id_wizyty:
                     return self._wyslij_odpowiedz(400, {"blad": "Wymagany parametr 'id_wizyty'."})
                 wynik = BAZA.anuluj_ewizyte(id_wizyty, pesel)
@@ -272,7 +332,8 @@ class ZUSRequestHandler(BaseHTTPRequestHandler):
             # ZUS: Złożenie wniosku zasiłkowego
             if sciezka == "/api/zus/wnioski":
                 sesja = self._wymagaj_sesji()
-                pesel = dane.get("pesel", sesja.pesel or "90031501245")
+                pesel = sesja.pesel or dane.get("pesel", "90031501245")
+                self._sprawdz_pesel(sesja, pesel)
                 typ = dane.get("typ_wniosku", "Wniosek o zasiłek chorobowy ZAS-12")
                 dodatkowe = dane.get("dane", {})
                 wniosek = BAZA.zloz_wniosek_zasilkowy(pesel, typ, dodatkowe)
@@ -281,14 +342,15 @@ class ZUSRequestHandler(BaseHTTPRequestHandler):
             # L4: Wystawienie e-ZLA przez lekarza
             if sciezka == "/api/l4/wystaw":
                 sesja = self._wymagaj_sesji()
-                # Jeśli lekarz nie jest bezpośrednio w tokenie, sprawdzamy czy przesłano pwz w ciele
-                pwz = dane.get("pwz_lekarza") or sesja.pwz or (sesja.rola == Rola.LEKARZ and "7891234")
-                if not pwz and sesja.rola != Rola.URZEDNIK_ZUS:
-                    return self._wyslij_odpowiedz(403, {"blad": "Brak uprawnień lekarza. Wymagany ważny numer PWZ lekarza."})
+                if sesja.rola != Rola.LEKARZ and sesja.rola != Rola.URZEDNIK_ZUS:
+                    raise BrakUprawnien("Brak uprawnień lekarza. Wymagana rola lekarza z ważnym numerem PWZ.")
+
+                pwz = sesja.pwz or (sesja.rola == Rola.URZEDNIK_ZUS and dane.get("pwz_lekarza"))
+                if not pwz:
+                    raise BrakUprawnien("Brak ważnego numeru PWZ lekarza w sesji.")
 
                 dane["pwz_lekarza"] = pwz
-                if not dane.get("imie_nazwisko_lekarza"):
-                    dane["imie_nazwisko_lekarza"] = sesja.nazwa or "dr n. med. Tomasz Zieliński"
+                dane["imie_nazwisko_lekarza"] = sesja.nazwa or dane.get("imie_nazwisko_lekarza", "Lekarz")
 
                 nowe_ezla = BAZA.wystaw_ezla(dane)
                 return self._wyslij_odpowiedz(201, {
@@ -298,10 +360,22 @@ class ZUSRequestHandler(BaseHTTPRequestHandler):
 
             # L4: Anulowanie e-ZLA
             if sciezka == "/api/l4/anuluj":
+                sesja = self._wymagaj_sesji()
+                if sesja.rola not in (Rola.LEKARZ, Rola.URZEDNIK_ZUS):
+                    raise BrakUprawnien("Tylko lekarz lub urzędnik ZUS może anulować zaświadczenie e-ZLA.")
+
                 id_ezla = dane.get("id_ezla")
                 powod = dane.get("powod", "Pomyłka w dacie lub danych pacjenta")
                 if not id_ezla:
                     return self._wyslij_odpowiedz(400, {"blad": "Wymagany parametr 'id_ezla'."})
+
+                ezla = BAZA.pobierz_ezla_po_id(id_ezla)
+                if not ezla:
+                    return self._wyslij_odpowiedz(404, {"blad": f"Nie znaleziono e-ZLA o ID {id_ezla}"})
+
+                if sesja.rola == Rola.LEKARZ and sesja.pwz and ezla.get("pwz_lekarza") != sesja.pwz:
+                    raise BrakUprawnien("Lekarz może anulować wyłącznie wystawione przez siebie e-ZLA.")
+
                 anulowane = BAZA.anuluj_ezla(id_ezla, powod)
                 return self._wyslij_odpowiedz(200, {"komunikat": "Zwolnienie zostało anulowane", "ezla": anulowane})
 
@@ -334,21 +408,28 @@ class ZUSRequestHandler(BaseHTTPRequestHandler):
             # Nieznana ścieżka POST
             self._wyslij_odpowiedz(404, {"blad": f"Nie znaleziono endpointu POST: {sciezka}"})
 
+        except BrakAutoryzacji as ba:
+            self._wyslij_odpowiedz(401, {"blad": str(ba)})
+        except BrakUprawnien as bu:
+            self._wyslij_odpowiedz(403, {"blad": str(bu)})
         except ValueError as ve:
-            self._wyslij_odpowiedz(422, {"blad": "Błąd walidacji danych wejściowych", "szczegoly": str(ve)})
+            kod_bledu = 413 if "rozmiar" in str(ve).lower() else 422
+            self._wyslij_odpowiedz(kod_bledu, {"blad": "Błąd walidacji danych", "szczegoly": str(ve)})
         except KeyError as ke:
             self._wyslij_odpowiedz(404, {"blad": str(ke)})
         except PermissionError as pe:
             self._wyslij_odpowiedz(403, {"blad": str(pe)})
-        except Exception as e:
-            self._wyslij_odpowiedz(500, {"blad": "Wystąpił nieoczekiwany błąd serwera", "szczegoly": str(e)})
+        except Exception:
+            self._wyslij_odpowiedz(500, {"blad": "Wewnętrzny błąd serwera"})
 
 
 def uruchom_serwer(port: int = 8795):
+    host = os.environ.get("HOST", "127.0.0.1")
     try:
-        serwer = ThreadingHTTPServer(("0.0.0.0", port), ZUSRequestHandler)
+        serwer = ThreadingHTTPServer((host, port), ZUSRequestHandler)
     except Exception as e:
-        print(f"Błąd uruchamiania serwera ZUS na porcie {port}: {e}", file=sys.stderr, flush=True)
+        print(f"Błąd uruchamiania serwera ZUS na {host}:{port}: {e}", file=sys.stderr, flush=True)
+        return
         return
     print(f"================================================================")
     print(f"  ZUS & e-ZLA (L4) REST API Server uruchomiony na porcie {port}")

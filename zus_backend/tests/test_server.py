@@ -74,7 +74,8 @@ class TestZUSServer(unittest.TestCase):
         self.assertEqual(kod_bad, 401)
 
     def test_pobierz_konto_zus(self):
-        kod, odp = self._zapytanie("GET", "/api/zus/konto?pesel=90031501245")
+        # Wymaga sesji użytkownika
+        kod, odp = self._zapytanie("GET", "/api/zus/konto?pesel=90031501245", token="token-marta-90031501245")
         self.assertEqual(kod, 200)
         self.assertEqual(odp["imie"], "Marta")
         self.assertGreater(odp["stan_konta_emerytalnego"], 0)
@@ -86,7 +87,7 @@ class TestZUSServer(unittest.TestCase):
         self.assertGreater(odp["suma_laczna"], 0)
 
     def test_symulacja_emerytury(self):
-        kod, odp = self._zapytanie("GET", "/api/zus/emerytura/symulacja?pesel=90031501245")
+        kod, odp = self._zapytanie("GET", "/api/zus/emerytura/symulacja?pesel=90031501245", token="token-marta-90031501245")
         self.assertEqual(kod, 200)
         self.assertIn("prognozowana_emerytura_brutto", odp)
 
@@ -95,12 +96,12 @@ class TestZUSServer(unittest.TestCase):
             "pesel": "82041203471",
             "kwota": 500.0,
             "tytul": "Częściowa wpłata składki ZUS"
-        })
+        }, token="token-jan-82041203471")
         self.assertEqual(kod, 200)
         self.assertEqual(odp["kwota"], 500.0)
 
     def test_ewizyty_flow(self):
-        # 1. Pobranie wolnych terminów
+        # 1. Pobranie wolnych terminów (publiczne)
         kod1, odp1 = self._zapytanie("GET", "/api/zus/ewizyty/terminy")
         self.assertEqual(kod1, 200)
         self.assertGreater(odp1["liczba"], 0)
@@ -111,7 +112,7 @@ class TestZUSServer(unittest.TestCase):
             "id_terminu": id_terminu,
             "pesel": "90031501245",
             "imie_nazwisko": "Marta Kowalska"
-        })
+        }, token="token-marta-90031501245")
         self.assertEqual(kod2, 201)
         id_wizyty = odp2["id_wizyty"]
         self.assertEqual(odp2["status"], "potwierdzona")
@@ -131,7 +132,7 @@ class TestZUSServer(unittest.TestCase):
 
     def test_l4_flow(self):
         # 1. Lista moich e-ZLA
-        kod1, odp1 = self._zapytanie("GET", "/api/l4/moje?pesel=90031501245")
+        kod1, odp1 = self._zapytanie("GET", "/api/l4/moje?pesel=90031501245", token="token-marta-90031501245")
         self.assertEqual(kod1, 200)
         self.assertGreater(odp1["liczba_zwolnien"], 0)
 
@@ -175,13 +176,56 @@ class TestZUSServer(unittest.TestCase):
         self.assertEqual(odp4["dni_pracodawcy"], 5)
         self.assertGreater(odp4["kwota_netto_do_wyplaty"], 0)
 
-        # 5. Anulowanie zwolnienia
+        # 5. Anulowanie zwolnienia przez uprawnionego lekarza
         kod5, odp5 = self._zapytanie("POST", "/api/l4/anuluj", {
             "id_ezla": id_nowego,
             "powod": "Wystawiono w celu testu integracyjnego"
-        })
+        }, token="token-lekarz-pwz-7891234")
         self.assertEqual(kod5, 200)
         self.assertEqual(odp5["ezla"]["status"], "anulowane")
+
+    def test_zabezpieczenia_brak_autoryzacji_zwraca_401(self):
+        # Brak tokenu na chronionych endpointach
+        kod1, _ = self._zapytanie("GET", "/api/zus/konto?pesel=90031501245")
+        self.assertEqual(kod1, 401)
+
+        kod2, _ = self._zapytanie("GET", "/api/l4/moje?pesel=90031501245")
+        self.assertEqual(kod2, 401)
+
+        kod3, _ = self._zapytanie("POST", "/api/zus/wplata-nrs", {"kwota": 100})
+        self.assertEqual(kod3, 401)
+
+    def test_zabezpieczenia_ochrona_idor_zwraca_403(self):
+        # Marta próbuje odpytać konto Jana
+        kod1, _ = self._zapytanie("GET", "/api/zus/konto?pesel=82041203471", token="token-marta-90031501245")
+        self.assertEqual(kod1, 403)
+
+        # Marta próbuje odpytać zwolnienia Jana
+        kod2, _ = self._zapytanie("GET", "/api/l4/moje?pesel=82041203471", token="token-marta-90031501245")
+        self.assertEqual(kod2, 403)
+
+    def test_zabezpieczenia_brak_roli_lekarza_zwraca_403(self):
+        # Zwykły obywatel (Marta) próbuje wystawić e-ZLA
+        dane_wystawienia = {
+            "pesel_pacjenta": "90031501245",
+            "imie_pacjenta": "Marta",
+            "nazwisko_pacjenta": "Kowalska",
+            "okres_od": date.today().isoformat(),
+            "okres_do": (date.today() + timedelta(days=2)).isoformat(),
+            "pwz_lekarza": "7891234"
+        }
+        kod, _ = self._zapytanie("POST", "/api/l4/wystaw", dane_wystawienia, token="token-marta-90031501245")
+        self.assertEqual(kod, 403)
+
+    def test_zabezpieczenia_limit_rozmiaru_payloadu_413(self):
+        # Wysłanie sztucznie za dużego obiektu (powyżej 256 KB)
+        duzy_tekst = "A" * (262144 + 1024)
+        kod, _ = self._zapytanie("POST", "/api/zus/wplata-nrs", {
+            "pesel": "82041203471",
+            "kwota": 50.0,
+            "tytul": duzy_tekst
+        }, token="token-jan-82041203471")
+        self.assertEqual(kod, 413)
 
 
 if __name__ == "__main__":

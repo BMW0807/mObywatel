@@ -228,7 +228,17 @@ class H(SimpleHTTPRequestHandler):
         self.send_header('X-Content-Type-Options', 'nosniff')
         self.send_header('Referrer-Policy', 'same-origin')
         self.send_header('X-Frame-Options', 'SAMEORIGIN')
-        self.send_header('Content-Security-Policy', "frame-ancestors 'self'; base-uri 'self';")
+        csp = (
+            "default-src 'self'; "
+            "script-src 'self' 'unsafe-inline'; "
+            "style-src 'self' 'unsafe-inline'; "
+            "img-src 'self' data: blob:; "
+            "media-src 'self' data: blob:; "
+            "connect-src 'self' http://127.0.0.1:* http://localhost:* https://api.openai.com https://api.anthropic.com https://api.elevenlabs.io https://integrate.api.nvidia.com; "
+            "frame-ancestors 'self'; "
+            "base-uri 'self';"
+        )
+        self.send_header('Content-Security-Policy', csp)
         if not getattr(self, '_cc_set', False) and not self.path.startswith('/api/'):
             self.send_header('Cache-Control', 'no-cache')
         super().end_headers()
@@ -414,7 +424,10 @@ class H(SimpleHTTPRequestHandler):
                 log(dict(t='i18n', lang=lang, n=len(teksty), brak=len(teksty) - len(d)))
                 return self.js(dict(t=d))
             if p == '/api/znak/beat':
-                req = self.json_body(16384); dev = str(req.get('dev', ''))[:40]
+                req = self.json_body(16384)
+                dev = str(req.get('dev', '')).strip()[:64]
+                if not dev or not re.match(r'^[a-zA-Z0-9_\-]{1,64}$', dev):
+                    return self.js(dict(error='zly identyfikator urzadzenia'), 400)
                 try: tok = int(req.get('token')) & 0xffff
                 except (TypeError, ValueError, OverflowError): return self.js(dict(error='zly zeton'), 400)
                 with _lock:
@@ -428,8 +441,10 @@ class H(SimpleHTTPRequestHandler):
                     if otrz: ZN['skan'].pop(dev, None)
                 return self.js(dict(otrzymane=otrz, skanuje=skanuje and not otrz, zmien=zajety))
             if p == '/api/znak/przekaz':
-                req = self.json_body(20000); to = req.get('to')
-                if not isinstance(to, str): return self.js(dict(ok=False, error='odbiorca niedostepny'), 404)
+                req = self.json_body(20000)
+                to = str(req.get('to') or '').strip()[:64]
+                if not to or not re.match(r'^[a-zA-Z0-9_\-]{1,64}$', to):
+                    return self.js(dict(ok=False, error='odbiorca niedostepny'), 404)
                 with _lock:
                     if to not in ZN['devs']: return self.js(dict(ok=False, error='odbiorca niedostepny'), 404)
                     ZN['skrz'].setdefault(to, []).append(dict(ok=bool(req.get('ok')), dane=req.get('dane') if req.get('ok') else None, t=time.time()))
@@ -487,7 +502,8 @@ class H(SimpleHTTPRequestHandler):
         except urllib.error.HTTPError as e:
             msg = e.read().decode('utf-8', 'replace')[:400]; log(dict(t='err', path=p, code=e.code, msg=msg)); self.js(dict(error=msg), 502)
         except Exception as e:
-            log(dict(t='err', path=p, msg=str(e), tb=traceback.format_exc()[-800:])); self.js(dict(error=str(e)), 500)
+            log(dict(t='err', path=p, msg=str(e), tb=traceback.format_exc()[-800:]))
+            self.js(dict(error='Wystąpił błąd serwera. Spróbuj ponownie później.'), 500)
 
 def czy_uruchomic_zus():
     """Sprawdza, czy backend ZUS powinien zostać uruchomiony (START_ZUS=1 lub flaga CLI --start-zus / --zus)."""

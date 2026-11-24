@@ -1628,6 +1628,11 @@
     };
 
     // --- Narzędzia pomocnicze ---
+    function esc(s) {
+      if (s === null || s === undefined) return '';
+      return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    }
+
     function formatPLN(num) {
       if (num === undefined || num === null || isNaN(num)) return '0,00 zł';
       return Number(num).toLocaleString('pl-PL', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' zł';
@@ -1637,7 +1642,7 @@
       const box = document.getElementById('toastBox');
       const toast = document.createElement('div');
       toast.className = `toast ${type}`;
-      toast.innerHTML = (type === 'success' ? '✓ ' : '⚠️ ') + msg;
+      toast.textContent = (type === 'success' ? '✓ ' : '⚠️ ') + msg;
       box.appendChild(toast);
       setTimeout(() => {
         toast.style.opacity = '0';
@@ -1721,7 +1726,7 @@
       if (isLive) {
         pill.className = 'api-status-pill online';
         text.textContent = 'REST API ZUS: Połączono';
-        banner.innerHTML = `Serwer działa na żywo pod adresem <code>${STATE.backendUrl}</code>. Wszystkie operacje są zapisywane w backendzie.`;
+        banner.innerHTML = `Serwer działa na żywo pod adresem <code>${esc(STATE.backendUrl)}</code>. Wszystkie operacje są zapisywane w backendzie.`;
       } else {
         pill.className = 'api-status-pill mock';
         text.textContent = 'Tryb Symulacji (uruchom backend)';
@@ -1831,14 +1836,14 @@
         zglContainer.innerHTML = zgloszenia.map(z => `
           <div style="padding:10px 14px; background:var(--surface-2); border-radius:10px; margin-bottom:10px; border:1px solid var(--hairline)">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px">
-              <strong>${z.platnik_nazwa || 'Pracodawca'}</strong>
-              <span class="badge badge-success">${z.status || 'aktywne'}</span>
+              <strong>${esc(z.platnik_nazwa || 'Pracodawca')}</strong>
+              <span class="badge badge-success">${esc(z.status || 'aktywne')}</span>
             </div>
             <div style="font-size:12.5px; color:var(--ink-muted)">
-              NIP: ${z.platnik_nip || '-'} • Kod: <b>${z.kod_tytulu || '01 10 00'}</b>
+              NIP: ${esc(z.platnik_nip || '-')} • Kod: <b>${esc(z.kod_tytulu || '01 10 00')}</b>
             </div>
             <div style="font-size:12px; color:var(--ink-muted); margin-top:2px">
-              ${z.opis_tytulu || 'Pracownik podlegający ubezpieczeniom'} (od: ${z.data_od || '-'})
+              ${esc(z.opis_tytulu || 'Pracownik podlegający ubezpieczeniom')} (od: ${esc(z.data_od || '-')})
             </div>
           </div>
         `).join('');
@@ -1852,13 +1857,13 @@
       } else {
         tbody.innerHTML = hist.map(h => `
           <tr>
-            <td><strong>${h.miesiac}</strong></td>
+            <td><strong>${esc(h.miesiac)}</strong></td>
             <td>${formatPLN(h.podstawa)}</td>
             <td>${formatPLN(h.emerytalna)}</td>
             <td>${formatPLN(h.rentowa)}</td>
             <td>${formatPLN(h.chorobowa)}</td>
             <td>${formatPLN(h.zdrowotna)}</td>
-            <td><span class="badge badge-success">${h.status || 'rozliczona'}</span></td>
+            <td><span class="badge badge-success">${esc(h.status || 'rozliczona')}</span></td>
           </tr>
         `).join('');
       }
@@ -1955,38 +1960,38 @@
           <div class="l4-card">
             <div class="l4-header">
               <div class="l4-number">
-                <span>📄 ${z.id_ezla}</span>
-                <span class="badge ${badgeClass}">${z.status ? z.status.toUpperCase() : 'AKTYWNE'}</span>
+                <span>📄 ${esc(z.id_ezla)}</span>
+                <span class="badge ${badgeClass}">${esc(z.status ? z.status.toUpperCase() : 'AKTYWNE')}</span>
                 ${z.kody_literowe && z.kody_literowe.includes('B') ? '<span class="badge badge-warning" title="Ciąża: płatne 100%">KOD B (Ciąża)</span>' : ''}
               </div>
               <div>
-                ${!isAnulowane ? `<button class="btn btn-outline btn-sm" onclick="openAnulujEzlaModal('${z.id_ezla}')">⚠️ Anuluj e-ZLA</button>` : `<span style="font-size:12px; color:var(--mob-red)">Powód anulowania: ${z.powod_anulowania || 'Pomyłka'}</span>`}
+                ${!isAnulowane ? `<button class="btn btn-outline btn-sm" onclick="openAnulujEzlaModal('${esc(z.id_ezla)}')">⚠️ Anuluj e-ZLA</button>` : `<span style="font-size:12px; color:var(--mob-red)">Powód anulowania: ${esc(z.powod_anulowania || 'Pomyłka')}</span>`}
               </div>
             </div>
 
             <div class="l4-body-grid">
               <div>
                 <small>Okres zwolnienia:</small>
-                <b>${z.okres_od} do ${z.okres_do} (${z.liczba_dni || '-'} dni)</b>
+                <b>${esc(z.okres_od)} do ${esc(z.okres_do)} (${esc(z.liczba_dni || '-')} dni)</b>
               </div>
               <div>
                 <small>Pacjent:</small>
-                <b>${z.imie_pacjenta || ''} ${z.nazwisko_pacjenta || ''} (PESEL: ${z.pesel_pacjenta || '-'})</b>
+                <b>${esc(z.imie_pacjenta || '')} ${esc(z.nazwisko_pacjenta || '')} (PESEL: ${esc(z.pesel_pacjenta || '-')})</b>
               </div>
               <div>
                 <small>Lekarz wystawiający:</small>
-                <b>${z.imie_nazwisko_lekarza || 'dr n. med. Tomasz Zieliński'} (PWZ: ${z.pwz_lekarza || '-'})</b>
+                <b>${esc(z.imie_nazwisko_lekarza || 'dr n. med. Tomasz Zieliński')} (PWZ: ${esc(z.pwz_lekarza || '-')})</b>
               </div>
               <div>
                 <small>Wskazania lekarskie:</small>
-                <b>${wskazanieText}</b>
+                <b>${esc(wskazanieText)}</b>
               </div>
             </div>
 
             ${isPlatnik
               ? `<div class="l4-icd-hidden">🔒 Dane medyczne ukryte przed pracodawcą (RODO / tajemnica lekarska)</div>`
               : `<div class="l4-icd-box">
-                  <strong>Rozpoznanie ICD-10:</strong> <code style="font-weight:700">${z.kod_icd10 || 'J06.9'}</code> — ${z.opis_rozpoznania || 'Infekcja'}
+                  <strong>Rozpoznanie ICD-10:</strong> <code style="font-weight:700">${esc(z.kod_icd10 || 'J06.9')}</code> — ${esc(z.opis_rozpoznania || 'Infekcja')}
                 </div>`
             }
           </div>
@@ -2175,11 +2180,11 @@
           ${terminy.map(t => `
             <div style="border:1px solid var(--hairline); padding:16px; border-radius:12px; background:var(--surface-2); display:flex; flex-direction:column; justify-content:space-between; gap:12px">
               <div>
-                <span class="badge badge-info" style="margin-bottom:6px">${t.temat}</span>
-                <div style="font-size:16px; font-weight:700">${t.data} o godz. ${t.godzina}</div>
-                <div style="font-size:12px; color:var(--ink-muted); margin-top:2px">Oddział: ${t.oddzial_zus || 'Oddział I w Warszawie'}</div>
+                <span class="badge badge-info" style="margin-bottom:6px">${esc(t.temat)}</span>
+                <div style="font-size:16px; font-weight:700">${esc(t.data)} o godz. ${esc(t.godzina)}</div>
+                <div style="font-size:12px; color:var(--ink-muted); margin-top:2px">Oddział: ${esc(t.oddzial_zus || 'Oddział I w Warszawie')}</div>
               </div>
-              <button class="btn btn-primary btn-sm" onclick="rezerwujEwizyte('${t.id_terminu}', '${t.data}', '${t.godzina}')">
+              <button class="btn btn-primary btn-sm" onclick="rezerwujEwizyte('${esc(t.id_terminu)}', '${esc(t.data)}', '${esc(t.godzina)}')">
                 🗓️ Zarezerwuj termin
               </button>
             </div>
@@ -2205,18 +2210,18 @@
           <div>
             <div style="display:flex; align-items:center; gap:8px">
               <span class="badge badge-success">ZAPLANOWANA</span>
-              <strong style="font-size:16px">Wideorozmowa: ${w.temat || 'Sprawy ogólne'}</strong>
+              <strong style="font-size:16px">Wideorozmowa: ${esc(w.temat || 'Sprawy ogólne')}</strong>
             </div>
             <div style="font-size:14px; margin-top:4px; color:var(--ink)">
-              🗓️ <b>${w.data}</b> o godzinie <b>${w.godzina}</b>
+              🗓️ <b>${esc(w.data)}</b> o godzinie <b>${esc(w.godzina)}</b>
             </div>
             <div style="font-size:12px; color:var(--ink-muted)">
-              Link do pokoju ZUS: <a href="${w.link_do_wideorozmowy || '#'}" target="_blank" style="color:var(--zus-green)">${w.link_do_wideorozmowy || 'https://ewizyta.zus.pl/pokoj/' + w.id_wizyty}</a>
+              Link do pokoju ZUS: <a href="${esc(w.link_do_wideorozmowy || '#')}" target="_blank" rel="noopener noreferrer" style="color:var(--zus-green)">${esc(w.link_do_wideorozmowy || 'https://ewizyta.zus.pl/pokoj/' + w.id_wizyty)}</a>
             </div>
           </div>
           <div style="display:flex; gap:8px">
-            <a href="${w.link_do_wideorozmowy || '#'}" target="_blank" class="btn btn-primary btn-sm">📹 Dołącz do e-Wizyty</a>
-            <button class="btn btn-outline btn-sm" onclick="anulujEwizyte('${w.id_wizyty}')">Odwołaj</button>
+            <a href="${esc(w.link_do_wideorozmowy || '#')}" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-sm">📹 Dołącz do e-Wizyty</a>
+            <button class="btn btn-outline btn-sm" onclick="anulujEwizyte('${esc(w.id_wizyty)}')">Odwołaj</button>
           </div>
         </div>
       `).join('');
@@ -2272,12 +2277,13 @@
 
       tbody.innerHTML = wnioski.map(w => `
         <tr>
-          <td><code style="font-weight:700">${w.id_wniosku}</code></td>
-          <td><b>${w.typ_wniosku}</b></td>
-          <td>${w.data_zlozenia}</td>
-          <td><small style="color:var(--ink-muted)">${w.opis || 'Wniosek złożony elektronicznie przez mObywatel/PUE'}</small></td>
-          <td><span class="badge ${w.status === 'rozpatrzony_pozytywnie' ? 'badge-success' : 'badge-warning'}">${w.status || 'w_trakcie_rozpatrywania'}</span></td>
+          <td><code style="font-weight:700">${esc(w.id_wniosku)}</code></td>
+          <td><b>${esc(w.typ_wniosku)}</b></td>
+          <td>${esc(w.data_zlozenia)}</td>
+          <td><small style="color:var(--ink-muted)">${esc(w.opis || 'Wniosek złożony elektronicznie przez mObywatel/PUE')}</small></td>
+          <td><span class="badge ${w.status === 'rozpatrzony_pozytywnie' ? 'badge-success' : 'badge-warning'}">${esc(w.status || 'w_trakcie_rozpatrywania')}</span></td>
         </tr>
+      `).join('');
       `).join('');
     }
 

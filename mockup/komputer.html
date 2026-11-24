@@ -112,7 +112,8 @@ h1{margin:0 0 6px;font-size:28px;letter-spacing:-.02em}
 <script src="znak-kod.js?v=13"></script>
 <script src="sylwetki.js?v=16"></script>
 <script>
-const DEV='web'+Math.random().toString(36).slice(2,10);
+const rndWebId=()=>{try{const a=new Uint8Array(8);crypto.getRandomValues(a);return Array.from(a,b=>b.toString(16).padStart(2,'0')).join('')}catch(e){return Math.random().toString(36).slice(2,10)}};
+const DEV='web_'+rndWebId();
 const KTO='Autoplus Wypożyczalnia Samochodów';
 const ZAKRES=[['Zdjęcie','foto'],['Imię i nazwisko','imie_nazwisko'],['Data urodzenia','data_urodzenia'],['PESEL','pesel'],['Numer dowodu','nr_dowodu'],['Prawo jazdy','prawo_jazdy']];
 let TOKEN=0,done=false;

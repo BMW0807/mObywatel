@@ -404,7 +404,20 @@ class ApiTestCase(unittest.TestCase):
         st, headers, _ = self.request('/api/health')
         self.assertEqual(st, 200)
         self.assertEqual(headers.get('X-Frame-Options'), 'SAMEORIGIN')
-        self.assertIn("frame-ancestors 'self'", headers.get('Content-Security-Policy', ''))
+        self.assertEqual(headers.get('X-Content-Type-Options'), 'nosniff')
+        csp = headers.get('Content-Security-Policy', '')
+        self.assertIn("frame-ancestors 'self'", csp)
+        self.assertIn("default-src 'self'", csp)
+        self.assertIn("script-src 'self'", csp)
+
+    def test_server_500_does_not_leak_internals(self):
+        with mock.patch('agent.run', side_effect=RuntimeError('SensibleDatabaseSecret/etc/shadow')):
+            server.KEYS[agent.PROVIDER] = 'dummy'
+            st, _, body = self.request('/api/agent', method='POST', data={'messages': [{'role': 'user', 'content': 'hej'}]})
+            self.assertEqual(st, 500)
+            err = json.loads(body.decode('utf-8'))
+            self.assertNotIn('SensibleDatabaseSecret', err.get('error', ''))
+            self.assertIn('błąd serwera', err.get('error', '').lower())
 
     def test_rate_bucket_prunes_on_high_unique_ips(self):
         now = 100000.0
